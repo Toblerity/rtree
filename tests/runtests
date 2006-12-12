@@ -1,0 +1,3 @@
+#!/bin/sh
+PYTHONPATH=/home/sean/Projects/dev-packages python runalltests.py
+

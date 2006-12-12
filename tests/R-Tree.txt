@@ -1,0 +1,20 @@
+Testing Rtree
+================
+
+Make an instance
+
+    >>> from rtree import Rtree
+    >>> index = Rtree()
+
+Add 100 largish boxes randomly distributed over the domain
+
+    >>> from data import boxes15, boxes3, points
+    >>> for i, coords in enumerate(boxes15):
+    ...     index.add(i, coords)
+   
+Find likely items
+
+    >>> hits = [n for n in index.intersection((0, 0, 60, 60))]
+    >>> len(hits)
+    10
+
