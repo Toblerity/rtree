@@ -1,7 +1,7 @@
 Testing Rtree
 ================
 
-Make an instance
+Make an instance, index stored in memory
 
     >>> from rtree import Rtree
     >>> index = Rtree()
@@ -18,3 +18,30 @@ Find likely items
     >>> len(hits)
     10
 
+Disk-based indexes
+------------------
+
+Existing index data will be clobbered! This is a known issue of the underlying
+C++ lib. Patches gratefully accepted.
+
+    # Default page size 0
+    >>> index = Rtree("default")
+    >>> for i, coords in enumerate(boxes15):
+    ...     index.add(i, coords)
+    >>> hits = [n for n in index.intersection((0, 0, 60, 60))]
+    >>> len(hits)
+    10
+
+    # Page size 3
+    >>> index = Rtree("pagesize3", 3)
+    >>> for i, coords in enumerate(boxes15):
+    ...     index.add(i, coords)
+    >>> hits = [n for n in index.intersection((0, 0, 60, 60))]
+    >>> len(hits)
+    10
+
+    Test invalid name
+    >>> index = Rtree("bogus/foo")
+    Traceback (most recent call last):
+    ...
+    IOError: Unable to open file 'bogus/foo' for index storage

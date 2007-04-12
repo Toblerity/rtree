@@ -2,19 +2,19 @@
 # =============================================================================
 # Rtree spatial index. Copyright (C) 2006 Ancient World Mapping Center
 #
-# This program is free software; you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by the Free
-# Software Foundation; either version 2 of the License, or (at your option)
+# This library is free software; you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation; either version 2.1 of the License, or (at your option)
 # any later version.
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT
+# This library is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
 # details.
 #
-# You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-# Place, Suite 330, Boston, MA 02111-1307 USA
+# You should have received a copy of the GNU Lesser General Public License 
+# along with this library; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #
 # Contact email: sgillies@frii.com
 # =============================================================================
@@ -28,21 +28,41 @@ typedef struct {
     RtreeIndex index;
 } Rtree;
 
-//staticforward PyTypeObject RtreeType;
-
 /* Alloc/dealloc */
 
 static void
 Rtree_dealloc(Rtree *self)
 {
     RtreeIndex_del(self->index);
+
     self->ob_type->tp_free((PyObject*) self);
 }
 
 static int
 Rtree_init(Rtree *self, PyObject *args, PyObject *kwds)
 {
-    self->index = RtreeIndex_new();
+    char* filename = NULL;
+    unsigned long nPageLength = 0;
+    FILE *file = NULL;
+
+    if (!PyArg_ParseTuple(args, "|si", &filename, (unsigned long)&nPageLength))
+        return -1;
+   
+    // Check that there is a file beyond the name
+    if (filename)
+    {
+        file = fopen(filename, "wb");
+        if (!file)
+        {
+            PyErr_Format(PyExc_IOError,
+                "Unable to open file '%s' for index storage", filename);
+            return -1;
+        }
+        fclose(file);
+    }
+
+    self->index = RtreeIndex_new(filename, nPageLength);
+    
     return 0;
 }
 

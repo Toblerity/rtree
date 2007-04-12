@@ -8,5 +8,5 @@ except:
     pass
 
 for file in glob.glob('*.txt'):
-    doctest.testfile(file)
+    doctest.testfile(file, verbose=1)
 
