@@ -56,14 +56,21 @@ private:
 
 extern "C"
 GISPySpatialIndex *
-RtreeIndex_new(char* filename, unsigned long nPageLength)
+RtreeIndex_new(char* filename, unsigned long nPageLength, int load)
 {
     if (!filename)
         return new GISPySpatialIndex;
     else
-    {   
-        if (!nPageLength) nPageLength=1;
-        return new GISPySpatialIndex(filename, nPageLength);
+    {
+        if (load == 1)
+        {
+            return new GISPySpatialIndex(filename);
+        }
+        else
+        {
+            if (!nPageLength) nPageLength=1;
+            return new GISPySpatialIndex(filename, nPageLength);
+        }
     }
 }
 

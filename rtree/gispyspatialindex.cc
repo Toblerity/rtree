@@ -25,16 +25,6 @@
 
 using namespace SpatialIndex;
 
-GISPySpatialIndex::GISPySpatialIndex(const char* pszFilename, unsigned long nPageSize)
-{
-
-  std::string oFilename = std::string(pszFilename);
-  mStorageManager = StorageManager::createNewDiskStorageManager(oFilename, nPageSize);
-
-  Initialize();
-
-}
-
 void GISPySpatialIndex::Initialize()
 {
   unsigned int capacity = 10;
@@ -61,6 +51,28 @@ GISPySpatialIndex::GISPySpatialIndex()
   mStorageManager = StorageManager::createNewMemoryStorageManager();
   
   Initialize();
+}
+
+// Load a persisted index
+GISPySpatialIndex::GISPySpatialIndex(const char* filename)
+{
+
+  std::string oFilename = std::string(filename);
+  mStorageManager = StorageManager::loadDiskStorageManager(oFilename);
+
+  Initialize();
+
+}
+
+// Create a new index
+GISPySpatialIndex::GISPySpatialIndex(const char* filename, unsigned long pagesize)
+{
+
+  std::string oFilename = std::string(filename);
+  mStorageManager = StorageManager::createNewDiskStorageManager(oFilename, pagesize);
+
+  Initialize();
+
 }
 
 GISPySpatialIndex:: ~GISPySpatialIndex()

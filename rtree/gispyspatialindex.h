@@ -47,6 +47,7 @@ class GISPySpatialIndex
 
 public:
   GISPySpatialIndex();
+  GISPySpatialIndex(const char* pszFilename);
   GISPySpatialIndex(const char* pszFilename, unsigned long nPageSize);
   ~GISPySpatialIndex();
   

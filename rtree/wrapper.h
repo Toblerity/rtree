@@ -26,7 +26,7 @@ extern "C" {
 
 typedef struct RtreeIndex_t *RtreeIndex;
 
-RtreeIndex RtreeIndex_new(char* filename, unsigned long nPagesize);
+RtreeIndex RtreeIndex_new(char* filename, unsigned long nPagesize, int load);
 void RtreeIndex_del(RtreeIndex index);
 void RtreeIndex_insertData(RtreeIndex index, long id, 
         double *min, double *max);

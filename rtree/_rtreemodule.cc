@@ -41,27 +41,63 @@ Rtree_dealloc(Rtree *self)
 static int
 Rtree_init(Rtree *self, PyObject *args, PyObject *kwds)
 {
-    char* filename = NULL;
+    char* basename = NULL;
+    char filename[256];
     unsigned long nPageLength = 0;
-    FILE *file = NULL;
+    int overwrite = 0;
+    int load = -1;
+    PyObject *os_module;
+    PyObject *path_module;
+    PyObject *abspath, *dirname;
+    PyObject *func;
 
-    if (!PyArg_ParseTuple(args, "|si", &filename, (unsigned long)&nPageLength))
+    static char *kwlist[] = {"basename", "pagesize", "overwrite", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(
+            args, kwds, "|sii", kwlist,
+            &basename, (unsigned long)&nPageLength, &overwrite
+            )
+        )
         return -1;
-   
-    // Check that there is a file beyond the name
-    if (filename)
+
+    // Import os and os.path
+    os_module = PyImport_ImportModule("os");
+    path_module = PyImport_ImportModule("os.path");
+
+    if (basename)
     {
-        file = fopen(filename, "wb");
-        if (!file)
+        snprintf(filename, 256, "%s.dat", basename);
+ 
+        // Bail out if we don't have write access
+        func = PyObject_GetAttrString(path_module, "abspath");
+        abspath = PyObject_CallFunction(func, "s", filename);
+        func = PyObject_GetAttrString(path_module, "dirname");
+        dirname = PyObject_CallFunctionObjArgs(func, abspath, NULL);
+
+        func = PyObject_GetAttrString(os_module, "access");
+        if (!PyObject_IsTrue(PyObject_CallFunctionObjArgs(func, dirname, PyObject_GetAttrString(os_module, "W_OK"), NULL)))
         {
             PyErr_Format(PyExc_IOError,
-                "Unable to open file '%s' for index storage", filename);
+                "Unable to open file '%s' for index storage",
+                basename
+                );
             return -1;
         }
-        fclose(file);
+
+        // Check for existence with os.path.exists
+        func = PyObject_GetAttrString(path_module, "exists");
+        if (PyObject_IsTrue(PyObject_CallFunction(func, "s", filename)))
+        {
+            if (overwrite == 0)
+                load = 1;
+            else
+                load = 0;
+        }
+        else
+            load = 0;
     }
 
-    self->index = RtreeIndex_new(filename, nPageLength);
+    self->index = RtreeIndex_new(basename, nPageLength, load);
     
     return 0;
 }

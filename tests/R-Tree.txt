@@ -21,10 +21,19 @@ Find likely items
 Disk-based indexes
 ------------------
 
-Existing index data will be clobbered! This is a known issue of the underlying
-C++ lib. Patches gratefully accepted.
+    # Clean up leftover data
+    >>> import os
+    >>> try:
+    ...     os.remove('default.dat')
+    ...     os.remove('default.idx')
+    ...     os.remove('pagesize3.dat')
+    ...     os.remove('pagesize3.idx')
+    ...     os.remove('testing.dat')
+    ...     os.remove('testing.idx')
+    ... except OSError:
+    ...     pass
 
-    # Default page size 0
+    # Default page size 1
     >>> index = Rtree("default")
     >>> for i, coords in enumerate(boxes15):
     ...     index.add(i, coords)
@@ -33,7 +42,7 @@ C++ lib. Patches gratefully accepted.
     10
 
     # Page size 3
-    >>> index = Rtree("pagesize3", 3)
+    >>> index = Rtree("pagesize3", pagesize=3)
     >>> for i, coords in enumerate(boxes15):
     ...     index.add(i, coords)
     >>> hits = [n for n in index.intersection((0, 0, 60, 60))]
@@ -45,3 +54,13 @@ C++ lib. Patches gratefully accepted.
     Traceback (most recent call last):
     ...
     IOError: Unable to open file 'bogus/foo' for index storage
+
+    # Load a persisted index
+    >>> _ = os.system("cp default.dat testing.dat")
+    >>> _ = os.system("cp default.idx testing.idx")
+
+    >>> index = Rtree("testing")
+    >>> hits = [n for n in index.intersection((0, 0, 60, 60))]
+    >>> len(hits)
+    10
+
