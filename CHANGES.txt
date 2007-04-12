@@ -1,1 +1,6 @@
 
+0.2: 12 April 2007
+==================
+- Add disk storage option for indexes (#320).
+- Change license to LGPL.
+
