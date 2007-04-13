@@ -24,7 +24,6 @@ setup(name          = 'Rtree',
       maintainer_email  = 'sgillies@frii.com',
       url   = 'http://trac.gispython.org/projects/PCL/wiki/ArrTree',
       packages      = ['rtree'],
-      namespace_packages    = ['rtree'],
       ext_modules   = [_rtree],
       classifiers   = [
         'Development Status :: 3 - Alpha',
