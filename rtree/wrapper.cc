@@ -68,7 +68,7 @@ RtreeIndex_new(char* filename, unsigned long nPageLength, int load)
         }
         else
         {
-            if (!nPageLength) nPageLength=1;
+            if (!nPageLength) nPageLength=4096;
             return new GISPySpatialIndex(filename, nPageLength);
         }
     }

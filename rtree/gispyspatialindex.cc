@@ -21,9 +21,11 @@
 */
 
 #include <SpatialIndex.h>
+
 #include "gispyspatialindex.h"
 
 using namespace SpatialIndex;
+using namespace std;
 
 void GISPySpatialIndex::Initialize()
 {
@@ -39,7 +41,7 @@ void GISPySpatialIndex::Initialize()
   RTree::RTreeVariant variant = RTree::RV_RSTAR;
 
   // create R-tree
-  long indexId;
+  long indexId=1;
   mRTree = RTree::createNewRTree(*mStorage, fillFactor, indexCapacity,
                                  leafCapacity, dimension, variant, indexId); 
    
@@ -60,7 +62,13 @@ GISPySpatialIndex::GISPySpatialIndex(const char* filename)
   std::string oFilename = std::string(filename);
   mStorageManager = StorageManager::loadDiskStorageManager(oFilename);
 
-  Initialize();
+  unsigned int capacity = 10;
+  bool writeThrough = false;
+  mStorage = StorageManager::createNewRandomEvictionsBuffer(*mStorageManager, capacity, writeThrough);
+
+  // load R-tree
+  long indexId= 1;
+  mRTree = RTree::loadRTree(*mStorage, indexId); 
 
 }
 
