@@ -1,0 +1,3 @@
+recursive-include rtree *.h
+recursive-include spatialindex *.h
+
