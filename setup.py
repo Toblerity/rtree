@@ -14,7 +14,7 @@ _rtree = Extension('rtree._rtree',
                   )
 
 setup(name          = 'Rtree',
-      version       = '0.2.0',
+      version       = '0.1.0',
       description   = 'R-tree spatial index for Python GIS',
       license       = 'LGPL',
       keywords      = 'spatial index',

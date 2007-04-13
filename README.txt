@@ -51,21 +51,9 @@ Support
 
 For current information about this project, see
 
-http://trac.gispython.org/projects/PCL/wiki/RtreeSpatialIndex
+http://trac.gispython.org/projects/PCL/wiki/ArrTree
 
-If you have questions, please consider joining our software support list:
+If you have questions, please consider joining our community list:
 
-http://icon.stoa.org/trac/pleiades/wiki/PleiadesSoftwareList
-
-
-About Pleiades
---------------
-
-Pleiades is an international research network and associated web portal and
-content management system devoted to the study of ancient geography. 
-
-See http://icon.stoa.org/trac/pleiades/wiki.
-
-Funding for the creation of this software was provided by a grant from the 
-U.S. National Endowment for the Humanities (http://www.neh.gov).
+http://trac.gispython.org/projects/PCL/wiki/CommunityList
 

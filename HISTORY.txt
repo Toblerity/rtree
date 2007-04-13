@@ -1,5 +1,1 @@
 
-0.1: 12 December 2006
-=====================
-Initial release.
-
