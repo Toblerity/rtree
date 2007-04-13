@@ -3,13 +3,20 @@ from glob import glob
 from setuptools import setup, Extension
 
 _rtree = Extension('rtree._rtree',
-                  sources=['rtree/_rtreemodule.cc', 'rtree/wrapper.cc',
-                           'rtree/gispyspatialindex.cc'] \
+                  sources=['rtree/_rtreemodule.cc',
+                           'rtree/wrapper.cc', 'rtree/wrapper.h',
+                           'rtree/gispyspatialindex.cc',
+                           'rtree/gispyspatialindex.h']
                          +glob('spatialindex/tools/*.cc') \
+                         +glob('spatialindex/tools/*.h') \
                          +glob('spatialindex/storagemanager/*.cc') \
+                         +glob('spatialindex/storagemanager/*.h') \
                          +glob('spatialindex/spatialindex/*.cc') \
+                         +glob('spatialindex/spatialindex/*.h') \
                          +glob('spatialindex/rtree/*.cc') \
+                         +glob('spatialindex/rtree/*.h') \
                          +glob('spatialindex/geometry/*.cc'),
+                         +glob('spatialindex/geometry/*.h'),
                   include_dirs=['spatialindex/include']
                   )
 
