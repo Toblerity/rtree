@@ -1,4 +1,3 @@
-This source has been lifted directly from the QGIS project: http://gqis.org.
 
 Spatial indexing is based on code by Marios Hadjieleftheriou, who has
 developed spatial index library and published it under GNU LGPL.
