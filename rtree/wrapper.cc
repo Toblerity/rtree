@@ -22,7 +22,7 @@
 
 #include "gispyspatialindex.h"
 #include "Python.h"
-#include <SpatialIndex.h>
+#include <spatialindex/SpatialIndex.h>
 
 using namespace SpatialIndex;
 

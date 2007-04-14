@@ -20,12 +20,11 @@
 # =============================================================================
 */
 
-#include <SpatialIndex.h>
+#include <spatialindex/SpatialIndex.h>
 
 #include "gispyspatialindex.h"
 
 using namespace SpatialIndex;
-using namespace std;
 
 void GISPySpatialIndex::Initialize()
 {
@@ -41,7 +40,7 @@ void GISPySpatialIndex::Initialize()
   RTree::RTreeVariant variant = RTree::RV_RSTAR;
 
   // create R-tree
-  long indexId=1;
+  id_type indexId=1;
   mRTree = RTree::createNewRTree(*mStorage, fillFactor, indexCapacity,
                                  leafCapacity, dimension, variant, indexId); 
    

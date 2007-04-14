@@ -4,17 +4,12 @@ from setuptools import setup, Extension
 
 _rtree = Extension('rtree._rtree',
                   sources=['rtree/_rtreemodule.cc', 'rtree/wrapper.cc',
-                           'rtree/gispyspatialindex.cc']
-                         +glob('spatialindex/tools/*.cc') \
-                         +glob('spatialindex/storagemanager/*.cc') \
-                         +glob('spatialindex/spatialindex/*.cc') \
-                         +glob('spatialindex/rtree/*.cc') \
-                         +glob('spatialindex/geometry/*.cc'),
-                  include_dirs=['spatialindex/include']
+                           'rtree/gispyspatialindex.cc'],
+                  libraries=['spatialindex']
                   )
 
 setup(name          = 'Rtree',
-      version       = '0.1.0',
+      version       = '0.2.0',
       description   = 'R-tree spatial index for Python GIS',
       license       = 'LGPL',
       keywords      = 'spatial index',
