@@ -25,6 +25,13 @@ The *intersection* method is exact, with no false positives and no missed data.
 Installation
 ------------
 
+Obtain and install a copy of both spatialindex and tools libraries from: 
+http://research.att.com/~marioh/spatialindex/index.html  Each library is 
+a GNU-style build, so it should just be a matter of
+"./configure; make; make install" for each.  The spatialindex library depends 
+on the tools library, so make sure to build and install that first.
+
+
 $ python setup.py install
 
 This installs an egg. If you'd rather stick with the old-school distributions,
