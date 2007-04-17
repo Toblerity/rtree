@@ -20,7 +20,6 @@
 # =============================================================================
 */
 
-#include <Python.h>
 #include <string>
 
 namespace SpatialIndex
@@ -52,7 +51,6 @@ public:
   ~GISPySpatialIndex();
   
   bool insertFeature(long id, double *min, double *max);
-  PyObject *intersects(double *min, double *max);
   SpatialIndex::ISpatialIndex& index() {return *mRTree;}
 
 private:
