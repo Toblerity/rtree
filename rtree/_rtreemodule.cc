@@ -205,11 +205,57 @@ Rtree_intersection(Rtree *self, PyObject *args)
     return RtreeIndex_intersects(self->index, min, max);
 }
 
+static PyObject *
+Rtree_nearsetNeighbors(Rtree *self, PyObject *args)
+{
+
+    double min[2], max[2];
+    uint32_t num_results;
+    int size;
+    
+    PyObject *bounds=NULL;
+
+    if (!PyArg_ParseTuple(args, "Ol", &bounds, &num_results))
+        return NULL;
+
+        
+    /* Check length of the bounds argument */
+    if (!PySequence_Check(bounds))
+    {
+        PyErr_SetString(PyExc_TypeError, "Bounds must be a sequence");
+        return NULL;
+    }
+
+    size = (int) PySequence_Size(bounds);
+    if (size == 2)
+    {
+        min[0] = max[0] = PyFloat_AsDouble(PySequence_ITEM(bounds, 0));
+        min[1] = max[1] = PyFloat_AsDouble(PySequence_ITEM(bounds, 1));
+    }
+    else if (size == 4)
+    {
+        min[0] = PyFloat_AsDouble(PySequence_ITEM(bounds, 0));
+        min[1] = PyFloat_AsDouble(PySequence_ITEM(bounds, 1));
+        max[0] = PyFloat_AsDouble(PySequence_ITEM(bounds, 2));
+        max[1] = PyFloat_AsDouble(PySequence_ITEM(bounds, 3));
+    }
+    else
+    {
+        PyErr_Format(PyExc_TypeError,
+            "Bounds argument must be sequence of length 2 or 4, not %d",
+            size);
+        return NULL;
+    }
+
+    return RtreeIndex_nearestNeighbors(self->index, num_results, min, max);
+}
+
 /* Define Methods */
 
 static PyMethodDef module_methods[] = {
     {"add", (PyCFunction)Rtree_add, METH_VARARGS, "Add an item to an index, specifying an integer id and a bounding box"},
     {"intersection", (PyCFunction)Rtree_intersection, METH_VARARGS, "Return an iterator over integer ids of items that are likely to intersect with the specified bounding box."},
+    {"nearest", (PyCFunction)Rtree_nearsetNeighbors, METH_VARARGS, "Return an iterator over integer ids of items that are near the specified bounding box."},
     {"delete", (PyCFunction)Rtree_deleteData, METH_VARARGS, "Deletes a member from the index with a given id and bounding box."},
     {NULL}
 };

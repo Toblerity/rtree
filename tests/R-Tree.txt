@@ -18,6 +18,13 @@ Find likely items
     >>> len(hits)
     10
 
+Find the three items nearest to this one
+    >>> hits = [n for n in index.nearest((0,0,10,10), 3)]
+    >>> len(hits)
+    3
+    >>> hits
+    [76, 48, 19]
+
 Delete index members
 
     >>> for i, coords in enumerate(boxes15):

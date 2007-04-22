@@ -118,3 +118,22 @@ RtreeIndex_intersects(GISPySpatialIndex *index, double *min, double *max)
     return ids;
 }
 
+extern "C"
+PyObject *
+RtreeIndex_nearestNeighbors(GISPySpatialIndex *index, uint32_t num_results, double *min, double *max)
+{
+    /* get intersecting data */
+    int count=0;
+    PyObject *ids;
+
+    ids = PyList_New((size_t)count);
+    PyListVisitor *visitor = new PyListVisitor(ids);
+    const Tools::Geometry::Region *region = new Tools::Geometry::Region(min, max, 2);
+     index->index().nearestNeighborQuery(num_results,
+        (*region), (*visitor)
+    );
+    delete region;
+    delete visitor;
+    return ids;
+}
+

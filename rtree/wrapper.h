@@ -33,7 +33,7 @@ void RtreeIndex_deleteData(RtreeIndex index, long id,
 void RtreeIndex_insertData(RtreeIndex index, long id, 
         double *min, double *max);
 PyObject *RtreeIndex_intersects(RtreeIndex index, double *min, double *max);
-
+PyObject *RtreeIndex_nearestNeighbors(RtreeIndex index, uint32_t num_results, double *min, double *max);
 #ifdef __cplusplus
 } // extern "C"
 #endif
