@@ -91,6 +91,15 @@ RtreeIndex_insertData(GISPySpatialIndex *index, long id,
 }
 
 extern "C"
+void
+RtreeIndex_deleteData(GISPySpatialIndex *index, long id,
+                      double *min, double *max)
+{
+  /* TODO: handle possible exceptions */
+  index->index().deleteData(Tools::Geometry::Region(min, max, 2), id);
+}
+
+extern "C"
 PyObject *
 RtreeIndex_intersects(GISPySpatialIndex *index, double *min, double *max)
 {

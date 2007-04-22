@@ -18,6 +18,19 @@ Find likely items
     >>> len(hits)
     10
 
+Delete index members
+
+    >>> for i, coords in enumerate(boxes15):
+    ...     index.delete(i, coords)
+
+Check that we have deleted stuff
+
+    >>> hits = 0
+    >>> hits = [n for n in index.intersection((0, 0, 60, 60))]
+    >>> len(hits)
+    0
+          
+      
 Disk-based indexes
 ------------------
 
