@@ -119,6 +119,19 @@ RtreeIndex_intersects(GISPySpatialIndex *index, double *min, double *max)
 }
 
 extern "C"
+int
+RtreeIndex_isValid(GISPySpatialIndex *index)
+{
+  try {	
+      return (int) index->index().isIndexValid();
+  }
+  catch (...) {
+     // isIndexValid throws an exception for empty indexes which we'll assume is valid
+	return 1; 
+  }
+}
+
+extern "C"
 PyObject *
 RtreeIndex_nearestNeighbors(GISPySpatialIndex *index, uint32_t num_results, double *min, double *max)
 {
