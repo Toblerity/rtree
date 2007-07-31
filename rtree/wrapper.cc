@@ -86,14 +86,14 @@ int
 RtreeIndex_insertData(GISPySpatialIndex *index, long id,
                       double *min, double *max)
 {
-  try {	
-      index->index().insertData(0, 0, Tools::Geometry::Region(min, max, 2), id);
-      return 1;
-  }
-  catch (Tools::Exception& e) {
-      PyErr_SetString(PyExc_TypeError, e.what().c_str());
-      return 0;
-  }
+    try {	
+        index->index().insertData(0, 0, Tools::Geometry::Region(min, max, 2), id);
+        return 1;
+    }
+    catch (Tools::Exception& e) {
+        PyErr_SetString(PyExc_TypeError, e.what().c_str());
+        return 0;
+    }
 }
 
 extern "C"
@@ -101,14 +101,14 @@ int
 RtreeIndex_deleteData(GISPySpatialIndex *index, long id,
                       double *min, double *max)
 {
-  try {	
-      index->index().deleteData(Tools::Geometry::Region(min, max, 2), id);
-      return 1;
-  }
-  catch (Tools::Exception& e) {
-      PyErr_SetString(PyExc_TypeError, e.what().c_str());
-      return 0;
-  }
+    try {	
+        index->index().deleteData(Tools::Geometry::Region(min, max, 2), id);
+        return 1;
+    }
+    catch (Tools::Exception& e) {
+        PyErr_SetString(PyExc_TypeError, e.what().c_str());
+        return 0;
+    }
   
 }
 
@@ -122,13 +122,20 @@ RtreeIndex_intersects(GISPySpatialIndex *index, double *min, double *max)
 
     ids = PyList_New((size_t)count);
     PyListVisitor *visitor = new PyListVisitor(ids);
-    const Tools::Geometry::Region *region = new Tools::Geometry::Region(min, max, 2);
-     index->index().intersectsWithQuery(
-        (*region), (*visitor)
-    );
-    delete region;
-    delete visitor;
-    return ids;
+
+    try {	
+        const Tools::Geometry::Region *region = new Tools::Geometry::Region(min, max, 2);
+        index->index().intersectsWithQuery((*region), (*visitor));
+        delete region;
+        delete visitor;
+        return ids;
+    }
+    catch (Tools::Exception& e) {
+        PyErr_SetString(PyExc_TypeError, e.what().c_str());
+        delete visitor;
+        return NULL;
+    }
+
 }
 
 extern "C"
@@ -154,12 +161,18 @@ RtreeIndex_nearestNeighbors(GISPySpatialIndex *index, uint32_t num_results, doub
 
     ids = PyList_New((size_t)count);
     PyListVisitor *visitor = new PyListVisitor(ids);
-    const Tools::Geometry::Region *region = new Tools::Geometry::Region(min, max, 2);
-     index->index().nearestNeighborQuery(num_results,
-        (*region), (*visitor)
-    );
-    delete region;
-    delete visitor;
-    return ids;
+    try {	
+        const Tools::Geometry::Region *region = new Tools::Geometry::Region(min, max, 2);
+        index->index().nearestNeighborQuery(num_results, (*region), (*visitor));
+        delete region;
+        delete visitor;
+        return ids;
+    }
+    catch (Tools::Exception& e) {
+        PyErr_SetString(PyExc_TypeError, e.what().c_str());
+        delete visitor;
+        return NULL;
+    }
+    
 }
 
