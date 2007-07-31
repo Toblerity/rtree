@@ -149,10 +149,15 @@ Rtree_add(Rtree *self, PyObject *args)
         return NULL;
     }
   
-    RtreeIndex_insertData(self->index, id, min, max);
+    if (RtreeIndex_insertData(self->index, id, min, max) ) {
+        Py_INCREF(Py_None);
+        return Py_None;        
+    } else {
+        return NULL;
+    }
     
-    Py_INCREF(Py_None);
-    return Py_None;
+    
+
 }
 
 static PyObject *
@@ -194,10 +199,14 @@ Rtree_deleteData(Rtree *self, PyObject *args)
         return NULL;
     }
   
-    RtreeIndex_deleteData(self->index, id, min, max);
     
-    Py_INCREF(Py_None);
-    return Py_None;
+    if (RtreeIndex_deleteData(self->index, id, min, max) ) {
+        Py_INCREF(Py_None);
+        return Py_None;        
+    } else {
+        return NULL;
+    }    
+
 }
 
 static PyObject *

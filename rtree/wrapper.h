@@ -28,9 +28,9 @@ typedef struct RtreeIndex_t *RtreeIndex;
 
 RtreeIndex RtreeIndex_new(char* filename, unsigned long nPagesize, int load);
 void RtreeIndex_del(RtreeIndex index);
-void RtreeIndex_deleteData(RtreeIndex index, long id, 
+int RtreeIndex_deleteData(RtreeIndex index, long id, 
         double *min, double *max);
-void RtreeIndex_insertData(RtreeIndex index, long id, 
+int RtreeIndex_insertData(RtreeIndex index, long id, 
         double *min, double *max);
 int RtreeIndex_isValid(RtreeIndex index);
 PyObject *RtreeIndex_intersects(RtreeIndex index, double *min, double *max);

@@ -82,21 +82,34 @@ RtreeIndex_del(GISPySpatialIndex *index)
 }
 
 extern "C"
-void
+int
 RtreeIndex_insertData(GISPySpatialIndex *index, long id,
                       double *min, double *max)
 {
-  /* TODO: handle possible exceptions */
-  index->index().insertData(0, 0, Tools::Geometry::Region(min, max, 2), id);
+  try {	
+      index->index().insertData(0, 0, Tools::Geometry::Region(min, max, 2), id);
+      return 1;
+  }
+  catch (Tools::Exception& e) {
+      PyErr_SetString(PyExc_TypeError, e.what().c_str());
+      return 0;
+  }
 }
 
 extern "C"
-void
+int
 RtreeIndex_deleteData(GISPySpatialIndex *index, long id,
                       double *min, double *max)
 {
-  /* TODO: handle possible exceptions */
-  index->index().deleteData(Tools::Geometry::Region(min, max, 2), id);
+  try {	
+      index->index().deleteData(Tools::Geometry::Region(min, max, 2), id);
+      return 1;
+  }
+  catch (Tools::Exception& e) {
+      PyErr_SetString(PyExc_TypeError, e.what().c_str());
+      return 0;
+  }
+  
 }
 
 extern "C"
