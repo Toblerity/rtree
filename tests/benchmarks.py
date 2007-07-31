@@ -17,16 +17,25 @@ class Point(object):
         self.y = y
 
 # Scatter points randomly in a 1x1 box
+# 
+minx = 0
+miny = 0
+maxx = 6000000
+maxy = 6000000
+
+bounds = (minx, miny, maxx, maxy)
 count = 50000
 points = []
 index = Rtree()
+disk_index = Rtree('test', overwrite=1)
 for i in xrange(count):
-    x = 360.0*(random.random()-0.5)
-    y = 180.0*(random.random()-0.5)
+    x = random.randrange(minx, maxx) * random.random()
+    y = random.randrange(miny, maxy) * random.random()
     points.append(Point(x, y))
     index.add(i, (x, y))
+    disk_index.add(i, (x,y))
 
-bbox = (0.0, 50.0, 5.0, 55.0)
+bbox = (240000, 130000, 400000, 350000)
 
 print count, "points"
 print "Query box: ", bbox
@@ -47,8 +56,15 @@ s = """
 hits = [points[id] for id in index.intersection(bbox)]
 """
 t = timeit.Timer(stmt=s, setup='from __main__ import points, index, bbox')
-print "\nIntersection:"
+print "\nMemory-based Rtree Intersection:"
 print len([points[id] for id in index.intersection(bbox)]), "hits"
 print "%.2f usec/pass" % (1000000 * t.timeit(number=100)/100)
 
 
+s = """
+hits = [points[id] for id in disk_index.intersection(bbox)]
+"""
+t = timeit.Timer(stmt=s, setup='from __main__ import points, disk_index, bbox')
+print "\Disk-based Rtree Intersection:"
+print len([points[id] for id in disk_index.intersection(bbox)]), "hits"
+print "%.2f usec/pass" % (1000000 * t.timeit(number=100)/100)
