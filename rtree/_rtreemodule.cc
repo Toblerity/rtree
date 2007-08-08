@@ -99,12 +99,12 @@ Rtree_init(Rtree *self, PyObject *args, PyObject *kwds)
 
     self->index = RtreeIndex_new(basename, nPageLength, load);
     
-    if (RtreeIndex_isValid(self->index) != 1) {
-        PyErr_Format(PyExc_IOError,
-            "Index layout is invalid"
-            );
-        return -1;
-	}
+//    if (RtreeIndex_isValid(self->index) != 1) {
+//        PyErr_Format(PyExc_IOError,
+//            "Index layout is invalid"
+//            );
+//        return -1;
+//	}
     return 0;
 }
 
