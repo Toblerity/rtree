@@ -20,6 +20,8 @@ setup(name          = 'Rtree',
       url   = 'http://trac.gispython.org/projects/PCL/wiki/ArrTree',
       packages      = ['rtree'],
       ext_modules   = [_rtree],
+      install_requires = ['setuptools'],
+      tests_require = ['zope.testing'],
       classifiers   = [
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
