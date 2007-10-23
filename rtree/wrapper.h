@@ -24,6 +24,8 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 typedef struct RtreeIndex_t *RtreeIndex;
 
 RtreeIndex RtreeIndex_new(char* filename, unsigned long nPagesize, int load);
