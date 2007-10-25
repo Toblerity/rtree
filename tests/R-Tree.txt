@@ -44,8 +44,8 @@ Disk-based indexes
     # Clean up leftover data
     >>> import os
     >>> try:
-    ...     os.remove('default.dat')
-    ...     os.remove('default.idx')
+    ...     os.remove('/tmp/default.dat')
+    ...     os.remove('/tmp/default.idx')
     ...     os.remove('pagesize3.dat')
     ...     os.remove('pagesize3.idx')
     ...     os.remove('testing.dat')
@@ -76,8 +76,8 @@ Disk-based indexes
     IOError: Unable to open file 'bogus/foo' for index storage
 
     # Load a persisted index
-    >>> _ = os.system("cp default.dat testing.dat")
-    >>> _ = os.system("cp default.idx testing.idx")
+    >>> _ = os.system("cp /tmp/default.dat testing.dat")
+    >>> _ = os.system("cp /tmp/default.idx testing.idx")
 
     >>> index = Rtree("testing")
     >>> hits = [n for n in index.intersection((0, 0, 60, 60))]
