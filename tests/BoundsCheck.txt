@@ -1,0 +1,21 @@
+Bounding Box Checking
+=====================
+
+See http://trac.gispython.org/projects/PCL/ticket/127.
+
+Adding with bogus bounds
+------------------------
+
+  >>> import rtree
+  >>> index = rtree.Rtree()
+  >>> index.add(1, (0.0, 0.0, -1.0, 1.0))
+  Traceback (most recent call last):
+  ...
+  ValueError: Bounding box is invalid: maxx < miny or maxy < miny
+
+  >>> index.intersection((0.0, 0.0, -1.0, 1.0))
+  Traceback (most recent call last):
+  ...
+  ValueError: Bounding box is invalid: maxx < miny or maxy < miny
+
+

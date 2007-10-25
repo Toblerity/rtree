@@ -107,7 +107,7 @@ RtreeIndex_deleteData(GISPySpatialIndex *index, long id,
     }
     catch (Tools::Exception& e) {
         PyErr_SetString(PyExc_TypeError, e.what().c_str());
-        return 0;
+        return NULL;
     }
   
 }

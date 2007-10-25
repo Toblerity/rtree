@@ -7,6 +7,9 @@ try:
 except:
     pass
 
-for file in glob.glob('*.txt'):
+for file in [
+    'BoundsCheck.txt',
+    'R-Tree.txt',
+    ]:
     doctest.testfile(file, verbose=1)
 

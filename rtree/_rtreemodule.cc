@@ -148,7 +148,16 @@ Rtree_add(Rtree *self, PyObject *args)
             size);
         return NULL;
     }
-  
+ 
+    /* Check validity of bounds */
+    if (min[0] > max[0] || min[1] > max[1])
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "Bounding box is invalid: maxx < miny or maxy < miny"
+            );
+        return NULL;
+    }
+
     if (RtreeIndex_insertData(self->index, id, min, max) ) {
         Py_INCREF(Py_None);
         return Py_None;        
@@ -198,7 +207,15 @@ Rtree_deleteData(Rtree *self, PyObject *args)
             size);
         return NULL;
     }
-  
+
+    /* Check validity of bounds */
+    if (min[0] > max[0] || min[1] > max[1])
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "Bounding box is invalid: maxx < miny or maxy < miny"
+            );
+        return NULL;
+    }
     
     if (RtreeIndex_deleteData(self->index, id, min, max) ) {
         Py_INCREF(Py_None);
@@ -216,7 +233,16 @@ Rtree_intersection(Rtree *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "(dddd)", &min[0], &min[1], &max[0], &max[1]))
         return NULL;
-    
+
+    /* Check validity of bounds */
+    if (min[0] > max[0] || min[1] > max[1])
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "Bounding box is invalid: maxx < miny or maxy < miny"
+            );
+        return NULL;
+    }
+
     return RtreeIndex_intersects(self->index, min, max);
 }
 
@@ -259,6 +285,15 @@ Rtree_nearsetNeighbors(Rtree *self, PyObject *args)
         PyErr_Format(PyExc_TypeError,
             "Bounds argument must be sequence of length 2 or 4, not %d",
             size);
+        return NULL;
+    }
+
+    /* Check validity of bounds */
+    if (min[0] > max[0] || min[1] > max[1])
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "Bounding box is invalid: maxx < miny or maxy < miny"
+            );
         return NULL;
     }
 
