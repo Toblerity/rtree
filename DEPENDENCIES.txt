@@ -1,1 +1,10 @@
 - setuptools
+
+- spatial index library 1.1.1
+
+  http://research.att.com/~marioh/spatialindex/index.html
+
+- spatial index build tools 0.5.4b
+
+  http://research.att.com/~marioh/tools/index.html
+

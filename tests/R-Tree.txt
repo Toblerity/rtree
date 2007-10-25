@@ -54,7 +54,7 @@ Disk-based indexes
     ...     pass
 
     # Default page size 1
-    >>> index = Rtree("default")
+    >>> index = Rtree("/tmp/default")
     >>> for i, coords in enumerate(boxes15):
     ...     index.add(i, coords)
     >>> hits = [n for n in index.intersection((0, 0, 60, 60))]

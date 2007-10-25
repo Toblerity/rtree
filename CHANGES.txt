@@ -1,3 +1,6 @@
+0.2: 
+==================
+- Link spatialindex system library.
 
 0.1: 13 April 2007
 ==================

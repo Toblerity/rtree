@@ -2,6 +2,9 @@
 from glob import glob
 from setuptools import setup, Extension
 
+# Get text from README.txt
+readme_text = file('README.txt', 'rb').read()
+
 _rtree = Extension('rtree._rtree',
                   sources=['rtree/_rtreemodule.cc', 'rtree/wrapper.cc',
                            'rtree/gispyspatialindex.cc'],
@@ -10,14 +13,15 @@ _rtree = Extension('rtree._rtree',
 
 setup(name          = 'Rtree',
       version       = '0.2.0',
-      description   = 'R-tree spatial index for Python GIS',
+      description   = 'R-Tree spatial index for Python GIS',
       license       = 'LGPL',
       keywords      = 'spatial index',
       author        = 'Sean Gillies',
       author_email  = 'sgillies@frii.com',
       maintainer    = 'Sean Gillies',
       maintainer_email  = 'sgillies@frii.com',
-      url   = 'http://trac.gispython.org/projects/PCL/wiki/ArrTree',
+      url   = 'http://trac.gispython.org/projects/PCL/wiki/RTree',
+      long_description = readme_text,
       packages      = ['rtree'],
       ext_modules   = [_rtree],
       install_requires = ['setuptools'],
