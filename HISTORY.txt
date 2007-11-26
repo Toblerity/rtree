@@ -1,1 +1,11 @@
+0.2: 
+==================
+- Link spatialindex system library.
+
+0.1: 13 April 2007
+==================
+- Add disk storage option for indexes (#320).
+- Change license to LGPL.
+- Moved from Pleiades to GIS-Python repo.
+- Initial release.
 

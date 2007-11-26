@@ -5,6 +5,7 @@ Whether for in-memory feature stores, Plone content, or whatever -- we need an
 index to speed up the search for objects that intersect with a spatial bounding
 box.
 
+
 Index Protocol
 --------------
 
@@ -17,31 +18,36 @@ In a nutshell::
 This resembles a subset of the set protocol. *add* indexes a new object by id,
 *intersection* returns an iterator over ids where the node containing the id
 intersects with the specified bounding box.  The *intersection* method is
-exact, with no false positives and no missed data.
+exact, with no false positives and no missed data. Ids can be ints or long
+ints; index queries return long ints.
+
 
 Installation
 ------------
 
-Obtain and install a copy of both spatialindex and tools libraries from:
+First, obtain and install a copy of both spatialindex and tools libraries from:
 
 http://research.att.com/~marioh/tools/index.html
 
 http://research.att.com/~marioh/spatialindex/index.html  
 
-Each library is a GNU-style build, so it should just be a matter of::
+Rtree version 0.3 depends upon spatialindex version 1.1.1. Each library is a
+GNU-style build, so it should just be a matter of::
 
-  $ ./configure; make; make install
+  $ CPPFLAGS=-DNDEBUG ./configure; make; make install
 
-for each. The spatialindex library depends on the tools library, so make sure
-to build and install that first.
+for each. Debugging is on by default in 1.1.1, you'll want to turn it off for
+use in production. The spatialindex library depends on the tools library, so
+make sure to build and install that first.
 
 The command::
 
   $ python setup.py install
 
-installs an egg. If you'd rather stick with the old-school distributions, use::
+installs an egg. You can build and test in place like so::
 
-  $ python setup.py install --root / --single-version-externally-managed
+  $ python setup.py test
+
 
 Usage
 -----
