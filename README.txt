@@ -11,6 +11,8 @@ Index Protocol
 
 In a nutshell::
 
+  >>> from rtree import Rtree
+  >>> index = Rtree()
   >>> index.add(id=id, bounds=(left, bottom, right, top))
   >>> [n for n in index.intersection((left, bottom, right, top))]
   [id]
