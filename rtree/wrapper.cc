@@ -44,7 +44,7 @@ public:
     
     void visitData(const IData & d)
     {
-        PyList_Append(ids, Py_BuildValue("l", d.getIdentifier()));
+        PyList_Append(ids, PyLong_FromLongLong(d.getIdentifier()));
     }
 
     void visitData(std::vector<const IData*>& v) {}

@@ -25,7 +25,7 @@ setup(name          = 'Rtree',
       packages      = ['rtree'],
       ext_modules   = [_rtree],
       install_requires = ['setuptools'],
-      tests_require = ['zope.testing'],
+      test_suite = 'tests.test_suite',
       classifiers   = [
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

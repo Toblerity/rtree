@@ -8,7 +8,6 @@ Make an instance, index stored in memory
 
 Add 100 largish boxes randomly distributed over the domain
 
-    >>> from data import boxes15, boxes3, points
     >>> for i, coords in enumerate(boxes15):
     ...     index.add(i, coords)
    
@@ -23,7 +22,7 @@ Find the three items nearest to this one
     >>> len(hits)
     3
     >>> hits
-    [76, 48, 19]
+    [76L, 48L, 19L]
 
 Delete index members
 

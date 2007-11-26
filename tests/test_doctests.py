@@ -1,8 +1,10 @@
+import doctest
 import unittest
 import glob
 import os
 
-from zope.testing import doctest
+#from zope.testing import doctest
+from data import boxes15, boxes3, points
 
 optionflags = (doctest.REPORT_ONLY_FIRST_FAILURE |
                doctest.NORMALIZE_WHITESPACE |
@@ -20,6 +22,9 @@ def open_file(filename, mode='r'):
 def setUp(test):
     test.globs.update(dict(
             open_file = open_file,
+            boxes15=boxes15,
+            boxes3=boxes3,
+            points=points
             ))
 
 def test_suite():

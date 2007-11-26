@@ -114,11 +114,11 @@ static PyObject *
 Rtree_add(Rtree *self, PyObject *args)
 {
     double min[2], max[2];
-    long id;
+    long long id;
     int size;
     PyObject *bounds=NULL;
 
-    if (!PyArg_ParseTuple(args, "lO", &id, &bounds))
+    if (!PyArg_ParseTuple(args, "LO", &id, &bounds))
         return NULL;
 
     /* Check length of the bounds argument */
@@ -165,7 +165,6 @@ Rtree_add(Rtree *self, PyObject *args)
         return NULL;
     }
     
-    
 
 }
 
@@ -173,11 +172,11 @@ static PyObject *
 Rtree_deleteData(Rtree *self, PyObject *args)
 {
     double min[2], max[2];
-    long id;
+    long long id;
     int size;
     PyObject *bounds=NULL;
 
-    if (!PyArg_ParseTuple(args, "lO", &id, &bounds))
+    if (!PyArg_ParseTuple(args, "LO", &id, &bounds))
         return NULL;
 
     /* Check length of the bounds argument */
