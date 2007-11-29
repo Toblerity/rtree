@@ -1,8 +1,8 @@
 
 Sean Gillies <sgillies@frii.com>
-Howard Butler <hobu@iastate.edu>
+Howard Butler <hobu.inc@gmail.com>
 
 Spatial indexing is based on code by Marios Hadjieleftheriou, who has developed
 spatial index library and published it under GNU LGPL. This code is based on
-version 1.0 of the library: http://u-foria.org/marioh/spatialindex/index.html.
+version 1.1.1 of the library: http://research.att.com/~marioh/spatialindex/index.html.
 
