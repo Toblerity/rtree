@@ -87,7 +87,7 @@ RtreeIndex_insertData(GISPySpatialIndex *index, long id,
                       double *min, double *max)
 {
     try {	
-        index->index().insertData(0, 0, Tools::Geometry::Region(min, max, 2), id);
+        index->index().insertData(0, 0, SpatialIndex::Region(min, max, 2), id);
         return 1;
     }
     catch (Tools::Exception& e) {
@@ -102,7 +102,7 @@ RtreeIndex_deleteData(GISPySpatialIndex *index, long id,
                       double *min, double *max)
 {
     try {	
-        index->index().deleteData(Tools::Geometry::Region(min, max, 2), id);
+        index->index().deleteData(SpatialIndex::Region(min, max, 2), id);
         return 1;
     }
     catch (Tools::Exception& e) {
@@ -124,7 +124,7 @@ RtreeIndex_intersects(GISPySpatialIndex *index, double *min, double *max)
     PyListVisitor *visitor = new PyListVisitor(ids);
 
     try {	
-        const Tools::Geometry::Region *region = new Tools::Geometry::Region(min, max, 2);
+        const SpatialIndex::Region *region = new SpatialIndex::Region(min, max, 2);
         index->index().intersectsWithQuery((*region), (*visitor));
         delete region;
         delete visitor;
@@ -162,7 +162,7 @@ RtreeIndex_nearestNeighbors(GISPySpatialIndex *index, uint32_t num_results, doub
     ids = PyList_New((size_t)count);
     PyListVisitor *visitor = new PyListVisitor(ids);
     try {	
-        const Tools::Geometry::Region *region = new Tools::Geometry::Region(min, max, 2);
+        const SpatialIndex::Region *region = new SpatialIndex::Region(min, max, 2);
         index->index().nearestNeighborQuery(num_results, (*region), (*visitor));
         delete region;
         delete visitor;

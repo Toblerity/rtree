@@ -25,20 +25,14 @@ namespace SpatialIndex
 {
   class IStorageManager;
   class ISpatialIndex;
-
+  class Region;
+  
   namespace StorageManager
   {
     class IBuffer;
   }
 }
 
-namespace Tools
-{
-  namespace Geometry
-  {
-    class Region;
-  }
-}
 
 class GISPySpatialIndex
 {
