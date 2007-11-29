@@ -1,3 +1,3 @@
 #!/bin/sh
-valgrind --tool=memcheck --leak-check=yes --suppressions=/home/sean/Projects/valgrind-python.supp python runalltests.py
+valgrind --tool=memcheck --leak-check=yes --suppressions=/home/sean/Projects/valgrind-python.supp python test_doctests.py
 
