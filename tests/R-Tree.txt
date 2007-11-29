@@ -83,3 +83,14 @@ Disk-based indexes
     >>> len(hits)
     10
 
+    # Clean up leftover data
+    >>> import os
+    >>> try:
+    ...     os.remove('/tmp/default.dat')
+    ...     os.remove('/tmp/default.idx')
+    ...     os.remove('pagesize3.dat')
+    ...     os.remove('pagesize3.idx')
+    ...     os.remove('testing.dat')
+    ...     os.remove('testing.idx')
+    ... except OSError:
+    ...     pass
