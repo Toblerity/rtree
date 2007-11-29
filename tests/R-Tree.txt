@@ -5,6 +5,7 @@ Make an instance, index stored in memory
 
     >>> from rtree import Rtree
     >>> index = Rtree()
+    >>> from data import boxes15
 
 Add 100 largish boxes randomly distributed over the domain
 
