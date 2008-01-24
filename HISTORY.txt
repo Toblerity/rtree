@@ -1,3 +1,10 @@
+0.3: 26 November 2007
+=====================
+- Change to Python long integer identifiers (#126).
+- Allow deletion of objects from indexes.
+- Reraise index query errors as Python exceptions.
+- Improved persistence.
+
 0.2: 
 ==================
 - Link spatialindex system library.

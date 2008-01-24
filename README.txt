@@ -27,28 +27,44 @@ ints; index queries return long ints.
 Installation
 ------------
 
-First, obtain and install a copy of both spatialindex and tools libraries from:
+First, download and install version 1.3 of the spatialindex library from:
+
+http://trac.gispython.org/projects/SpatialIndex/wiki/Releases
+
+The library is a GNU-style build, so it is just a matter of::
+
+  $ ./configure; make; make install
+
+At this point you can get Rtree 0.4 via easy_install::
+
+  $ easy_install Rtree
+
+or by running the local setup.py::
+
+  $ python setup.py install
+
+You can build and test in place like::
+
+  $ python setup.py test
+
+
+Previous Versions
++++++++++++++++++
+
+Users of Rtree versions <= 0.3 should use spatialindex 1.1.1. Download and
+install a copy of both spatialindex and tools libraries from:
 
 http://research.att.com/~marioh/tools/index.html
 
 http://research.att.com/~marioh/spatialindex/index.html  
 
-Rtree version 0.3 depends upon spatialindex version 1.1.1. Each library is a
-GNU-style build, so it should just be a matter of::
+Each library is a GNU-style build, so it should just be a matter of::
 
   $ CPPFLAGS=-DNDEBUG ./configure; make; make install
 
 for each. Debugging is on by default in 1.1.1, you'll want to turn it off for
 use in production. The spatialindex library depends on the tools library, so
 make sure to build and install that first.
-
-The command::
-
-  $ python setup.py install
-
-installs an egg. You can build and test in place like so::
-
-  $ python setup.py test
 
 
 Usage
