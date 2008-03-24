@@ -116,33 +116,32 @@ Rtree_add(Rtree *self, PyObject *args)
     double min[2], max[2];
     long long id;
     int size;
-    PyObject *bounds=NULL;
+    PyObject *binput=NULL;
+    PyObject *bounds;
 
-    if (!PyArg_ParseTuple(args, "LO", &id, &bounds))
+    if (!PyArg_ParseTuple(args, "LO", &id, &binput))
         return NULL;
 
-    /* Check length of the bounds argument */
-    if (!PySequence_Check(bounds))
-    {
-        PyErr_SetString(PyExc_TypeError, "Bounds must be a sequence");
-        return NULL;
-    }
-
-    size = (int) PySequence_Size(bounds);
+    bounds = PySequence_Fast(binput, "Bounds must be a sequence");
+    size = (int) PySequence_Fast_GET_SIZE(bounds);
+    
     if (size == 2)
     {
-        min[0] = max[0] = PyFloat_AsDouble(PySequence_ITEM(bounds, 0));
-        min[1] = max[1] = PyFloat_AsDouble(PySequence_ITEM(bounds, 1));
+        min[0] = max[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 0));
+        min[1] = max[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 1));
+        Py_DECREF(bounds);
     }
     else if (size == 4)
     {
-        min[0] = PyFloat_AsDouble(PySequence_ITEM(bounds, 0));
-        min[1] = PyFloat_AsDouble(PySequence_ITEM(bounds, 1));
-        max[0] = PyFloat_AsDouble(PySequence_ITEM(bounds, 2));
-        max[1] = PyFloat_AsDouble(PySequence_ITEM(bounds, 3));
+        min[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 0));
+        min[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 1));
+        max[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 2));
+        max[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 3));
+        Py_DECREF(bounds);
     }
     else
     {
+        Py_DECREF(bounds);
         PyErr_Format(PyExc_TypeError,
             "Bounds argument must be sequence of length 2 or 4, not %d",
             size);
@@ -174,33 +173,32 @@ Rtree_deleteData(Rtree *self, PyObject *args)
     double min[2], max[2];
     long long id;
     int size;
-    PyObject *bounds=NULL;
+    PyObject *binput=NULL;
+    PyObject *bounds;
 
-    if (!PyArg_ParseTuple(args, "LO", &id, &bounds))
+    if (!PyArg_ParseTuple(args, "LO", &id, &binput))
         return NULL;
 
-    /* Check length of the bounds argument */
-    if (!PySequence_Check(bounds))
-    {
-        PyErr_SetString(PyExc_TypeError, "Bounds must be a sequence");
-        return NULL;
-    }
-
-    size = (int) PySequence_Size(bounds);
+    bounds = PySequence_Fast(binput, "Bounds must be a sequence");
+    size = (int) PySequence_Fast_GET_SIZE(bounds);
+    
     if (size == 2)
     {
-        min[0] = max[0] = PyFloat_AsDouble(PySequence_ITEM(bounds, 0));
-        min[1] = max[1] = PyFloat_AsDouble(PySequence_ITEM(bounds, 1));
+        min[0] = max[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 0));
+        min[1] = max[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 1));
+        Py_DECREF(bounds);
     }
     else if (size == 4)
     {
-        min[0] = PyFloat_AsDouble(PySequence_ITEM(bounds, 0));
-        min[1] = PyFloat_AsDouble(PySequence_ITEM(bounds, 1));
-        max[0] = PyFloat_AsDouble(PySequence_ITEM(bounds, 2));
-        max[1] = PyFloat_AsDouble(PySequence_ITEM(bounds, 3));
+        min[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 0));
+        min[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 1));
+        max[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 2));
+        max[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 3));
+        Py_DECREF(bounds);
     }
     else
     {
+        Py_DECREF(bounds);
         PyErr_Format(PyExc_TypeError,
             "Bounds argument must be sequence of length 2 or 4, not %d",
             size);
@@ -253,34 +251,32 @@ Rtree_nearsetNeighbors(Rtree *self, PyObject *args)
     uint32_t num_results;
     int size;
     
-    PyObject *bounds=NULL;
+    PyObject *binput=NULL;
+    PyObject *bounds;
 
-    if (!PyArg_ParseTuple(args, "Ol", &bounds, &num_results))
+    if (!PyArg_ParseTuple(args, "Ol", &binput, &num_results))
         return NULL;
-
         
-    /* Check length of the bounds argument */
-    if (!PySequence_Check(bounds))
-    {
-        PyErr_SetString(PyExc_TypeError, "Bounds must be a sequence");
-        return NULL;
-    }
-
-    size = (int) PySequence_Size(bounds);
+    bounds = PySequence_Fast(binput, "Bounds must be a sequence");
+    size = (int) PySequence_Fast_GET_SIZE(bounds);
+    
     if (size == 2)
     {
-        min[0] = max[0] = PyFloat_AsDouble(PySequence_ITEM(bounds, 0));
-        min[1] = max[1] = PyFloat_AsDouble(PySequence_ITEM(bounds, 1));
+        min[0] = max[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 0));
+        min[1] = max[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 1));
+        Py_DECREF(bounds);
     }
     else if (size == 4)
     {
-        min[0] = PyFloat_AsDouble(PySequence_ITEM(bounds, 0));
-        min[1] = PyFloat_AsDouble(PySequence_ITEM(bounds, 1));
-        max[0] = PyFloat_AsDouble(PySequence_ITEM(bounds, 2));
-        max[1] = PyFloat_AsDouble(PySequence_ITEM(bounds, 3));
+        min[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 0));
+        min[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 1));
+        max[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 2));
+        max[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 3));
+        Py_DECREF(bounds);
     }
     else
     {
+        Py_DECREF(bounds);
         PyErr_Format(PyExc_TypeError,
             "Bounds argument must be sequence of length 2 or 4, not %d",
             size);
