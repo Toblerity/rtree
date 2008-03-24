@@ -5,6 +5,10 @@ Whether for in-memory feature stores, Plone content, or whatever -- we need an
 index to speed up the search for objects that intersect with a spatial bounding
 box.
 
+See also CHANGES.txt_.
+
+.. _CHANGES.txt: http://trac.gispython.org/projects/PCL/browser/Rtree/trunk/CHANGES.txt
+
 
 Index Protocol
 --------------
