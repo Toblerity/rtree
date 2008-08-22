@@ -123,6 +123,8 @@ Rtree_add(Rtree *self, PyObject *args)
         return NULL;
 
     bounds = PySequence_Fast(binput, "Bounds must be a sequence");
+    if (bounds == NULL) return NULL;
+
     size = (int) PySequence_Fast_GET_SIZE(bounds);
     
     if (size == 2)

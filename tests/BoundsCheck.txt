@@ -18,4 +18,9 @@ Adding with bogus bounds
   ...
   ValueError: Bounding box is invalid: maxx < miny or maxy < miny
 
+Adding with invalid bounds argument should raise an exception
 
+  >>> index.add(1, 1)
+  Traceback (most recent call last):
+  ...
+  TypeError: Bounds must be a sequence
