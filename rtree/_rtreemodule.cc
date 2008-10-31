@@ -98,75 +98,105 @@ Rtree_init(Rtree *self, PyObject *args, PyObject *kwds)
     }
 
     self->index = RtreeIndex_new(basename, nPageLength, load);
-    
-//    if (RtreeIndex_isValid(self->index) != 1) {
-//        PyErr_Format(PyExc_IOError,
-//            "Index layout is invalid"
-//            );
-//        return -1;
-//	}
     return 0;
 }
 
 /* Methods */
+
+static int
+processbounds(PyObject *binput, double min[2], double max[2], int minsize)
+{
+    int size, i;
+    int ret = 0;
+
+    PyObject *bounds = NULL;
+    PyObject *omin[2];
+    PyObject *omax[2];
+
+    omin[0] = NULL; omin[1] = NULL;
+    omax[0] = NULL; omax[1] = NULL;
+
+    bounds =  PySequence_Fast(binput, "Bounds must be a sequence");
+    if(bounds == NULL)
+        return -1;
+
+    size = (int) PySequence_Fast_GET_SIZE(bounds);
+
+    if (size < minsize)
+    {
+        PyErr_Format(PyExc_TypeError,
+            "Bounds argument must be sequence of length %d, not %d",
+            minsize, size);
+
+        ret = -1;
+        goto error;
+    }
+
+    if (size == 2)
+    {
+        omin[0] = PySequence_Fast_GET_ITEM(bounds, 0);
+        omax[0] = PySequence_Fast_GET_ITEM(bounds, 1);
+        min[0] = max[0] =  PyFloat_AsDouble(omin[0]);
+        min[1] = max[1] =  PyFloat_AsDouble(omax[0]);
+    }
+    else if (size == 4)
+    {
+        for(i = 0; i < 2; i++)
+        {
+            omin[i] = PySequence_Fast_GET_ITEM(bounds, i);
+            omax[i] = PySequence_Fast_GET_ITEM(bounds, i+2);
+            min[i] =  PyFloat_AsDouble(omin[i]);
+            max[i] =  PyFloat_AsDouble(omax[i]);
+        }
+    }
+    else
+    {
+        PyErr_Format(PyExc_TypeError,
+            "Bounds argument must be sequence of length 2 or 4, not %d",
+             size);
+        ret = -1;
+        goto error;
+    }
+
+    if(PyErr_Occurred())
+    {
+        ret = -1;
+        goto error;
+    }
+
+    /* Check validity of bounds */
+    if (min[0] > max[0] || min[1] > max[1])
+    {
+        PyErr_SetString(PyExc_ValueError,
+             "Bounding box is invalid: maxx < miny or maxy < miny");
+        ret = -1;
+        goto error;
+    }
+
+error:
+    Py_XDECREF(bounds);
+    return ret;
+}
 
 static PyObject *
 Rtree_add(Rtree *self, PyObject *args)
 {
     double min[2], max[2];
     long long id;
-    int size;
     PyObject *binput=NULL;
-    PyObject *bounds;
 
     if (!PyArg_ParseTuple(args, "LO", &id, &binput))
         return NULL;
 
-    bounds = PySequence_Fast(binput, "Bounds must be a sequence");
-    if (bounds == NULL) return NULL;
-
-    size = (int) PySequence_Fast_GET_SIZE(bounds);
-    
-    if (size == 2)
-    {
-        min[0] = max[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 0));
-        min[1] = max[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 1));
-        Py_DECREF(bounds);
-    }
-    else if (size == 4)
-    {
-        min[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 0));
-        min[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 1));
-        max[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 2));
-        max[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 3));
-        Py_DECREF(bounds);
-    }
-    else
-    {
-        Py_DECREF(bounds);
-        PyErr_Format(PyExc_TypeError,
-            "Bounds argument must be sequence of length 2 or 4, not %d",
-            size);
+    if (processbounds(binput, min, max, 2) < 0)
         return NULL;
-    }
- 
-    /* Check validity of bounds */
-    if (min[0] > max[0] || min[1] > max[1])
-    {
-        PyErr_SetString(PyExc_ValueError,
-            "Bounding box is invalid: maxx < miny or maxy < miny"
-            );
-        return NULL;
-    }
 
     if (RtreeIndex_insertData(self->index, id, min, max) ) {
         Py_INCREF(Py_None);
-        return Py_None;        
-    } else {
-        return NULL;
+        return Py_None;
     }
-    
 
+    return NULL;
 }
 
 static PyObject *
@@ -174,73 +204,33 @@ Rtree_deleteData(Rtree *self, PyObject *args)
 {
     double min[2], max[2];
     long long id;
-    int size;
     PyObject *binput=NULL;
-    PyObject *bounds;
 
     if (!PyArg_ParseTuple(args, "LO", &id, &binput))
         return NULL;
 
-    bounds = PySequence_Fast(binput, "Bounds must be a sequence");
-    size = (int) PySequence_Fast_GET_SIZE(bounds);
-    
-    if (size == 2)
-    {
-        min[0] = max[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 0));
-        min[1] = max[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 1));
-        Py_DECREF(bounds);
-    }
-    else if (size == 4)
-    {
-        min[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 0));
-        min[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 1));
-        max[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 2));
-        max[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 3));
-        Py_DECREF(bounds);
-    }
-    else
-    {
-        Py_DECREF(bounds);
-        PyErr_Format(PyExc_TypeError,
-            "Bounds argument must be sequence of length 2 or 4, not %d",
-            size);
+    if (processbounds(binput, min, max, 2) < 0)
         return NULL;
-    }
 
-    /* Check validity of bounds */
-    if (min[0] > max[0] || min[1] > max[1])
-    {
-        PyErr_SetString(PyExc_ValueError,
-            "Bounding box is invalid: maxx < miny or maxy < miny"
-            );
-        return NULL;
-    }
-    
     if (RtreeIndex_deleteData(self->index, id, min, max) ) {
         Py_INCREF(Py_None);
-        return Py_None;        
-    } else {
-        return NULL;
-    }    
+        return Py_None;
+    }
 
+    return NULL;
 }
 
 static PyObject *
 Rtree_intersection(Rtree *self, PyObject *args)
 {
     double min[2], max[2];
+    PyObject *binput = NULL;
 
-    if (!PyArg_ParseTuple(args, "(dddd)", &min[0], &min[1], &max[0], &max[1]))
+    if (!PyArg_ParseTuple(args, "O", &binput))
         return NULL;
 
-    /* Check validity of bounds */
-    if (min[0] > max[0] || min[1] > max[1])
-    {
-        PyErr_SetString(PyExc_ValueError,
-            "Bounding box is invalid: maxx < miny or maxy < miny"
-            );
+    if (processbounds(binput, min, max, 4) < 0)
         return NULL;
-    }
 
     return RtreeIndex_intersects(self->index, min, max);
 }
@@ -248,51 +238,15 @@ Rtree_intersection(Rtree *self, PyObject *args)
 static PyObject *
 Rtree_nearsetNeighbors(Rtree *self, PyObject *args)
 {
-
     double min[2], max[2];
     uint32_t num_results;
-    int size;
-    
     PyObject *binput=NULL;
-    PyObject *bounds;
 
     if (!PyArg_ParseTuple(args, "Ol", &binput, &num_results))
         return NULL;
-        
-    bounds = PySequence_Fast(binput, "Bounds must be a sequence");
-    size = (int) PySequence_Fast_GET_SIZE(bounds);
-    
-    if (size == 2)
-    {
-        min[0] = max[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 0));
-        min[1] = max[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 1));
-        Py_DECREF(bounds);
-    }
-    else if (size == 4)
-    {
-        min[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 0));
-        min[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 1));
-        max[0] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 2));
-        max[1] = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(bounds, 3));
-        Py_DECREF(bounds);
-    }
-    else
-    {
-        Py_DECREF(bounds);
-        PyErr_Format(PyExc_TypeError,
-            "Bounds argument must be sequence of length 2 or 4, not %d",
-            size);
-        return NULL;
-    }
 
-    /* Check validity of bounds */
-    if (min[0] > max[0] || min[1] > max[1])
-    {
-        PyErr_SetString(PyExc_ValueError,
-            "Bounding box is invalid: maxx < miny or maxy < miny"
-            );
+    if (processbounds(binput, min, max, 2) < 0)
         return NULL;
-    }
 
     return RtreeIndex_nearestNeighbors(self->index, num_results, min, max);
 }

@@ -88,7 +88,7 @@ Support
 
 For current information about this project, see the wiki_.
 
-.. _wiki: http://trac.gispython.org/projects/PCL/wiki/RTree
+.. _wiki: http://trac.gispython.org/projects/PCL/wiki/Rtree
 
 If you have questions, please consider joining our community list:
 
