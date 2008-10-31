@@ -22,6 +22,9 @@
 
 #include <Python.h>
 #include "wrapper.h"
+#include <spatialindex/SpatialIndex.h>
+
+using namespace SpatialIndex;
 
 typedef struct {
     PyObject_HEAD
@@ -34,7 +37,6 @@ static void
 Rtree_dealloc(Rtree *self)
 {
     RtreeIndex_del(self->index);
-
     self->ob_type->tp_free((PyObject*) self);
 }
 
@@ -97,8 +99,21 @@ Rtree_init(Rtree *self, PyObject *args, PyObject *kwds)
             load = 0;
     }
 
-    self->index = RtreeIndex_new(basename, nPageLength, load);
-    return 0;
+	try {
+        self->index = RtreeIndex_new(basename, nPageLength, load);
+        return 0;
+	}
+
+    catch (Tools::Exception& e) {
+        PyErr_SetString(PyExc_TypeError, e.what().c_str());
+        return -1;
+    }
+
+	catch (...)
+	{
+        PyErr_SetString(PyExc_RuntimeError, "Unknown Exception");
+        return -1;
+	}
 }
 
 /* Methods */

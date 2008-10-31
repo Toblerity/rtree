@@ -1,0 +1,21 @@
+Handle index clobbering
+=======================
+
+See http://trac.gispython.org/lab/ticket/160
+
+Clean up leftover data
+
+  >>> import os
+  >>> try:
+  ...     os.remove('/tmp/rtree_test.dat')
+  ...     os.remove('/tmp/rtree_test.idx')
+  ... except OSError:
+  ...     pass
+
+  >>> from rtree import Rtree
+  >>> k = Rtree('/tmp/rtree_test')
+  >>> k = Rtree('/tmp/rtree_test')
+  Traceback (most recent call last):
+  ...
+  TypeError: IllegalStateException: SpatialIndex::DiskStorageManager: Failed reading pageSize.
+  Please contact mhadji@gmail.com
