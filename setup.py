@@ -19,7 +19,7 @@ else:
     data_files = None
     
 setup(name          = 'Rtree',
-      version       = '0.4.1',
+      version       = '0.4.2',
       description   = 'R-Tree spatial index for Python GIS',
       license       = 'LGPL',
       keywords      = 'gis spatial index',
