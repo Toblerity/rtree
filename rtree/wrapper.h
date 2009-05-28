@@ -47,7 +47,7 @@ int RtreeIndex_insertData(RtreeIndex index, uint64_t id,
         double *min, double *max);
 int RtreeIndex_isValid(RtreeIndex index);
 PyObject *RtreeIndex_intersects(RtreeIndex index, double *min, double *max);
-PyObject *RtreeIndex_nearestNeighbors(RtreeIndex index, unsigned long num_results, double *min, double *max);
+PyObject *RtreeIndex_nearestNeighbors(RtreeIndex index, uint32_t num_results, double *min, double *max);
 #ifdef __cplusplus
 } // extern "C"
 #endif
