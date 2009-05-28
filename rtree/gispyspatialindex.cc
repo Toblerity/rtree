@@ -20,7 +20,12 @@
 # =============================================================================
 */
 
+#ifdef _MSC_VER
+#include "SpatialIndex.h"
+#else
 #include <spatialindex/SpatialIndex.h>
+#endif
+
 
 #include "gispyspatialindex.h"
 
