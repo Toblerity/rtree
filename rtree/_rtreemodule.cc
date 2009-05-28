@@ -22,7 +22,13 @@
 
 #include <Python.h>
 #include "wrapper.h"
+
+
+#ifdef _MSC_VER
+#include "SpatialIndex.h"
+#else
 #include <spatialindex/SpatialIndex.h>
+#endif
 
 using namespace SpatialIndex;
 
@@ -197,7 +203,7 @@ static PyObject *
 Rtree_add(Rtree *self, PyObject *args)
 {
     double min[2], max[2];
-    long long id;
+    uint64_t id;
     PyObject *binput=NULL;
 
     if (!PyArg_ParseTuple(args, "LO", &id, &binput))
@@ -218,7 +224,7 @@ static PyObject *
 Rtree_deleteData(Rtree *self, PyObject *args)
 {
     double min[2], max[2];
-    long long id;
+    uint64_t id;
     PyObject *binput=NULL;
 
     if (!PyArg_ParseTuple(args, "LO", &id, &binput))
