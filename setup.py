@@ -10,7 +10,14 @@ _rtree = Extension('rtree._rtree',
                            'rtree/gispyspatialindex.cc'],
                   libraries=['spatialindex']
                   )
+                  
+import os
 
+if os.name == 'nt':
+    data_files=[('DLLs',[r'c:\cvs\buildkit\spatialindex\spatialindex1.dll',]),]
+else:
+    data_files = None
+    
 setup(name          = 'Rtree',
       version       = '0.4.1',
       description   = 'R-Tree spatial index for Python GIS',
@@ -26,6 +33,8 @@ setup(name          = 'Rtree',
       ext_modules   = [_rtree],
       install_requires = ['setuptools'],
       test_suite = 'tests.test_suite',
+      data_files = data_files,
+      zip_safe = False,
       classifiers   = [
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
