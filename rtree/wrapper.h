@@ -24,19 +24,30 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
+#ifdef _MSC_VER
+   typedef __int8 int8_t;
+   typedef __int16 int16_t;
+   typedef __int32 int32_t;
+   typedef __int64 int64_t;
+   typedef unsigned __int8 uint8_t;
+   typedef unsigned __int16 uint16_t;
+   typedef unsigned __int32 uint32_t;
+   typedef unsigned __int64 uint64_t;
+#else
+   #include <stdint.h>		
+#endif
 
 typedef struct RtreeIndex_t *RtreeIndex;
 
 RtreeIndex RtreeIndex_new(char* filename, unsigned long nPagesize, int load);
 void RtreeIndex_del(RtreeIndex index);
-int RtreeIndex_deleteData(RtreeIndex index, long id, 
+int RtreeIndex_deleteData(RtreeIndex index, uint64_t id, 
         double *min, double *max);
-int RtreeIndex_insertData(RtreeIndex index, long id, 
+int RtreeIndex_insertData(RtreeIndex index, uint64_t id, 
         double *min, double *max);
 int RtreeIndex_isValid(RtreeIndex index);
 PyObject *RtreeIndex_intersects(RtreeIndex index, double *min, double *max);
-PyObject *RtreeIndex_nearestNeighbors(RtreeIndex index, uint32_t num_results, double *min, double *max);
+PyObject *RtreeIndex_nearestNeighbors(RtreeIndex index, unsigned long num_results, double *min, double *max);
 #ifdef __cplusplus
 } // extern "C"
 #endif

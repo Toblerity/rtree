@@ -22,7 +22,12 @@
 
 #include "gispyspatialindex.h"
 #include "Python.h"
+
+#ifdef _MSC_VER
+#include "SpatialIndex.h"
+#else
 #include <spatialindex/SpatialIndex.h>
+#endif
 
 using namespace SpatialIndex;
 
@@ -83,7 +88,7 @@ RtreeIndex_del(GISPySpatialIndex *index)
 
 extern "C"
 int
-RtreeIndex_insertData(GISPySpatialIndex *index, long id,
+RtreeIndex_insertData(GISPySpatialIndex *index, uint64_t id,
                       double *min, double *max)
 {
     try {	
@@ -98,7 +103,7 @@ RtreeIndex_insertData(GISPySpatialIndex *index, long id,
 
 extern "C"
 int
-RtreeIndex_deleteData(GISPySpatialIndex *index, long id,
+RtreeIndex_deleteData(GISPySpatialIndex *index, uint64_t id,
                       double *min, double *max)
 {
     try {	
