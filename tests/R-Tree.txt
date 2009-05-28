@@ -43,8 +43,8 @@ Disk-based indexes
     # Clean up leftover data
     >>> import os
     >>> try:
-    ...     os.remove('/tmp/default.dat')
-    ...     os.remove('/tmp/default.idx')
+    ...     os.remove('default.dat')
+    ...     os.remove('default.idx')
     ...     os.remove('pagesize3.dat')
     ...     os.remove('pagesize3.idx')
     ...     os.remove('testing.dat')
@@ -53,7 +53,7 @@ Disk-based indexes
     ...     pass
 
     # Default page size 1
-    >>> index = Rtree("/tmp/default")
+    >>> index = Rtree("default")
     >>> for i, coords in enumerate(boxes15):
     ...     index.add(i, coords)
     >>> hits = [n for n in index.intersection((0, 0, 60, 60))]
@@ -75,8 +75,9 @@ Disk-based indexes
     IOError: Unable to open file 'bogus/foo' for index storage
 
     # Load a persisted index
-    >>> _ = os.system("cp /tmp/default.dat testing.dat")
-    >>> _ = os.system("cp /tmp/default.idx testing.idx")
+    >>> import shutil
+    >>> _ = shutil.copy("default.dat", "testing.dat")
+    >>> _ = shutil.copy("default.idx", "testing.idx")
 
     >>> index = Rtree("testing")
     >>> hits = [n for n in index.intersection((0, 0, 60, 60))]
@@ -86,8 +87,8 @@ Disk-based indexes
     # Clean up leftover data
     >>> import os
     >>> try:
-    ...     os.remove('/tmp/default.dat')
-    ...     os.remove('/tmp/default.idx')
+    ...     os.remove('default.dat')
+    ...     os.remove('default.idx')
     ...     os.remove('pagesize3.dat')
     ...     os.remove('pagesize3.idx')
     ...     os.remove('testing.dat')
