@@ -49,7 +49,9 @@ public:
     
     void visitData(const IData & d)
     {
-        PyList_Append(ids, PyLong_FromLongLong(d.getIdentifier()));
+        PyObject* ob = PyLong_FromLongLong(d.getIdentifier()); 
+        PyList_Append(ids, ob); 
+        Py_DECREF(ob); 
     }
 
     void visitData(std::vector<const IData*>& v) {}
