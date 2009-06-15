@@ -1,7 +1,5 @@
 
-#include <stack>
-#include <string>
-#include "sidx_api.h"
+#include "sidx_impl.hpp"
 
 static std::stack<std::string> errors;
 
@@ -10,13 +8,13 @@ IDX_C_START
 
 IndexH Index_Create(const char* pszFilename, IndexProperties* properties)
 {
-    // return (IndexH) new GISPySpatialIndex();    
+     return (IndexH) new Index(pszFilename, properties);    
 }
 
 void Index_Delete(IndexH index)
 {
-    // GISPySpatialIndex* idx = (GISPySpatialIndex*) index;
-    // if (idx) delete idx;
+    Index* idx = (Index*) index;
+    if (idx) delete idx;
 }
 
 RTError Index_DeleteData(IndexH index, uint64_t id, double* pdMin, double* pdMax, uint32_t nDimension)

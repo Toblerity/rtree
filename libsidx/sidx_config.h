@@ -31,14 +31,20 @@ typedef enum
    RT_RTree = 0,
    RT_MVRTree = 1,
    RT_TPRTree = 2
-} RTType;
+} RTIndexType;
+
+typedef enum
+{
+   RT_Memory = 0,
+   RT_Disk = 1
+} RTStorageType;
 
 typedef enum
 {
    RT_Linear = 0,
    RT_Quadratic = 1,
    RT_Star = 2
-} RTVariant;
+} RTIndexVariant;
 
 
 #ifdef __cplusplus
@@ -52,11 +58,14 @@ typedef enum
 typedef struct IndexHS *IndexH;
 
 typedef struct  {
-    RTType type;
+    RTIndexType type;
     uint32_t dimension;
-    RTVariant variant;
+    RTIndexVariant variant;
+    RTStorageType storage;
     uint32_t index_capacity;
     uint32_t leaf_capacity;
+    uint32_t pagesize;
+    double tpr_horizon;
 } IndexProperties;
 
 #endif

@@ -9,7 +9,8 @@ _rtree = Extension('rtree._rtree',
                   sources=[ 'rtree/_rtreemodule.cc', 
                             'rtree/wrapper.cc',
                             'rtree/gispyspatialindex.cc',
-                            'libsidx/sidx_api.cc'],
+                            'libsidx/sidx_api.cc',
+                            'libsidx/sidx_impl.cc'],
                   libraries=['spatialindex']
                   )
                   
