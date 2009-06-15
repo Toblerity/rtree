@@ -23,11 +23,12 @@
 #include "gispyspatialindex.h"
 #include "Python.h"
 
-#ifdef _MSC_VER
-#include "SpatialIndex.h"
-#else
-#include <spatialindex/SpatialIndex.h>
-#endif
+#include "idx_config.h"
+
+#include <stack>
+#include <string>
+
+static std::stack<std::string> errors;
 
 using namespace SpatialIndex;
 
@@ -60,10 +61,37 @@ private:
     PyObject *ids;
 };
 
+IDX_C_START
+
+IndexH Index_Create(const char* pszFilename, IndexProperties* properties)
+{
+    return (IndexH) new GISPySpatialIndex();    
+}
+
+void Index_Delete(IndexH index)
+{
+    GISPySpatialIndex* idx = (GISPySpatialIndex*) index;
+    if (idx) delete idx;
+}
+
+RTError Index_DeleteData(IndexH index, uint64_t id, double* pdMin, double* pdMax, uint32_t nDimension)
+{
+    GISPySpatialIndex* idx = (GISPySpatialIndex*) index;
+    
+    try {	
+        idx->index().deleteData(SpatialIndex::Region(pdMin, pdMax, nDimension), id);
+        return RT_None;
+    }
+    catch (Tools::Exception& e) {
+        // PyErr_SetString(PyExc_TypeError, e.what().c_str());
+        return RT_Fatal;
+    }
+}
+IDX_C_END
 
 extern "C"
 GISPySpatialIndex *
-RtreeIndex_new(char* filename, unsigned long nPageLength, int load)
+RtreeIndex_new(char* filename, uint32_t nPageLength, int load)
 {
     if (!filename)
         return new GISPySpatialIndex;

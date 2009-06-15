@@ -20,26 +20,23 @@
 # =============================================================================
 */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef WRAPPER_H_INCLUDED
+#define WRAPPER_H_INCLUDED
 
-#ifdef _MSC_VER
-   typedef __int8 int8_t;
-   typedef __int16 int16_t;
-   typedef __int32 int32_t;
-   typedef __int64 int64_t;
-   typedef unsigned __int8 uint8_t;
-   typedef unsigned __int16 uint16_t;
-   typedef unsigned __int32 uint32_t;
-   typedef unsigned __int64 uint64_t;
-#else
-   #include <stdint.h>		
-#endif
+#include "idx_config.h"
 
-typedef struct RtreeIndex_t *RtreeIndex;
 
-RtreeIndex RtreeIndex_new(char* filename, unsigned long nPagesize, int load);
+IDX_C_START
+
+IndexH Index_Create(const char* pszFilename, IndexProperties* properties);
+void Index_Delete(IndexH index);
+RTError Index_DeleteData(IndexH index, uint64_t id, double* pdMin, double* pdMax, uint32_t nDimension);
+RTError Index_InsertData(IndexH index, uint64_t id, double* pdMin, double* pdMax, uint32_t nDimension);
+RTError Index_IsValid(IndexH index);
+RTError Index_Intersects(IndexH index, uint64_t* ids, uint32_t nCount, double* pdMin, double pdMax, uint32_t nDimension);
+
+
+RtreeIndex RtreeIndex_new(char* filename, uint32_t nPagesize, int load);
 void RtreeIndex_del(RtreeIndex index);
 int RtreeIndex_deleteData(RtreeIndex index, uint64_t id, 
         double *min, double *max);
@@ -48,6 +45,7 @@ int RtreeIndex_insertData(RtreeIndex index, uint64_t id,
 int RtreeIndex_isValid(RtreeIndex index);
 PyObject *RtreeIndex_intersects(RtreeIndex index, double *min, double *max);
 PyObject *RtreeIndex_nearestNeighbors(RtreeIndex index, uint32_t num_results, double *min, double *max);
-#ifdef __cplusplus
-} // extern "C"
+
+IDX_C_END
+
 #endif

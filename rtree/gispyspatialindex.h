@@ -20,19 +20,13 @@
 # =============================================================================
 */
 
+#ifdef _MSC_VER
+#include "SpatialIndex.h"
+#else
+#include <spatialindex/SpatialIndex.h>
+#endif
 
-namespace SpatialIndex
-{
-  class IStorageManager;
-  class ISpatialIndex;
-  class Region;
-  
-  namespace StorageManager
-  {
-    class IBuffer;
-  }
-}
-
+#include "idx_config.h"
 
 class GISPySpatialIndex
 {
