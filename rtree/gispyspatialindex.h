@@ -26,7 +26,7 @@
 #include <spatialindex/SpatialIndex.h>
 #endif
 
-#include "idx_config.h"
+#include "sidx_config.h"
 
 class GISPySpatialIndex
 {

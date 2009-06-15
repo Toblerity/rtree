@@ -6,8 +6,10 @@ from setuptools import setup, Extension
 readme_text = file('README.txt', 'rb').read()
 
 _rtree = Extension('rtree._rtree',
-                  sources=['rtree/_rtreemodule.cc', 'rtree/wrapper.cc',
-                           'rtree/gispyspatialindex.cc'],
+                  sources=[ 'rtree/_rtreemodule.cc', 
+                            'rtree/wrapper.cc',
+                            'rtree/gispyspatialindex.cc',
+                            'libsidx/sidx_api.cc'],
                   libraries=['spatialindex']
                   )
                   

@@ -1,5 +1,5 @@
-#ifndef IDXCONFIG_H_INCLUDED
-#define IDXCONFIG_H_INCLUDED
+#ifndef SIDX_CONFIG_H_INCLUDED
+#define SIDX_CONFIG_H_INCLUDED
 
 
 #ifdef _MSC_VER
@@ -48,8 +48,7 @@ typedef enum
 #  define IDX_C_START
 #  define IDX_C_END
 #endif
-   
-typedef struct RtreeIndex_t *RtreeIndex;
+
 typedef struct IndexHS *IndexH;
 
 typedef struct  {
