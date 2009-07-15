@@ -27,13 +27,41 @@
 
 IDX_C_START
 
-IndexH Index_Create(const char* pszFilename, IndexProperties* properties);
+IndexH Index_Create(const char* pszFilename, IndexPropertyH properties);
 void Index_Delete(IndexH index);
 RTError Index_DeleteData(IndexH index, uint64_t id, double* pdMin, double* pdMax, uint32_t nDimension);
 RTError Index_InsertData(IndexH index, uint64_t id, double* pdMin, double* pdMax, uint32_t nDimension);
 RTError Index_IsValid(IndexH index);
 RTError Index_Intersects(IndexH index, uint64_t* ids, uint32_t nCount, double* pdMin, double pdMax, uint32_t nDimension);
 
+RTError IndexProperty_SetIndexType(IndexPropertyH iprop, RTIndexType value);
+RTIndexType IndexProperty_GetIndexType(IndexPropertyH iprop);
+
+RTError IndexProperty_SetDimension(IndexPropertyH iprop, uint32_t value);
+uint32_t IndexProperty_GetDimension(IndexPropertyH iprop);
+
+RTError IndexProperty_SetIndexVariant(IndexPropertyH iprop, RTIndexVariant value);
+RTIndexVariant IndexProperty_GetIndexVariant(IndexPropertyH iprop);
+
+RTError IndexProperty_SetIndexStorage(IndexPropertyH iprop, RTStorageType value);
+RTStorageType IndexProperty_GetIndexStorage(IndexPropertyH iprop);
+
+RTError IndexProperty_SetIndexCapacity(IndexPropertyH iprop, uint32_t value);
+uint32_t IndexProperty_GetIndexCapacity(IndexPropertyH iprop);
+
+RTError IndexProperty_SetLeafCapacity(IndexPropertyH iprop, uint32_t value);
+uint32_t IndexProperty_GetLeafCapacity(IndexPropertyH iprop);
+
+RTError IndexProperty_SetPagesize(IndexPropertyH iprop, uint32_t value);
+uint32_t IndexProperty_GetPagesize(IndexPropertyH iprop);
+
+RTError IndexProperty_SetTPRHorizon(IndexPropertyH iprop, double value);
+double IndexProperty_GetTPRHorizon(IndexPropertyH iprop);
+
+RTError IndexProperty_SetFillFactor(IndexPropertyH iprop, double value);
+double IndexProperty_GetFillFactor(IndexPropertyH iprop);
+
+    
 IDX_C_END
 
 #endif

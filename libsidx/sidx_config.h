@@ -30,20 +30,23 @@ typedef enum
 {
    RT_RTree = 0,
    RT_MVRTree = 1,
-   RT_TPRTree = 2
+   RT_TPRTree = 2,
+   RT_InvalidIndexType = -99
 } RTIndexType;
 
 typedef enum
 {
    RT_Memory = 0,
-   RT_Disk = 1
+   RT_Disk = 1,
+   RT_InvalidStorageType = -99
 } RTStorageType;
 
 typedef enum
 {
    RT_Linear = 0,
    RT_Quadratic = 1,
-   RT_Star = 2
+   RT_Star = 2,
+   RT_InvalidIndexVariant = -99
 } RTIndexVariant;
 
 
@@ -56,16 +59,19 @@ typedef enum
 #endif
 
 typedef struct IndexHS *IndexH;
+typedef struct IndexPropertyHS *IndexPropertyH;
 
-typedef struct  {
-    RTIndexType type;
-    uint32_t dimension;
-    RTIndexVariant variant;
-    RTStorageType storage;
-    uint32_t index_capacity;
-    uint32_t leaf_capacity;
-    uint32_t pagesize;
-    double tpr_horizon;
-} IndexProperties;
+#ifndef SIDX_DLL
+#if defined(_MSC_VER) && !defined(SIDX_DISABLE_DLL)
+#  define SIDX_DLL     __declspec(dllexport)
+#else
+#  if defined(USE_GCC_VISIBILITY_FLAG)
+#    define SIDX_DLL     __attribute__ ((visibility("default")))
+#  else
+#    define SIDX_DLL
+#  endif
+#endif
+#endif
+
 
 #endif

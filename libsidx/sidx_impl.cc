@@ -68,6 +68,73 @@ void Visitor::visitData(std::vector<const SpatialIndex::IData*>& v)
 }
 
 
+IndexProperty::IndexProperty() : 
+    m_type(RT_RTree),
+    m_dimension(2),
+    m_variant(RT_Star),
+    m_storage(RT_Disk),
+    m_index_capacity(100),
+    m_leaf_capacity(100),
+    m_pagesize(4096),
+    m_tpr_horizon(20.0),
+    m_fillfactor(0.7)
+{}
+
+IndexProperty& IndexProperty::operator=(IndexProperty const& rhs)
+{
+    if (this != &rhs) 
+    {
+        m_type = rhs.m_type;
+        m_dimension = rhs.m_dimension;
+        m_variant = rhs.m_variant;
+        m_storage = rhs.m_storage;
+        m_index_capacity = rhs.m_index_capacity;
+        m_leaf_capacity = rhs.m_leaf_capacity;
+        m_pagesize = rhs.m_pagesize;
+        m_tpr_horizon = rhs.m_tpr_horizon;
+        m_fillfactor = rhs.m_fillfactor;
+    }
+    return (*this);
+}
+
+IndexProperty::IndexProperty(IndexProperty const& other) :
+    m_type(other.m_type),
+    m_dimension(other.m_dimension),
+    m_variant(other.m_variant),
+    m_storage(other.m_storage),
+    m_index_capacity(other.m_index_capacity),
+    m_leaf_capacity(other.m_index_capacity),
+    m_pagesize(other.m_pagesize),
+    m_tpr_horizon(other.m_tpr_horizon),
+    m_fillfactor(other.m_fillfactor)
+{}
+
+
+Error::Error(int code, std::string const& message, std::string const& method) :
+    m_code(code),
+    m_message(message),
+    m_method(method)
+{
+}
+
+Error::Error(Error const& other) :
+    m_code(other.m_code),
+    m_message(other.m_message),
+    m_method(other.m_method)
+{
+}
+
+Error& Error::operator=(Error const& rhs)
+{
+    if (&rhs != this)
+    {
+        m_code = rhs.m_code;
+        m_message = rhs.m_message;
+        m_method = rhs.m_method;
+
+    }
+    return *this;
+}
 
 SpatialIndex::ISpatialIndex* Index::CreateIndex() 
 {
@@ -78,18 +145,18 @@ SpatialIndex::ISpatialIndex* Index::CreateIndex()
     
 
     
-    if (m_properties->type == RT_RTree) {
-        RTree::RTreeVariant variant;
+    if (m_properties.GetIndexType() == RT_RTree) {
+        RTree::RTreeVariant variant = RTree::RV_RSTAR;
 
-        if (m_properties->variant == RT_Linear) variant = RTree::RV_LINEAR;
-        if (m_properties->variant == RT_Quadratic) variant = RTree::RV_QUADRATIC;
-        if (m_properties->variant == RT_Star) variant = RTree::RV_RSTAR;
+        if (m_properties.GetIndexVariant() == RT_Linear) variant = RTree::RV_LINEAR;
+        if (m_properties.GetIndexVariant() == RT_Quadratic) variant = RTree::RV_QUADRATIC;
+        if (m_properties.GetIndexVariant() == RT_Star) variant = RTree::RV_RSTAR;
         try{
             index = RTree::createNewRTree(  *m_buffer, 
-                                            0.7, 
-                                            m_properties->index_capacity,
-                                            m_properties->leaf_capacity,
-                                            m_properties->dimension,
+                                            m_properties.GetFillFactor(), 
+                                            m_properties.GetIndexCapacity(),
+                                            m_properties.GetLeafCapacity(),
+                                            m_properties.GetDimension(),
                                             variant,
                                             m_idxId); 
 
@@ -98,7 +165,6 @@ SpatialIndex::ISpatialIndex* Index::CreateIndex()
                 throw std::runtime_error(   "Spatial index error: index is not "
                                             "valid after createNewRTree");
 
-            return index;
         } catch (Tools::Exception& e) {
             std::ostringstream os;
             os << "Spatial Index Error: " << e.what();
@@ -106,19 +172,19 @@ SpatialIndex::ISpatialIndex* Index::CreateIndex()
         }    
     }
 
-    else if (m_properties->type == RT_MVRTree) {
-        MVRTree::MVRTreeVariant variant;
+    else if (m_properties.GetIndexType() == RT_MVRTree) {
+        MVRTree::MVRTreeVariant variant = MVRTree::RV_RSTAR;
 
-        if (m_properties->variant == RT_Linear) variant = MVRTree::RV_LINEAR;
-        if (m_properties->variant == RT_Quadratic) variant = MVRTree::RV_QUADRATIC;
-        if (m_properties->variant == RT_Star) variant = MVRTree::RV_RSTAR;
+        if (m_properties.GetIndexVariant() == RT_Linear) variant = MVRTree::RV_LINEAR;
+        if (m_properties.GetIndexVariant() == RT_Quadratic) variant = MVRTree::RV_QUADRATIC;
+        if (m_properties.GetIndexVariant() == RT_Star) variant = MVRTree::RV_RSTAR;
 
         try{
             index = MVRTree::createNewMVRTree(  *m_buffer, 
-                                            0.7, 
-                                            m_properties->index_capacity,
-                                            m_properties->leaf_capacity,
-                                            m_properties->dimension,
+                                            m_properties.GetFillFactor(), 
+                                            m_properties.GetIndexCapacity(),
+                                            m_properties.GetLeafCapacity(),
+                                            m_properties.GetDimension(),
                                             variant,
                                             m_idxId); 
 
@@ -127,7 +193,6 @@ SpatialIndex::ISpatialIndex* Index::CreateIndex()
                 throw std::runtime_error(   "Spatial index error: index is not "
                                             "valid after createNewMVRTree");
 
-            return index;
         } catch (Tools::Exception& e) {
             std::ostringstream os;
             os << "Spatial Index Error: " << e.what();
@@ -135,18 +200,18 @@ SpatialIndex::ISpatialIndex* Index::CreateIndex()
         }   
     }
 
-    else if (m_properties->type == RT_TPRTree) {
+    else if (m_properties.GetIndexType() == RT_TPRTree) {
         TPRTree::TPRTreeVariant variant =  TPRTree::TPRV_RSTAR;
 
 
         try{
             index = TPRTree::createNewTPRTree(  *m_buffer, 
-                                            0.7, 
-                                            m_properties->index_capacity,
-                                            m_properties->leaf_capacity,
-                                            m_properties->dimension,
+                                            m_properties.GetFillFactor(), 
+                                            m_properties.GetIndexCapacity(),
+                                            m_properties.GetLeafCapacity(),
+                                            m_properties.GetDimension(),
                                             variant,
-                                            m_properties->tpr_horizon,
+                                            m_properties.GetTPRHorizon(),
                                             m_idxId); 
 
             bool ret = index->isIndexValid();
@@ -154,17 +219,19 @@ SpatialIndex::ISpatialIndex* Index::CreateIndex()
                 throw std::runtime_error(   "Spatial index error: index is not "
                                             "valid after createNewMVRTree");
 
-            return index;
+
         } catch (Tools::Exception& e) {
             std::ostringstream os;
             os << "Spatial Index Error: " << e.what();
             throw std::runtime_error(os.str());
         }   
-    }    
+    }
+
+    return index;
 }
 
 
-Index::Index(const char* pszFilename, const IndexProperties* poProperties) 
+Index::Index(const char* pszFilename, const IndexProperty& poProperties) 
 {
     
     Setup();
@@ -174,15 +241,8 @@ Index::Index(const char* pszFilename, const IndexProperties* poProperties)
     bool m_Initialized;
     bool m_idxExists;
     SpatialIndex::id_type m_idxId;
-    
-    IndexProperties* m_properties = new IndexProperties;
-    m_properties->type = poProperties->type;
-    m_properties->storage = poProperties->storage;
-    m_properties->dimension = poProperties->dimension;
-    m_properties->index_capacity = poProperties->index_capacity;
-    m_properties->leaf_capacity = poProperties->leaf_capacity;
-    m_properties->pagesize = poProperties->pagesize;
-    m_properties->tpr_horizon = poProperties->tpr_horizon;
+    m_properties = poProperties;
+
     Initialize();
 }
 
@@ -245,9 +305,9 @@ SpatialIndex::IStorageManager* Index::CreateStorage(std::string& filename)
 {
     using namespace SpatialIndex::StorageManager;
     
-    std::cout << "index type:" << m_properties->type << std::endl;
+    std::cout << "index type:" << m_properties.GetIndexType() << std::endl;
     SpatialIndex::IStorageManager* storage = 0;
-    if (m_properties->storage == RT_Disk) {
+    if (m_properties.GetIndexStorage() == RT_Disk) {
 
         if (ExternalIndexExists(filename) && !filename.empty()) {
             std::cout << "loading existing DiskStorage " << filename << std::endl;
@@ -263,7 +323,7 @@ SpatialIndex::IStorageManager* Index::CreateStorage(std::string& filename)
         } else if (!filename.empty()){
             try{
                 std::cout << "creating new DiskStorage " << filename << std::endl;            
-                storage = createNewDiskStorageManager(filename, m_properties->pagesize);
+                storage = createNewDiskStorageManager(filename, m_properties.GetPagesize());
                 m_idxExists = false;
                 return storage;
             } catch (Tools::Exception& e) {
@@ -272,7 +332,7 @@ SpatialIndex::IStorageManager* Index::CreateStorage(std::string& filename)
                 throw std::runtime_error(os.str());
             }         
         }
-    } else if (m_properties->storage == RT_Memory) {
+    } else if (m_properties.GetIndexStorage() == RT_Memory) {
 
         try{
             std::cout << "creating new createNewVLRStorageManager " << filename << std::endl;            
