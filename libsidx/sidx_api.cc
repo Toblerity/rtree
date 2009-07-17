@@ -155,6 +155,110 @@ RTError Index_InsertData(   IndexH index,
     return RT_None;
 }
 
+RTError Index_Intersects(   IndexH index, 
+                            double* pdMin, 
+                            double* pdMax, 
+                            uint32_t nDimension, 
+                            IndexItemH* items, 
+                            uint32_t* nResults)
+{
+    Index* idx = static_cast<Index*>(index);
+
+    Visitor* visitor = new Visitor;
+    try {    
+        idx->index().intersectsWithQuery(   SpatialIndex::Region(pdMin, pdMax, nDimension), 
+                                            *visitor);
+        
+        items = (Item**) malloc (visitor->GetResultCount() * sizeof(Item*));
+        
+        std::vector<Item*>& results = visitor->GetResults();
+        
+        // copy the Items into the newly allocated item array
+        // we need to make sure to copy the actual Item instead 
+        // of just the pointers, as the visitor will nuke them 
+        // upon ~
+        for (size_t i=0; i < visitor->GetResultCount(); ++i)
+        {
+            *items[i] = *results[i];
+        }
+        *nResults = visitor->GetResultCount();
+        
+        delete visitor;
+        
+        return RT_None;
+    } catch (Tools::Exception& e)
+    {
+        Error_PushError(RT_Failure, 
+                        e.what().c_str(), 
+                        "Index_DeleteData");
+        return RT_Failure;
+    } catch (std::exception const& e)
+    {
+        Error_PushError(RT_Failure, 
+                        e.what(), 
+                        "Index_DeleteData");
+        return RT_Failure;
+    } catch (...) {
+        Error_PushError(RT_Failure, 
+                        "Unknown Error", 
+                        "Index_DeleteData");
+        return RT_Failure;        
+    }
+    return RT_None;
+}
+
+RTError Index_NearestNeighbors(  IndexH index, 
+                                 double* pdMin, 
+                                 double* pdMax, 
+                                 uint32_t nDimension, 
+                                 IndexItemH* items, 
+                                 uint32_t* nResults)
+{
+    Index* idx = static_cast<Index*>(index);
+
+    Visitor* visitor = new Visitor;
+    try {    
+        idx->index().nearestNeighborQuery(  *nResults,
+                                            SpatialIndex::Region(pdMin, pdMax, nDimension), 
+                                            *visitor);
+        
+        items = (Item**) malloc (visitor->GetResultCount() * sizeof(Item*));
+        
+        std::vector<Item*>& results = visitor->GetResults();
+        
+        // copy the Items into the newly allocated item array
+        // we need to make sure to copy the actual Item instead 
+        // of just the pointers, as the visitor will nuke them 
+        // upon ~
+        for (size_t i=0; i < visitor->GetResultCount(); ++i)
+        {
+            *items[i] = *results[i];
+        }
+        *nResults = visitor->GetResultCount();
+        
+        delete visitor;
+        
+        return RT_None;
+    } catch (Tools::Exception& e)
+    {
+        Error_PushError(RT_Failure, 
+                        e.what().c_str(), 
+                        "Index_DeleteData");
+        return RT_Failure;
+    } catch (std::exception const& e)
+    {
+        Error_PushError(RT_Failure, 
+                        e.what(), 
+                        "Index_DeleteData");
+        return RT_Failure;
+    } catch (...) {
+        Error_PushError(RT_Failure, 
+                        "Unknown Error", 
+                        "Index_DeleteData");
+        return RT_Failure;        
+    }
+    return RT_None;
+}                        
 uint32_t Index_IsValid(IndexH index)
 {
     Index* idx = static_cast<Index*>(index);
@@ -169,6 +273,14 @@ IndexPropertyH Index_GetProperties(IndexH index)
     idx->index().getIndexProperties(*ps);
     return dynamic_cast<IndexPropertyH>(ps);
 }
+
+void IndexItem_Destroy(IndexItemH item)
+{
+    Item* it = static_cast<Item*>(item);
+    if (it) delete it;
+}
+
+
 
 SIDX_DLL RTError IndexProperty_SetIndexType(IndexPropertyH hProp, 
                                             RTIndexType value)

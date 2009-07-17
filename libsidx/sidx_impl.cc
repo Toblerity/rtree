@@ -5,6 +5,7 @@ Item::Item(uint64_t id)
     m_id = id;
     m_data = 0;
     m_length = 0;
+    m_bounds = 0;
 }
 
 Item::~Item()
@@ -13,16 +14,55 @@ Item::~Item()
         delete m_data;
 }
 
+Item::Item(Item const& other) : m_id(other.m_id), 
+                                m_length(other.m_length)
+{
+    void *p = 0;
+    
+    p = std::memcpy(m_data, other.m_data, m_length);
+    m_bounds = other.m_bounds->clone();
+    
+}
+
+Item& Item::operator=(Item const& rhs)
+{
+    void *p = 0;
+    if (this != &rhs)
+    {
+        m_id = rhs.m_id;
+        m_length = rhs.m_length;
+        p = std::memcpy(m_data, rhs.m_data, m_length);
+        m_bounds = rhs.m_bounds->clone();
+    }
+    return (*this);
+}
+    
 void Item::SetData(const uint8_t* data, uint64_t length) 
 {
     m_length = length;
     m_data = new uint8_t[length];
     
-    if (length > 0)
+    if (length > 0 && m_data != 0)
         memcpy(m_data, data, length);
 }
 
-Visitor::Visitor()
+void Item::GetData(uint8_t* data, uint64_t *length) 
+{
+    *length = m_length;
+    data = m_data;
+}
+
+const SpatialIndex::Region* Item::GetBounds() const 
+{
+    return m_bounds;
+}
+
+void Item::SetBounds( const SpatialIndex::Region* b)
+{
+    m_bounds = new SpatialIndex::Region(*b);
+}
+
+Visitor::Visitor(): nResults(0)
 {
 }
 
@@ -50,8 +90,6 @@ void Visitor::visitData(const SpatialIndex::IData& d)
     pS->getMBR(*r);
     std::cout <<"found shape: " << *r << " dimension: " <<pS->getDimension() << std::endl;
 
-    delete pS;
-    delete r;
 
     // data should be an array of characters representing a Region as a string.
     uint8_t* data = 0;
@@ -60,9 +98,14 @@ void Visitor::visitData(const SpatialIndex::IData& d)
 
     Item* item = new Item(d.getIdentifier());
     item->SetData(data, length);
+    item->SetBounds(r);
 
 
+    delete pS;
+    delete r;
     delete[] data;
+    
+    nResults += 1;
 
     m_vector.push_back(item);
 }

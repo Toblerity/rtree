@@ -31,11 +31,40 @@ IndexH Index_Create(IndexPropertyH properties);
 void Index_Destroy(IndexH index);
 IndexPropertyH Index_GetProperties(IndexH index);
 
-RTError Index_DeleteData(IndexH index, uint64_t id, double* pdMin, double* pdMax, uint32_t nDimension);
-RTError Index_InsertData(IndexH index, uint64_t id, double* pdMin, double* pdMax, uint32_t nDimension, const uint8_t* pData, size_t nDataLength);
+RTError Index_DeleteData(   IndexH index, 
+                            uint64_t id, 
+                            double* pdMin, 
+                            double* pdMax, 
+                            uint32_t nDimension);
+                            
+RTError Index_InsertData(   IndexH index, 
+                            uint64_t id, 
+                            double* pdMin, 
+                            double* pdMax, 
+                            uint32_t nDimension, 
+                            const uint8_t* pData, 
+                            size_t nDataLength);
+                            
 uint32_t Index_IsValid(IndexH index);
 
-RTError Index_Intersects(IndexH index, uint64_t* ids, uint32_t nCount, double* pdMin, double pdMax, uint32_t nDimension);
+RTError Index_Intersects(   IndexH index, 
+                            double* pdMin, 
+                            double* pdMax, 
+                            uint32_t nDimension, 
+                            IndexItemH* items, 
+                            uint32_t* nResults);
+
+RTError Index_NearestNeighbors( IndexH index, 
+                                double* pdMin, 
+                                double* pdMax, 
+                                uint32_t nDimension, 
+                                IndexItemH* items, 
+                                uint32_t* nResults);
+
+void IndexItem_Destroy(IndexItemH item);
+
+RTError IndexItem_GetData(uint8_t* data, uint32_t* length);
+
 
 RTError IndexProperty_SetIndexType(IndexPropertyH iprop, RTIndexType value);
 RTIndexType IndexProperty_GetIndexType(IndexPropertyH iprop);

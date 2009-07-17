@@ -21,16 +21,40 @@ private:
     uint64_t m_id;
     uint8_t* m_data;
     uint32_t m_length;
-    
-    // block copy operations
-    Item(Item const& other);
-    Item& operator=(Item const& other);
-    
+    SpatialIndex::Region* m_bounds;
+
 public:
     Item(uint64_t id);
     ~Item();
+
+    Item(Item const& other);
+    Item& operator=(Item const& other);
+    
     void SetData(const uint8_t* data, uint64_t length);
     void GetData(uint8_t* data, uint64_t* length);
+    const SpatialIndex::Region* GetBounds() const;
+    void SetBounds(const SpatialIndex::Region* );
+};
+
+class Visitor : public SpatialIndex::IVisitor
+{
+private:
+    size_t m_indexIO;
+    size_t m_leafIO;
+    std::vector<Item*> m_vector;
+    uint32_t nResults;
+
+public:
+
+    Visitor();
+    ~Visitor();
+
+    uint32_t GetResultCount() const { return nResults; }
+    std::vector<Item*>& GetResults()  { return m_vector; }
+    
+    void visitNode(const SpatialIndex::INode& n);
+    void visitData(const SpatialIndex::IData& d);
+    void visitData(std::vector<const SpatialIndex::IData*>& v);
 };
 
 class Error
@@ -94,24 +118,7 @@ private:
 }; // ExclusiveLock
 
 
-class Visitor : public SpatialIndex::IVisitor
-{
-private:
-    size_t m_indexIO;
-    size_t m_leafIO;
-    std::vector<Item*> m_vector;
-    std::string m_idxFilename;
-    
 
-public:
-
-    Visitor();
-    ~Visitor();
-
-    void visitNode(const SpatialIndex::INode& n);
-    void visitData(const SpatialIndex::IData& d);
-    void visitData(std::vector<const SpatialIndex::IData*>& v);
-};
 
 
 class Index
