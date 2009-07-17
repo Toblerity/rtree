@@ -17,6 +17,17 @@
 
 #include <sys/stat.h>
 
+
+#ifdef _MSC_VER
+#include "SpatialIndex.h"
+#include <windows.h>
+#else
+#include <spatialindex/SpatialIndex.h>
+#include <pthread.h>
+#define HAVE_PTHREAD_H 1
+#endif
+
+
 typedef enum
 {
    RT_None = 0,
@@ -58,8 +69,9 @@ typedef enum
 #  define IDX_C_END
 #endif
 
-typedef struct IndexHS *IndexH;
-typedef struct IndexPropertyHS *IndexPropertyH;
+typedef struct Index *IndexH;
+typedef struct Item *IndexItemH;
+typedef struct Tools::PropertySet *IndexPropertyH;
 
 #ifndef SIDX_DLL
 #if defined(_MSC_VER) && !defined(SIDX_DISABLE_DLL)

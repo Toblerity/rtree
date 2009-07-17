@@ -4,6 +4,7 @@ Item::Item(uint64_t id)
 {
     m_id = id;
     m_data = 0;
+    m_length = 0;
 }
 
 Item::~Item()
@@ -12,9 +13,13 @@ Item::~Item()
         delete m_data;
 }
 
-void Item::SetData(uint8_t* data, uint64_t length) 
+void Item::SetData(const uint8_t* data, uint64_t length) 
 {
+    m_length = length;
     m_data = new uint8_t[length];
+    
+    if (length > 0)
+        memcpy(m_data, data, length);
 }
 
 Visitor::Visitor()
@@ -68,46 +73,6 @@ void Visitor::visitData(std::vector<const SpatialIndex::IData*>& v)
 }
 
 
-IndexProperty::IndexProperty() : 
-    m_type(RT_RTree),
-    m_dimension(2),
-    m_variant(RT_Star),
-    m_storage(RT_Disk),
-    m_index_capacity(100),
-    m_leaf_capacity(100),
-    m_pagesize(4096),
-    m_tpr_horizon(20.0),
-    m_fillfactor(0.7)
-{}
-
-IndexProperty& IndexProperty::operator=(IndexProperty const& rhs)
-{
-    if (this != &rhs) 
-    {
-        m_type = rhs.m_type;
-        m_dimension = rhs.m_dimension;
-        m_variant = rhs.m_variant;
-        m_storage = rhs.m_storage;
-        m_index_capacity = rhs.m_index_capacity;
-        m_leaf_capacity = rhs.m_leaf_capacity;
-        m_pagesize = rhs.m_pagesize;
-        m_tpr_horizon = rhs.m_tpr_horizon;
-        m_fillfactor = rhs.m_fillfactor;
-    }
-    return (*this);
-}
-
-IndexProperty::IndexProperty(IndexProperty const& other) :
-    m_type(other.m_type),
-    m_dimension(other.m_dimension),
-    m_variant(other.m_variant),
-    m_storage(other.m_storage),
-    m_index_capacity(other.m_index_capacity),
-    m_leaf_capacity(other.m_index_capacity),
-    m_pagesize(other.m_pagesize),
-    m_tpr_horizon(other.m_tpr_horizon),
-    m_fillfactor(other.m_fillfactor)
-{}
 
 
 Error::Error(int code, std::string const& message, std::string const& method) :
@@ -142,23 +107,12 @@ SpatialIndex::ISpatialIndex* Index::CreateIndex()
     
     ISpatialIndex* index = 0;
     
-    
+    Tools::Variant var;
 
-    
-    if (m_properties.GetIndexType() == RT_RTree) {
-        RTree::RTreeVariant variant = RTree::RV_RSTAR;
+    if (GetIndexType() == RT_RTree) {
 
-        if (m_properties.GetIndexVariant() == RT_Linear) variant = RTree::RV_LINEAR;
-        if (m_properties.GetIndexVariant() == RT_Quadratic) variant = RTree::RV_QUADRATIC;
-        if (m_properties.GetIndexVariant() == RT_Star) variant = RTree::RV_RSTAR;
         try{
-            index = RTree::createNewRTree(  *m_buffer, 
-                                            m_properties.GetFillFactor(), 
-                                            m_properties.GetIndexCapacity(),
-                                            m_properties.GetLeafCapacity(),
-                                            m_properties.GetDimension(),
-                                            variant,
-                                            m_idxId); 
+            index = RTree::returnRTree(  *m_buffer, m_properties); 
 
             bool ret = index->isIndexValid();
             if (ret == false) 
@@ -172,21 +126,10 @@ SpatialIndex::ISpatialIndex* Index::CreateIndex()
         }    
     }
 
-    else if (m_properties.GetIndexType() == RT_MVRTree) {
-        MVRTree::MVRTreeVariant variant = MVRTree::RV_RSTAR;
-
-        if (m_properties.GetIndexVariant() == RT_Linear) variant = MVRTree::RV_LINEAR;
-        if (m_properties.GetIndexVariant() == RT_Quadratic) variant = MVRTree::RV_QUADRATIC;
-        if (m_properties.GetIndexVariant() == RT_Star) variant = MVRTree::RV_RSTAR;
+    else if (GetIndexType() == RT_MVRTree) {
 
         try{
-            index = MVRTree::createNewMVRTree(  *m_buffer, 
-                                            m_properties.GetFillFactor(), 
-                                            m_properties.GetIndexCapacity(),
-                                            m_properties.GetLeafCapacity(),
-                                            m_properties.GetDimension(),
-                                            variant,
-                                            m_idxId); 
+            index = MVRTree::returnMVRTree(  *m_buffer, m_properties); 
 
             bool ret = index->isIndexValid();
             if (ret == false) 
@@ -200,25 +143,15 @@ SpatialIndex::ISpatialIndex* Index::CreateIndex()
         }   
     }
 
-    else if (m_properties.GetIndexType() == RT_TPRTree) {
-        TPRTree::TPRTreeVariant variant =  TPRTree::TPRV_RSTAR;
-
+    else if (GetIndexType() == RT_TPRTree) {
 
         try{
-            index = TPRTree::createNewTPRTree(  *m_buffer, 
-                                            m_properties.GetFillFactor(), 
-                                            m_properties.GetIndexCapacity(),
-                                            m_properties.GetLeafCapacity(),
-                                            m_properties.GetDimension(),
-                                            variant,
-                                            m_properties.GetTPRHorizon(),
-                                            m_idxId); 
+            index = TPRTree::returnTPRTree(  *m_buffer,m_properties); 
 
             bool ret = index->isIndexValid();
             if (ret == false) 
                 throw std::runtime_error(   "Spatial index error: index is not "
                                             "valid after createNewMVRTree");
-
 
         } catch (Tools::Exception& e) {
             std::ostringstream os;
@@ -231,16 +164,11 @@ SpatialIndex::ISpatialIndex* Index::CreateIndex()
 }
 
 
-Index::Index(const char* pszFilename, const IndexProperty& poProperties) 
+Index::Index(const Tools::PropertySet& poProperties) 
 {
     
     Setup();
     
-    std::string m_idxFilename = std::string(pszFilename);
-    
-    bool m_Initialized;
-    bool m_idxExists;
-    SpatialIndex::id_type m_idxId;
     m_properties = poProperties;
 
     Initialize();
@@ -269,9 +197,7 @@ SpatialIndex::StorageManager::IBuffer* Index::CreateIndexBuffer(SpatialIndex::IS
     IBuffer* buffer = 0;
     try{
         if ( m_storage == 0 ) throw std::runtime_error("Storage was invalid to create index buffer");
-        buffer = createNewRandomEvictionsBuffer(storage,
-                                                10,
-                                                false);
+        buffer = returnRandomEvictionsBuffer(storage, m_properties);
     } catch (Tools::Exception& e) {
         std::ostringstream os;
         os << "Spatial Index Error: " << e.what();
@@ -301,13 +227,26 @@ SpatialIndex::ISpatialIndex* Index::LoadIndex()
     }    
 }
 
-SpatialIndex::IStorageManager* Index::CreateStorage(std::string& filename)
+SpatialIndex::IStorageManager* Index::CreateStorage()
 {
     using namespace SpatialIndex::StorageManager;
     
-    std::cout << "index type:" << m_properties.GetIndexType() << std::endl;
+    std::cout << "index type:" << GetIndexType() << std::endl;
     SpatialIndex::IStorageManager* storage = 0;
-    if (m_properties.GetIndexStorage() == RT_Disk) {
+    std::string filename("");
+    
+    Tools::Variant var;
+    var = m_properties.getProperty("FileName");
+
+    if (var.m_varType != Tools::VT_EMPTY)
+    {
+        if (var.m_varType != Tools::VT_PCHAR)
+            throw std::runtime_error("Index::CreateStorage: Property FileName must be Tools::VT_PCHAR");
+        
+        filename = std::string(var.m_val.pcVal);
+    }
+    
+    if (GetIndexStorage() == RT_Disk) {
 
         if (ExternalIndexExists(filename) && !filename.empty()) {
             std::cout << "loading existing DiskStorage " << filename << std::endl;
@@ -323,7 +262,7 @@ SpatialIndex::IStorageManager* Index::CreateStorage(std::string& filename)
         } else if (!filename.empty()){
             try{
                 std::cout << "creating new DiskStorage " << filename << std::endl;            
-                storage = createNewDiskStorageManager(filename, m_properties.GetPagesize());
+                storage = returnDiskStorageManager(m_properties);
                 m_idxExists = false;
                 return storage;
             } catch (Tools::Exception& e) {
@@ -332,11 +271,11 @@ SpatialIndex::IStorageManager* Index::CreateStorage(std::string& filename)
                 throw std::runtime_error(os.str());
             }         
         }
-    } else if (m_properties.GetIndexStorage() == RT_Memory) {
+    } else if (GetIndexStorage() == RT_Memory) {
 
         try{
             std::cout << "creating new createNewVLRStorageManager " << filename << std::endl;            
-            storage = createNewMemoryStorageManager();
+            storage = returnMemoryStorageManager(m_properties);
             m_idxExists = false;
             return storage;
         } catch (Tools::Exception& e) {
@@ -352,12 +291,13 @@ SpatialIndex::IStorageManager* Index::CreateStorage(std::string& filename)
 
 bool Index::ExternalIndexExists(std::string& filename)
 {
+
+    // if we have already checked, we're done.
+    if (m_idxExists == true) return true;
+    
     struct stat stats;
     std::ostringstream os;
     os << filename << ".dat";
-    
-    // if we have already checked, we're done.
-    if (m_idxExists == true) return true;
 
     std::string indexname = os.str();
     
@@ -365,14 +305,14 @@ bool Index::ExternalIndexExists(std::string& filename)
     int ret = stat(indexname.c_str(),&stats);
 
     bool output = false;
-    if (ret == 0) output= true; else output =false;
+    if (ret == 0) output= true;
     return output;
 }
 
 
 void Index::Initialize()
 {
-    m_storage = CreateStorage(m_idxFilename);
+    m_storage = CreateStorage();
     
     m_buffer = CreateIndexBuffer(*m_storage);
 
@@ -394,11 +334,201 @@ void Index::Setup()
 
     m_idxExists = false;
     
-    m_idxFilename = std::string("");
     m_Initialized = false;
     m_idxId = 1;
     
     m_buffer = 0;
     m_storage = 0;
     m_rtree = 0;
+}
+
+RTIndexType Index::GetIndexType() 
+{
+    Tools::Variant var;
+    var = m_properties.getProperty("IndexType");
+
+    if (var.m_varType != Tools::VT_EMPTY)
+    {
+        if (var.m_varType != Tools::VT_ULONG)
+            throw std::runtime_error("Index::GetIndexType: Property IndexType must be Tools::VT_ULONG");
+        
+        return static_cast<RTIndexType>(var.m_val.ulVal);
+    }
+    
+    // if we didn't get anything, we're returning an error condition
+    return RT_InvalidIndexType;
+    
+}
+void Index::SetIndexType(RTIndexType v)
+{
+    Tools::Variant var;
+    var.m_varType = Tools::VT_ULONG;
+    var.m_val.ulVal = v;
+    m_properties.setProperty("IndexType", var);
+}
+
+RTStorageType Index::GetIndexStorage()
+{
+
+    Tools::Variant var;
+    var = m_properties.getProperty("IndexStorageType");
+
+    if (var.m_varType != Tools::VT_EMPTY)
+    {
+        if (var.m_varType != Tools::VT_ULONG)
+            throw std::runtime_error("Index::GetIndexStorage: Property IndexStorageType must be Tools::VT_ULONG");
+        
+        return static_cast<RTStorageType>(var.m_val.ulVal);
+    }
+    
+    // if we didn't get anything, we're returning an error condition
+    return RT_InvalidStorageType;
+}
+
+void Index::SetIndexStorage(RTStorageType v)
+{
+    Tools::Variant var;
+    var.m_varType = Tools::VT_ULONG;
+    var.m_val.ulVal = v;
+    m_properties.setProperty("IndexStorageType", var);
+}
+
+RTIndexVariant Index::GetIndexVariant()
+{
+
+    Tools::Variant var;
+    var = m_properties.getProperty("TreeVariant");
+
+    if (var.m_varType != Tools::VT_EMPTY)
+    {
+        if (var.m_varType != Tools::VT_ULONG)
+            throw std::runtime_error("Index::GetIndexVariant: Property TreeVariant must be Tools::VT_ULONG");
+        
+        return static_cast<RTIndexVariant>(var.m_val.ulVal);
+    }
+    
+    // if we didn't get anything, we're returning an error condition
+    return RT_InvalidIndexVariant;
+}
+
+void Index::SetIndexVariant(RTStorageType v)
+{
+    using namespace SpatialIndex;
+    Tools::Variant var;
+
+    if (GetIndexType() == RT_RTree) {
+        var.m_val.ulVal = static_cast<RTree::RTreeVariant>(v);
+        m_properties.setProperty("TreeVariant", var);
+    } else if (GetIndexType() == RT_MVRTree) {
+        var.m_val.ulVal = static_cast<MVRTree::MVRTreeVariant>(v);
+        m_properties.setProperty("TreeVariant", var);   
+    } else if (GetIndexType() == RT_TPRTree) {
+        var.m_val.ulVal = static_cast<TPRTree::TPRTreeVariant>(v);
+        m_properties.setProperty("TreeVariant", var);   
+    }
+}
+
+Tools::PropertySet GetDefaults()
+{
+    Tools::PropertySet ps;
+    
+    Tools::Variant var;
+    
+    // Rtree defaults
+    
+    var.m_varType = Tools::VT_DOUBLE;
+    var.m_val.dblVal = 0.7;
+    ps.setProperty("FillFactor", var);
+    
+    var.m_varType = Tools::VT_ULONG;
+    var.m_val.ulVal = 100;
+    ps.setProperty("IndexCapacity", var);
+    
+    var.m_varType = Tools::VT_ULONG;
+    var.m_val.ulVal = 100;
+    ps.setProperty("LeafCapacity", var);
+    
+    var.m_varType = Tools::VT_LONG;
+    var.m_val.lVal = SpatialIndex::RTree::RV_RSTAR;
+    ps.setProperty("TreeVariant", var);
+
+    var.m_varType = Tools::VT_LONG;
+    var.m_val.ulVal = 1;
+    ps.setProperty("IndexIdentifier", var);
+    
+    var.m_varType = Tools::VT_ULONG;
+    var.m_val.ulVal = 32;
+    ps.setProperty("NearMinimumOverlapFactor", var);
+    
+    var.m_varType = Tools::VT_DOUBLE;
+    var.m_val.dblVal = 0.4;
+    ps.setProperty("SplitDistributionFactor", var);
+
+    var.m_varType = Tools::VT_DOUBLE;
+    var.m_val.dblVal = 0.3;
+    ps.setProperty("ReinsertFactor", var);
+
+    var.m_varType = Tools::VT_ULONG;
+    var.m_val.ulVal = 2;
+    ps.setProperty("Dimension", var);
+        
+    var.m_varType = Tools::VT_BOOL;
+    var.m_val.bVal = true;
+    ps.setProperty("EnsureTightMBRs", var);
+    
+    var.m_varType = Tools::VT_ULONG;
+    var.m_val.ulVal = 100;
+    ps.setProperty("IndexPoolCapacity", var);
+    
+    var.m_varType = Tools::VT_ULONG;
+    var.m_val.ulVal = 100;
+    ps.setProperty("LeafPoolCapacity", var);
+
+    var.m_varType = Tools::VT_ULONG;
+    var.m_val.ulVal = 1000;
+    ps.setProperty("RegionPoolCapacity", var);
+
+    var.m_varType = Tools::VT_ULONG;
+    var.m_val.ulVal = 500;
+    ps.setProperty("PointPoolCapacity", var);
+
+    // horizon for TPRTree
+    var.m_varType = Tools::VT_DOUBLE;
+    var.m_val.dblVal = 20.0;
+    ps.setProperty("Horizon", var);
+    
+    // Buffering defaults
+    var.m_varType = Tools::VT_ULONG;
+    var.m_val.ulVal = 10;
+    ps.setProperty("Capacity", var);
+    
+    var.m_varType = Tools::VT_BOOL;
+    var.m_val.bVal = false;
+    ps.setProperty("WriteThrough", var);
+    
+    // Disk Storage Manager defaults
+    var.m_varType = Tools::VT_BOOL;
+    var.m_val.bVal = true;
+    ps.setProperty("Overwrite", var);
+    
+    var.m_varType = Tools::VT_PCHAR;
+    var.m_val.pcVal = const_cast<char*>("");
+    ps.setProperty("FileName", var);
+    
+    var.m_varType = Tools::VT_ULONG;
+    var.m_val.ulVal = 4096;
+    ps.setProperty("PageSize", var);
+    
+    // Our custom properties related to whether 
+    // or not we are using a disk or memory storage manager
+
+    var.m_varType = Tools::VT_ULONG;
+    var.m_val.ulVal = RT_Disk;
+    ps.setProperty("IndexStorageType", var);
+
+    var.m_varType = Tools::VT_ULONG;
+    var.m_val.ulVal = RT_RTree;
+    ps.setProperty("IndexType", var);
+           
+    return ps;
 }

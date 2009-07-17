@@ -27,11 +27,14 @@
 
 IDX_C_START
 
-IndexH Index_Create(const char* pszFilename, IndexPropertyH properties);
-void Index_Delete(IndexH index);
+IndexH Index_Create(IndexPropertyH properties);
+void Index_Destroy(IndexH index);
+IndexPropertyH Index_GetProperties(IndexH index);
+
 RTError Index_DeleteData(IndexH index, uint64_t id, double* pdMin, double* pdMax, uint32_t nDimension);
-RTError Index_InsertData(IndexH index, uint64_t id, double* pdMin, double* pdMax, uint32_t nDimension);
-RTError Index_IsValid(IndexH index);
+RTError Index_InsertData(IndexH index, uint64_t id, double* pdMin, double* pdMax, uint32_t nDimension, const uint8_t* pData, size_t nDataLength);
+uint32_t Index_IsValid(IndexH index);
+
 RTError Index_Intersects(IndexH index, uint64_t* ids, uint32_t nCount, double* pdMin, double pdMax, uint32_t nDimension);
 
 RTError IndexProperty_SetIndexType(IndexPropertyH iprop, RTIndexType value);
@@ -55,11 +58,48 @@ uint32_t IndexProperty_GetLeafCapacity(IndexPropertyH iprop);
 RTError IndexProperty_SetPagesize(IndexPropertyH iprop, uint32_t value);
 uint32_t IndexProperty_GetPagesize(IndexPropertyH iprop);
 
-RTError IndexProperty_SetTPRHorizon(IndexPropertyH iprop, double value);
-double IndexProperty_GetTPRHorizon(IndexPropertyH iprop);
+RTError IndexProperty_SetLeafPoolCapacity(IndexPropertyH iprop, uint32_t value);
+uint32_t IndexProperty_GetLeafPoolCapacity(IndexPropertyH iprop);
+
+RTError IndexProperty_SetIndexPoolCapacity(IndexPropertyH iprop, uint32_t value);
+uint32_t IndexProperty_GetIndexPoolCapacity(IndexPropertyH iprop);
+
+RTError IndexProperty_SetRegionPoolCapacity(IndexPropertyH iprop, uint32_t value);
+uint32_t IndexProperty_GetRegionPoolCapacity(IndexPropertyH iprop);
+
+RTError IndexProperty_SetPointPoolCapacity(IndexPropertyH iprop, uint32_t value);
+uint32_t IndexProperty_GetPointPoolCapacity(IndexPropertyH iprop);
+
+RTError IndexProperty_SetBufferingCapacity(IndexPropertyH iprop, uint32_t value);
+uint32_t IndexProperty_GetBufferingCapacity(IndexPropertyH iprop);
+
+RTError IndexProperty_SetEnsureTightMBRs(IndexPropertyH iprop, uint32_t value);
+uint32_t IndexProperty_GetEnsureTightMBRs(IndexPropertyH iprop);
+
+RTError IndexProperty_SetOverwrite(IndexPropertyH iprop, uint32_t value);
+uint32_t IndexProperty_GetOverwrite(IndexPropertyH iprop);
+
+RTError IndexProperty_SetNearMinimumOverlapFactor(IndexPropertyH iprop, uint32_t value);
+uint32_t IndexProperty_GetNearMinimumOverlapFactor(IndexPropertyH iprop);
+
+RTError IndexProperty_SetWriteThrough(IndexPropertyH iprop, uint32_t value);
+uint32_t IndexProperty_GetWriteThrough(IndexPropertyH iprop);
 
 RTError IndexProperty_SetFillFactor(IndexPropertyH iprop, double value);
 double IndexProperty_GetFillFactor(IndexPropertyH iprop);
+
+RTError IndexProperty_SetSplitDistributionFactor(IndexPropertyH iprop, double value);
+double IndexProperty_GetSplitDistributionFactor(IndexPropertyH iprop);
+
+RTError IndexProperty_SetTPRHorizon(IndexPropertyH iprop, double value);
+double IndexProperty_GetTPRHorizon(IndexPropertyH iprop);
+
+RTError IndexProperty_SetReinsertFactor(IndexPropertyH iprop, double value);
+double IndexProperty_GetReinsertFactor(IndexPropertyH iprop);
+
+RTError IndexProperty_SetFileName(IndexPropertyH iprop, const char* value);
+char* IndexProperty_GetFileName(IndexPropertyH iprop);
+
 
     
 IDX_C_END

@@ -6,8 +6,11 @@
 
 #ifdef _MSC_VER
 #include "SpatialIndex.h"
+#include <windows.h>
 #else
 #include <spatialindex/SpatialIndex.h>
+#include <pthread.h>
+#define HAVE_PTHREAD_H 1
 #endif
 
 #include "sidx_config.h"
@@ -17,15 +20,17 @@ class Item
 private:
     uint64_t m_id;
     uint8_t* m_data;
+    uint32_t m_length;
     
     // block copy operations
     Item(Item const& other);
     Item& operator=(Item const& other);
     
 public:
-    Item(uint64_t);
+    Item(uint64_t id);
     ~Item();
-    void SetData(uint8_t* data, uint64_t length);
+    void SetData(const uint8_t* data, uint64_t length);
+    void GetData(uint8_t* data, uint64_t* length);
 };
 
 class Error
@@ -40,9 +45,6 @@ public:
     /// Assignment operator.
     Error& operator=(Error const& rhs);
 
-    // TODO - mloskot: What about replacing string return by copy with const char* ?
-    //        char const* GetMethod() const { return m_method.c_str(); }, etc.
-
     int GetCode() const { return m_code; };
     const char* GetMessage() const { return m_message.c_str(); };
     const char* GetMethod() const { return m_method.c_str(); };    
@@ -53,6 +55,44 @@ private:
     std::string m_message;
     std::string m_method;
 };
+
+class Lock
+{
+public:
+
+    Lock() {};
+    ~Lock() {};
+private:
+    
+}; // Lock
+
+
+class Shared : public Lock
+{
+public:
+
+#if HAVE_PTHREAD_H
+    Shared(pthread_rwlock_t* pLock) : m_pLock(pLock) {pthread_rwlock_rdlock(m_pLock);}
+    ~Shared() {pthread_rwlock_unlock(m_pLock);}
+private:
+    pthread_rwlock_t* m_pLock;
+#endif
+
+}; // Shared
+
+
+class Exclusive
+{
+public:
+#if HAVE_PTHREAD_H
+    Exclusive(pthread_rwlock_t* pLock): m_pLock(pLock) {pthread_rwlock_wrlock(m_pLock);}
+    ~Exclusive() {pthread_rwlock_unlock(m_pLock);}
+
+private:
+    pthread_rwlock_t* m_pLock;
+#endif
+}; // ExclusiveLock
+
 
 class Visitor : public SpatialIndex::IVisitor
 {
@@ -74,86 +114,46 @@ public:
 };
 
 
-class IndexProperty
-{
-
-public:
-    IndexProperty();
-    ~IndexProperty() {};
-
-    IndexProperty& operator=(IndexProperty const& rhs);
-    IndexProperty(IndexProperty const& other);
-        
-    RTIndexType GetIndexType() const {return m_type;}
-    void SetIndexType( RTIndexType& v ) {m_type = v;}
-    
-    uint32_t GetDimension() const {return m_dimension;}
-    void SetDimension( uint32_t& v ) {m_dimension = v;}
-    
-    RTIndexVariant GetIndexVariant() const { return m_variant; }
-    void SetIndexVariant( RTIndexVariant& v ) { m_variant = v; }
-    
-    RTStorageType GetIndexStorage() const { return m_storage; }
-    void SetIndexStorage( RTStorageType& v ) { m_storage = v; }
-
-    uint32_t GetIndexCapacity() const { return m_index_capacity; }
-    void SetIndexCapacity( uint32_t& v ) { m_index_capacity = v; }
-    
-    uint32_t GetLeafCapacity() const { return m_leaf_capacity; }
-    void SetLeafCapacity( uint32_t& v ) { m_leaf_capacity = v; }
-
-    uint32_t GetPagesize() const { return m_pagesize; }
-    void SetPagesize( uint32_t& v ) { m_pagesize = v; }
-    
-    double GetTPRHorizon() const { return m_tpr_horizon; }
-    void SetTPRHorizon( double& v ) { m_tpr_horizon = v; }
-    
-    double GetFillFactor() const { return m_fillfactor; }
-    void SetFillFactor( double& v ) { m_fillfactor = v; }
-
-private:
-
-    RTIndexType m_type;
-    uint32_t m_dimension;
-    RTIndexVariant m_variant;
-    RTStorageType m_storage;
-    uint32_t m_index_capacity;
-    uint32_t m_leaf_capacity;
-    uint32_t m_pagesize;
-    double m_tpr_horizon;
-    double m_fillfactor;
-};
-
 class Index
 {
 
 public:
-    Index(const char* pszFilename, const IndexProperty& poProperties);
+    Index(const Tools::PropertySet& poProperties);
     ~Index();
 
-    const IndexProperty& GetProperties() { return m_properties; }
+    const Tools::PropertySet& GetProperties() { return m_properties; }
 
     bool insertFeature(uint64_t id, double *min, double *max);
+    
+    RTIndexType GetIndexType();
+    void SetIndexType(RTIndexType v);
 
+    RTStorageType GetIndexStorage();
+    void SetIndexStorage(RTStorageType v);
+    
+    RTIndexVariant GetIndexVariant();
+    void SetIndexVariant(RTStorageType v);
+    
+    SpatialIndex::ISpatialIndex& index() {return *m_rtree;}
 private:
 
     void Initialize();
     SpatialIndex::IStorageManager* m_storage;
     SpatialIndex::StorageManager::IBuffer* m_buffer;
     SpatialIndex::ISpatialIndex* m_rtree;
-    std::string m_idxFilename;
     
     bool m_Initialized;
     bool m_idxExists;
     SpatialIndex::id_type m_idxId;
     
-    IndexProperty m_properties;
+    RTIndexType m_idxType;
+    RTStorageType m_idxStorage;
     
-    
+    Tools::PropertySet m_properties;
 
 
     void Setup();
-    SpatialIndex::IStorageManager* CreateStorage(std::string& filename);
+    SpatialIndex::IStorageManager* CreateStorage();
     SpatialIndex::StorageManager::IBuffer* CreateIndexBuffer(SpatialIndex::IStorageManager& storage);
     SpatialIndex::ISpatialIndex* CreateIndex();
     SpatialIndex::ISpatialIndex* LoadIndex();
