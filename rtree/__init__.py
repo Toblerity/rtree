@@ -7,3 +7,7 @@ except ImportError:
 
 from _rtree import Rtree
 
+from core import rt
+import indexprop
+from indexprop import *
+

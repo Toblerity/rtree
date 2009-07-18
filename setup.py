@@ -5,6 +5,11 @@ from setuptools import setup, Extension
 # Get text from README.txt
 readme_text = file('README.txt', 'rb').read()
 
+libsidx = Extension('libsidx',
+                  sources=[ 'libsidx/sidx_api.cc',
+                            'libsidx/sidx_impl.cc'],
+                  libraries=['spatialindex']
+                  )
 _rtree = Extension('rtree._rtree',
                   sources=[ 'rtree/_rtreemodule.cc', 
                             'rtree/wrapper.cc',
@@ -33,7 +38,7 @@ setup(name          = 'Rtree',
       url   = 'http://trac.gispython.org/projects/PCL/wiki/Rtree',
       long_description = readme_text,
       packages      = ['rtree'],
-      ext_modules   = [_rtree],
+      ext_modules   = [_rtree, libsidx],
       install_requires = ['setuptools'],
       test_suite = 'tests.test_suite',
       data_files = data_files,
