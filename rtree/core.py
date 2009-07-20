@@ -5,7 +5,7 @@ from ctypes.util import find_library
 
 from ctypes import PyDLL
 
-class RTException(Exception):
+class RTreeError(Exception):
     "RTree exception, indicates a RTree-related error."
     pass
 
@@ -15,7 +15,7 @@ def check_return(result, func, cargs):
     if result != 0:
         msg = 'LASError in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg() )
         rt.Error_Reset()
-        raise RTException(msg)
+        raise RTreeError(msg)
     return True
 
 def check_void(result, func, cargs):
@@ -23,7 +23,7 @@ def check_void(result, func, cargs):
     if not bool(result):
         msg = 'Error in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg() )
         rt.Error_Reset()
-        raise RTException(msg)
+        raise RTreeError(msg)
     return result
 
 def check_void_done(result, func, cargs):
@@ -31,7 +31,7 @@ def check_void_done(result, func, cargs):
     if rt.Error_GetErrorCount():
         msg = 'Error in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg() )
         rt.Error_Reset()
-        raise RTException(msg)
+        raise RTreeError(msg)
         
     return result
 
@@ -41,7 +41,7 @@ def check_value(result, func, cargs):
     if count != 0:
         msg = 'Error in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg() )
         rt.Error_Reset()
-        raise RTException(msg)
+        raise RTreeError(msg)
     return result
 
 def check_value_free(result, func, cargs):
@@ -50,7 +50,7 @@ def check_value_free(result, func, cargs):
     if count != 0:
         msg = 'Error in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg() )
         rt.Error_Reset()
-        raise RTException(msg)
+        raise RTreeError(msg)
     retval = ctypes.string_at(result)[:]
     free(result)
     return retval
@@ -97,7 +97,7 @@ elif os.name == 'posix':
         free = ctypes.CDLL(find_library('libc.so.6')).free
     rt = ctypes.CDLL(lib_name)
 else:
-    raise RTException('Unsupported OS "%s"' % os.name)
+    raise RTreeError('Unsupported OS "%s"' % os.name)
 
 rt.Error_GetLastErrorNum.restype = ctypes.c_int
 
@@ -342,3 +342,17 @@ rt.IndexProperty_SetFileName.errcheck = check_return
 
 rt.IndexProperty_GetFileName.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetFileName.errcheck = check_value_free
+
+rt.IndexProperty_SetFileNameExtensionDat.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+rt.IndexProperty_SetFileNameExtensionDat.restype = ctypes.c_int
+rt.IndexProperty_SetFileNameExtensionDat.errcheck = check_return
+
+rt.IndexProperty_GetFileNameExtensionDat.argtypes = [ctypes.c_void_p]
+rt.IndexProperty_GetFileNameExtensionDat.errcheck = check_value_free
+
+rt.IndexProperty_SetFileNameExtensionIdx.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+rt.IndexProperty_SetFileNameExtensionIdx.restype = ctypes.c_int
+rt.IndexProperty_SetFileNameExtensionIdx.errcheck = check_return
+
+rt.IndexProperty_GetFileNameExtensionIdx.argtypes = [ctypes.c_void_p]
+rt.IndexProperty_GetFileNameExtensionIdx.errcheck = check_value_free

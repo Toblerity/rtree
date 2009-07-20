@@ -18,4 +18,3 @@ Clean up leftover data
   Traceback (most recent call last):
   ...
   TypeError: IllegalStateException: SpatialIndex::DiskStorageManager: Failed reading pageSize.
-  Please contact mhadji@gmail.com

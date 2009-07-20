@@ -71,7 +71,8 @@ typedef enum
 
 typedef struct Index *IndexH;
 typedef struct Item *IndexItemH;
-typedef struct Tools::PropertySet *IndexPropertyH;
+typedef Tools::PropertySet *IndexPropertyH;
+// typedef struct PropertySetHS *IndexPropertyH;
 
 #ifndef SIDX_DLL
 #if defined(_MSC_VER) && !defined(SIDX_DISABLE_DLL)

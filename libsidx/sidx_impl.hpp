@@ -15,6 +15,8 @@
 
 #include "sidx_config.h"
 
+Tools::PropertySet* GetDefaults();
+
 class Item 
 {
 private:

@@ -80,14 +80,14 @@ SIDX_DLL RTIndexVariant IndexProperty_GetIndexVariant(IndexPropertyH iprop);
 SIDX_DLL RTError IndexProperty_SetIndexStorage(IndexPropertyH iprop, RTStorageType value);
 SIDX_DLL RTStorageType IndexProperty_GetIndexStorage(IndexPropertyH iprop);
 
+SIDX_DLL RTError IndexProperty_SetPagesize(IndexPropertyH iprop, uint32_t value);
+SIDX_DLL uint32_t IndexProperty_GetPagesize(IndexPropertyH iprop);
+
 SIDX_DLL RTError IndexProperty_SetIndexCapacity(IndexPropertyH iprop, uint32_t value);
 SIDX_DLL uint32_t IndexProperty_GetIndexCapacity(IndexPropertyH iprop);
 
 SIDX_DLL RTError IndexProperty_SetLeafCapacity(IndexPropertyH iprop, uint32_t value);
 SIDX_DLL uint32_t IndexProperty_GetLeafCapacity(IndexPropertyH iprop);
-
-SIDX_DLL RTError IndexProperty_SetPagesize(IndexPropertyH iprop, uint32_t value);
-SIDX_DLL uint32_t IndexProperty_GetPagesize(IndexPropertyH iprop);
 
 SIDX_DLL RTError IndexProperty_SetLeafPoolCapacity(IndexPropertyH iprop, uint32_t value);
 SIDX_DLL uint32_t IndexProperty_GetLeafPoolCapacity(IndexPropertyH iprop);
@@ -130,6 +130,12 @@ SIDX_DLL double IndexProperty_GetReinsertFactor(IndexPropertyH iprop);
 
 SIDX_DLL RTError IndexProperty_SetFileName(IndexPropertyH iprop, const char* value);
 SIDX_DLL char* IndexProperty_GetFileName(IndexPropertyH iprop);
+
+SIDX_DLL RTError IndexProperty_SetFileNameExtensionDat(IndexPropertyH iprop, const char* value);
+SIDX_DLL char* IndexProperty_SetFileNameExtensionDat(IndexPropertyH iprop);
+
+SIDX_DLL RTError IndexProperty_SetFileNameExtensionIdx(IndexPropertyH iprop, const char* value);
+SIDX_DLL char* IndexProperty_SetFileNameExtensionIdx(IndexPropertyH iprop);
 
 
     
