@@ -1,0 +1,15 @@
+    >>> from rtree import index
+    
+    >>> p = index.Property()
+    
+    >>> idx = index.Index(properties=p)
+    >>> idx
+    <rtree.index.Index object at 0x...>
+    
+    
+    >>> for i, coords in enumerate(boxes15):
+    ...     idx.add(i, coords)
+    
+    >>> hits = [n for n in idx.intersection((0, 0, 60, 60))]
+    >>> len(hits)
+    10    

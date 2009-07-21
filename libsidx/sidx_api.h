@@ -62,6 +62,7 @@ SIDX_DLL RTError Index_NearestNeighbors(IndexH index,
                                         uint32_t* nResults);
 
 SIDX_DLL void IndexItem_Destroy(IndexItemH item);
+SIDX_DLL uint64_t IndexItem_GetID(IndexItemH item);
 
 SIDX_DLL RTError IndexItem_GetData(IndexItemH item, uint8_t* data, uint32_t* length);
 
@@ -132,13 +133,15 @@ SIDX_DLL RTError IndexProperty_SetFileName(IndexPropertyH iprop, const char* val
 SIDX_DLL char* IndexProperty_GetFileName(IndexPropertyH iprop);
 
 SIDX_DLL RTError IndexProperty_SetFileNameExtensionDat(IndexPropertyH iprop, const char* value);
-SIDX_DLL char* IndexProperty_SetFileNameExtensionDat(IndexPropertyH iprop);
+SIDX_DLL char* IndexProperty_GetFileNameExtensionDat(IndexPropertyH iprop);
 
 SIDX_DLL RTError IndexProperty_SetFileNameExtensionIdx(IndexPropertyH iprop, const char* value);
-SIDX_DLL char* IndexProperty_SetFileNameExtensionIdx(IndexPropertyH iprop);
+SIDX_DLL char* IndexProperty_GetFileNameExtensionIdx(IndexPropertyH iprop);
 
+IndexIdentifier
+SIDX_DLL RTError IndexProperty_SetIndexID(IndexPropertyH iprop, int64_t value);
+SIDX_DLL int64_t IndexProperty_GetIndexID(IndexPropertyH iprop);
 
-    
 IDX_C_END
 
 #endif

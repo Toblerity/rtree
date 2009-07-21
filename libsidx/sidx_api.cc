@@ -77,10 +77,27 @@ SIDX_DLL IndexH Index_Create(IndexPropertyH hProp)
     VALIDATE_POINTER1(hProp, "Index_Create", NULL);   
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
     
-    if (prop != NULL)
+    // try { 
         return (IndexH) new Index(*prop);    
-    else
-        return NULL;
+    // } catch (Tools::Exception& e)
+    // {
+    //     Error_PushError(RT_Failure, 
+    //                     e.what().c_str(), 
+    //                     "Index_Create");
+    //     return NULL;
+    // } catch (std::exception const& e)
+    // {
+    //     Error_PushError(RT_Failure, 
+    //                     e.what(), 
+    //                     "Index_Create");
+    //     return NULL;
+    // } catch (...) {
+    //     Error_PushError(RT_Failure, 
+    //                     "Unknown Error", 
+    //                     "Index_Create");
+    //     return NULL;        
+    // }
+    // return NULL;
 }
 
 SIDX_DLL void Index_Destroy(IndexH index)
@@ -136,7 +153,7 @@ SIDX_DLL RTError Index_InsertData(  IndexH index,
 
     Index* idx = static_cast<Index*>(index);
     
-    try {    
+    try {
         idx->index().insertData(nDataLength, 
                                 pData, 
                                 SpatialIndex::Region(pdMin, pdMax, nDimension), 
@@ -188,6 +205,7 @@ SIDX_DLL RTError Index_Intersects(  IndexH index,
         // upon ~
         for (size_t i=0; i < visitor->GetResultCount(); ++i)
         {
+            items[i] = new Item(results[i]->GetID());
             *items[i] = *results[i];
         }
         *nResults = visitor->GetResultCount();
@@ -242,6 +260,7 @@ SIDX_DLL RTError Index_NearestNeighbors(IndexH index,
         // upon ~
         for (size_t i=0; i < visitor->GetResultCount(); ++i)
         {
+            items[i] = new Item(results[i]->GetID());
             *items[i] = *results[i];
         }
         *nResults = visitor->GetResultCount();
@@ -291,7 +310,7 @@ SIDX_DLL void IndexItem_Destroy(IndexItemH item)
 {
     VALIDATE_POINTER0(item, "IndexItem_Destroy"); 
     Item* it = static_cast<Item*>(item);
-    if (it) delete it;
+    if (it != 0) delete it;
 }
 
 SIDX_DLL RTError IndexItem_GetData( IndexItemH item,
@@ -304,6 +323,14 @@ SIDX_DLL RTError IndexItem_GetData( IndexItemH item,
     return RT_None;
     
 }
+SIDX_DLL uint64_t IndexItem_GetID(IndexItemH item) 
+{
+    VALIDATE_POINTER1(item, "IndexItem_GetID",0); 
+    Item* it = static_cast<Item*>(item);
+    uint64_t value = it->GetID();
+    return value;
+}
+
 SIDX_DLL IndexPropertyH IndexProperty_Create()
 {
     Tools::PropertySet* ps = GetDefaults();
@@ -1772,6 +1799,66 @@ SIDX_DLL char* IndexProperty_GetFileNameExtensionIdx(IndexPropertyH hProp)
                     "Property FileNameIdx was empty", 
                     "IndexProperty_GetFileNameExtensionIdx");
     return NULL;
+}
+
+SIDX_DLL RTError IndexProperty_SetIndexID(  IndexPropertyH hProp, 
+                                            int64_t value)
+{
+    VALIDATE_POINTER1(hProp, "IndexProperty_SetIndexID", RT_Failure);    
+    Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
+
+    try
+    {
+        Tools::Variant var;
+        var.m_varType = Tools::VT_LONGLONG;
+        var.m_val.ulVal = value;
+        prop->setProperty("IndexIdentifier", var);
+    } catch (Tools::Exception& e)
+    {
+        Error_PushError(RT_Failure, 
+                        e.what().c_str(), 
+                        "IndexProperty_SetIndexID");
+        return RT_Failure;
+    } catch (std::exception const& e)
+    {
+        Error_PushError(RT_Failure, 
+                        e.what(), 
+                        "IndexProperty_SetIndexID");
+        return RT_Failure;
+    } catch (...) {
+        Error_PushError(RT_Failure, 
+                        "Unknown Error", 
+                        "IndexProperty_SetIndexID");
+        return RT_Failure;        
+    }
+    return RT_None;
+}
+
+SIDX_DLL int64_t IndexProperty_GetIndexID(IndexPropertyH hProp)
+{
+    VALIDATE_POINTER1(hProp, "IndexProperty_GetIndexID", 0);
+    Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
+
+    Tools::Variant var;
+    var = prop->getProperty("IndexIdentifier");
+
+    if (var.m_varType != Tools::VT_EMPTY)
+    {
+        if (var.m_varType != Tools::VT_LONGLONG) {
+            Error_PushError(RT_Failure, 
+                            "Property IndexIdentifier must be Tools::VT_LONGLONG", 
+                            "IndexProperty_GetIndexID");
+            return 0;
+        }
+        
+        return var.m_val.llVal;
+    }
+    
+    // return nothing for an error
+    Error_PushError(RT_Failure, 
+                    "Property IndexIdentifier was empty", 
+                    "IndexProperty_GetIndexID");
+    return 0;
 }
 
 IDX_C_END

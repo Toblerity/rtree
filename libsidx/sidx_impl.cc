@@ -18,30 +18,45 @@ Item::Item(Item const& other) : m_id(other.m_id),
                                 m_length(other.m_length)
 {
     void *p = 0;
-    
-    p = std::memcpy(m_data, other.m_data, m_length);
-    m_bounds = other.m_bounds->clone();
+    if (m_length > 0) {
+        m_data = new uint8_t[m_length];
+        p = std::memcpy(m_data, other.m_data, m_length);
+    } else
+        m_data = 0;
+    if (other.m_bounds != 0)
+        m_bounds = other.m_bounds->clone();
     
 }
 
 Item& Item::operator=(Item const& rhs)
 {
-    void *p = 0;
-    if (this != &rhs)
+
+    if (&rhs != this )
     {
+        void *p = 0;
         m_id = rhs.m_id;
         m_length = rhs.m_length;
-        p = std::memcpy(m_data, rhs.m_data, m_length);
-        m_bounds = rhs.m_bounds->clone();
+        if (m_length > 0) {
+            m_data = new uint8_t[m_length];
+            p = std::memcpy(m_data, rhs.m_data, m_length);
+        } else
+            m_data = 0;
+        if (rhs.m_bounds != 0)
+            m_bounds = rhs.m_bounds->clone();
     }
-    return (*this);
+    return *this;
 }
     
 void Item::SetData(const uint8_t* data, uint64_t length) 
 {
     m_length = length;
+    
+    // Don't do anything if we have no length
+    if (m_length < 1) return;
+    
     m_data = new uint8_t[length];
     
+    std::cout << "allocating " << m_length << " for Item::SetData" << std::endl;
     if (length > 0 && m_data != 0)
         memcpy(m_data, data, length);
 }
@@ -106,7 +121,8 @@ void Visitor::visitData(const SpatialIndex::IData& d)
     delete[] data;
     
     nResults += 1;
-
+    
+    std::cout << "pushing back item" << std::endl;
     m_vector.push_back(item);
 }
 
@@ -157,11 +173,6 @@ SpatialIndex::ISpatialIndex* Index::CreateIndex()
         try{
             index = RTree::returnRTree(  *m_buffer, m_properties); 
 
-            bool ret = index->isIndexValid();
-            if (ret == false) 
-                throw std::runtime_error(   "Spatial index error: index is not "
-                                            "valid after createNewRTree");
-
         } catch (Tools::Exception& e) {
             std::ostringstream os;
             os << "Spatial Index Error: " << e.what();
@@ -174,11 +185,6 @@ SpatialIndex::ISpatialIndex* Index::CreateIndex()
         try{
             index = MVRTree::returnMVRTree(  *m_buffer, m_properties); 
 
-            bool ret = index->isIndexValid();
-            if (ret == false) 
-                throw std::runtime_error(   "Spatial index error: index is not "
-                                            "valid after createNewMVRTree");
-
         } catch (Tools::Exception& e) {
             std::ostringstream os;
             os << "Spatial Index Error: " << e.what();
@@ -190,11 +196,6 @@ SpatialIndex::ISpatialIndex* Index::CreateIndex()
 
         try{
             index = TPRTree::returnTPRTree(  *m_buffer,m_properties); 
-
-            bool ret = index->isIndexValid();
-            if (ret == false) 
-                throw std::runtime_error(   "Spatial index error: index is not "
-                                            "valid after createNewMVRTree");
 
         } catch (Tools::Exception& e) {
             std::ostringstream os;
@@ -313,6 +314,18 @@ SpatialIndex::IStorageManager* Index::CreateStorage()
                 os << "Spatial Index Error: " << e.what();
                 throw std::runtime_error(os.str());
             }         
+        } else if (filename.empty()) {
+            try{
+                SetIndexStorage(RT_Memory);
+            std::cout << "creating new createNewVLRStorageManager because filename was empty" << filename << std::endl;            
+            storage = returnMemoryStorageManager(m_properties);
+            m_idxExists = false;
+            return storage;
+            } catch (Tools::Exception& e) {
+                std::ostringstream os;
+                os << "Spatial Index Error: " << e.what();
+                throw std::runtime_error(os.str());
+            }                
         }
     } else if (GetIndexStorage() == RT_Memory) {
 
@@ -495,9 +508,9 @@ Tools::PropertySet* GetDefaults()
     var.m_val.lVal = SpatialIndex::RTree::RV_RSTAR;
     ps->setProperty("TreeVariant", var);
 
-    var.m_varType = Tools::VT_LONG;
-    var.m_val.ulVal = 1;
-    ps->setProperty("IndexIdentifier", var);
+    // var.m_varType = Tools::VT_LONGLONG;
+    // var.m_val.llVal = 0;
+    // ps->setProperty("IndexIdentifier", var);
     
     var.m_varType = Tools::VT_ULONG;
     var.m_val.ulVal = 32;

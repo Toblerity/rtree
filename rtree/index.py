@@ -1,8 +1,101 @@
 
 import core
 import ctypes
+import pickle
 
+class Index(object):
+    def __init__(self, filename=None, properties=None, owned = True, pagesize = None):
+        if properties:
+            self.properties = properties
+        else:
+            self.properties = Property()
+            
+        if filename:
+            self.properties.filename = filename
+        
+        if pagesize:
+            self.properties.pagesize = pagesize
+        
+        self.handle = core.rt.Index_Create(self.properties.handle)
+        self.owned = True
+    
+    def __del__(self):
+        if self.owned:
+            if self.handle and core:
+                core.rt.Index_Destroy(self.handle)
+    
+    def insert(self, id, coordinates, obj = None):
 
+        mins = ctypes.c_double*self.properties.dimension
+        maxs = ctypes.c_double*self.properties.dimension
+
+        if self.properties.dimension == 2:
+            if len(coordinates) != 4:
+                raise RTreeError("Coordinates must be in the form minx, miny, maxx, maxy for 2D indexes")
+            
+            p_mins = mins(ctypes.c_double(coordinates[0]), ctypes.c_double(coordinates[1]))
+            p_maxs = maxs(ctypes.c_double(coordinates[2]), ctypes.c_double(coordinates[3]))
+        elif self.properties.dimension == 3:
+            if len(coordinates) != 6:
+                raise RTreeError("Coordinates must be in the form minx, miny, maxx, maxy, minz, maxz for 3D indexes")
+            
+            p_mins = mins(ctypes.c_double(coordinates[0]), ctypes.c_double(coordinates[1]), ctypes.c_double(coordinates[4]))
+            p_maxs = maxs(ctypes.c_double(coordinates[3]), ctypes.c_double(coordinates[4]), ctypes.c_double(coordinates[6]))
+        
+        if obj:
+            pik = pickle.dumps(obj)
+            size = len(pik)
+            data = ctypes.create_string_buffer(pik)
+            data.value = pik
+            # data = (ctypes.c_ubyte * size)()
+            # for i in range(size):
+            #     data[i] = ord(pik[i])
+        else:
+            data = ctypes.c_ubyte(0)
+            size = 0
+        core.rt.Index_InsertData(self.handle, id, p_mins, p_maxs, self.properties.dimension, data, size)
+    add = insert
+    
+    def intersection(self, coordinates):
+        mins = ctypes.c_double*self.properties.dimension
+        maxs = ctypes.c_double*self.properties.dimension
+
+        if self.properties.dimension == 2:
+            if len(coordinates) != 4:
+                raise RTreeError("Coordinates must be in the form minx, miny, maxx, maxy for 2D indexes")
+            
+            p_mins = mins(ctypes.c_double(coordinates[0]), ctypes.c_double(coordinates[1]))
+            p_maxs = maxs(ctypes.c_double(coordinates[2]), ctypes.c_double(coordinates[3]))
+        elif self.properties.dimension == 3:
+            if len(coordinates) != 6:
+                raise RTreeError("Coordinates must be in the form minx, miny, maxx, maxy, minz, maxz for 3D indexes")
+            
+            p_mins = mins(ctypes.c_double(coordinates[0]), ctypes.c_double(coordinates[1]), ctypes.c_double(coordinates[4]))
+            p_maxs = maxs(ctypes.c_double(coordinates[3]), ctypes.c_double(coordinates[4]), ctypes.c_double(coordinates[6]))
+        
+        p_num_results = ctypes.c_uint32(0)
+        items = ctypes.c_void_p(0)
+        core.rt.Index_Intersects(self.handle, p_mins, p_maxs, self.properties.dimension, ctypes.byref(items), ctypes.byref(p_num_results))
+        
+        items = ctypes.cast(items,ctypes.POINTER(ctypes.c_void_p * p_num_results.value))
+        results = []
+        import pdb;pdb.set_trace()
+        for i in range(p_num_results.value):
+            item = Item(handle=items[i])
+            results.append(item)
+        print results
+        return [0,1]
+
+class Item(object):
+    def __init__(self, handle=None, owned=True):
+        if handle:
+            self.handle = handle
+            
+    def get_id(self):
+        return core.rt.IndexItem_GetID(self.handle)
+    id = property(get_id)
+
+    
 class Property(object):
     def __init__(self, handle = None, owned=True):
         if handle:
@@ -167,3 +260,9 @@ class Property(object):
     def set_idx_extension(self, value):
         return core.rt.IndexProperty_SetFileNameExtensionIdx(self.handle, value)
     idx_extension = property(get_idx_extension, set_idx_extension)
+
+    def get_index_id(self):
+        return core.rt.IndexProperty_GetIndexID(self.handle)
+    def set_index_id(self, value):
+        return core.rt.IndexProperty_SetIndexID(self.handle, value)
+    index_id = property(get_index_id, set_index_id)

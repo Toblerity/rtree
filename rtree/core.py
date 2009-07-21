@@ -169,6 +169,10 @@ rt.IndexItem_GetData.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_ubyte)
 rt.IndexItem_GetData.restype = ctypes.c_int
 rt.IndexItem_GetData.errcheck = check_value
 
+rt.IndexItem_GetID.argtypes = [ctypes.c_void_p]
+rt.IndexItem_GetID.restype = ctypes.c_uint64
+rt.IndexItem_GetID.errcheck = check_value
+
 rt.IndexProperty_Create.restype = ctypes.c_void_p
 rt.IndexProperty_Create.errcheck = check_void
 
@@ -356,3 +360,11 @@ rt.IndexProperty_SetFileNameExtensionIdx.errcheck = check_return
 
 rt.IndexProperty_GetFileNameExtensionIdx.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetFileNameExtensionIdx.errcheck = check_value_free
+
+rt.IndexProperty_SetIndexID.argtypes = [ctypes.c_void_p, ctypes.c_int64]
+rt.IndexProperty_SetIndexID.restype = ctypes.c_int
+rt.IndexProperty_SetIndexID.errcheck = check_return
+
+rt.IndexProperty_GetIndexID.argtypes = [ctypes.c_void_p]
+rt.IndexProperty_GetIndexID.restype = ctypes.c_int
+rt.IndexProperty_GetIndexID.errcheck = check_value

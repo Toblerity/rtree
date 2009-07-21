@@ -205,3 +205,11 @@ Make a simple properties object
     >>> p.idx_extension = 'index'
     >>> p.idx_extension
     'index'
+    
+    >>> p.index_id
+    Traceback (most recent call last):
+    ...
+    RTreeError: Error in "IndexProperty_GetIndexID": Property IndexIdentifier was empty
+    >>> p.index_id = -420
+    >>> p.index_id
+    -420

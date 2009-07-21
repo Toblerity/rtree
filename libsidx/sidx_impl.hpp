@@ -32,6 +32,8 @@ public:
     Item(Item const& other);
     Item& operator=(Item const& other);
     
+    uint64_t GetID() const { return m_id; }
+    
     void SetData(const uint8_t* data, uint64_t length);
     void GetData(uint8_t* data, uint64_t* length);
     const SpatialIndex::Region* GetBounds() const;
