@@ -4,11 +4,15 @@ import ctypes
 from ctypes.util import find_library
 
 from ctypes import PyDLL
+import ctypes
 
 class RTreeError(Exception):
     "RTree exception, indicates a RTree-related error."
     pass
 
+class IndexItem(ctypes.Structure):
+    pass
+IndexItemH = ctypes.POINTER(IndexItem)
 
 def check_return(result, func, cargs):
     "Error checking for Error calls"
@@ -147,7 +151,7 @@ rt.Index_Intersects.argtypes = [ctypes.c_void_p,
                                 ctypes.POINTER(ctypes.c_double), 
                                 ctypes.POINTER(ctypes.c_double), 
                                 ctypes.c_uint32, 
-                                ctypes.POINTER(ctypes.c_void_p),
+                                ctypes.POINTER(IndexItemH),
                                 ctypes.POINTER(ctypes.c_uint32)]
 rt.Index_Intersects.restype = ctypes.c_int
 rt.Index_Intersects.errcheck = check_return

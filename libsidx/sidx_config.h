@@ -27,6 +27,8 @@
 #define HAVE_PTHREAD_H 1
 #endif
 
+class Item;
+class Index;
 
 typedef enum
 {
@@ -69,8 +71,8 @@ typedef enum
 #  define IDX_C_END
 #endif
 
-typedef struct Index *IndexH;
-typedef struct Item *IndexItemH;
+typedef Index *IndexH;
+typedef Item *IndexItemH;
 typedef Tools::PropertySet *IndexPropertyH;
 // typedef struct PropertySetHS *IndexPropertyH;
 

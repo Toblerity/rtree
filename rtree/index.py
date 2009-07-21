@@ -74,15 +74,16 @@ class Index(object):
             p_maxs = maxs(ctypes.c_double(coordinates[3]), ctypes.c_double(coordinates[4]), ctypes.c_double(coordinates[6]))
         
         p_num_results = ctypes.c_uint32(0)
-        items = ctypes.c_void_p(0)
+       
+        items = core.IndexItemH()
         core.rt.Index_Intersects(self.handle, p_mins, p_maxs, self.properties.dimension, ctypes.byref(items), ctypes.byref(p_num_results))
         
-        items = ctypes.cast(items,ctypes.POINTER(ctypes.c_void_p * p_num_results.value))
+        #items = ctypes.cast(items,ctypes.POINTER(ctypes.c_void_p * p_num_results.value))
         results = []
         import pdb;pdb.set_trace()
         for i in range(p_num_results.value):
-            item = Item(handle=items[i])
-            results.append(item)
+            it = Item(handle=items[i])
+            results.append(it)
         print results
         return [0,1]
 
