@@ -153,28 +153,54 @@ SIDX_DLL RTError Index_InsertData(  IndexH index,
 
     Index* idx = static_cast<Index*>(index);
     
+    // Test the data and check for the case when minx == maxx, miny == maxy
+    // and minz == maxz.  In that case, we will insert a SpatialIndex::Point 
+    // instead of a SpatialIndex::Region
+    
+    bool isPoint = false;
+    SpatialIndex::IShape* shape = 0;
+    double const epsilon = std::numeric_limits<double>::epsilon(); 
+    
+    for (uint32_t i = 0; i < nDimension; ++i){
+        double delta = pdMin[i] - pdMax[i];
+        if (!(delta <= epsilon && delta >= -epsilon)) {
+            break;
+        }
+        isPoint = true;
+    }
+    if (isPoint == true) {
+        shape = new SpatialIndex::Point(pdMin, nDimension);
+    } else {
+        shape = new SpatialIndex::Region(pdMin, pdMax, nDimension);
+    }
     try {
         idx->index().insertData(nDataLength, 
                                 pData, 
-                                SpatialIndex::Region(pdMin, pdMax, nDimension), 
+                                *shape, 
                                 id);
+
+        delete shape;
         return RT_None;
+
     } catch (Tools::Exception& e)
     {
         Error_PushError(RT_Failure, 
                         e.what().c_str(), 
                         "Index_DeleteData");
+        delete shape;
         return RT_Failure;
     } catch (std::exception const& e)
     {
         Error_PushError(RT_Failure, 
                         e.what(), 
                         "Index_DeleteData");
+        delete shape;
         return RT_Failure;
     } catch (...) {
         Error_PushError(RT_Failure, 
                         "Unknown Error", 
                         "Index_DeleteData");
+        delete shape;
         return RT_Failure;        
     }
     return RT_None;
