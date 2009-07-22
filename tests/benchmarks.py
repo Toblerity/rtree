@@ -1,3 +1,13 @@
+# Brute Force:
+# 481 hits
+# 29637.96 usec/pass
+# 
+# Memory-based Rtree Intersection:
+# 481 hits
+# 1216.70 usec/pass
+# \Disk-based Rtree Intersection:
+# 481 hits
+# 2617.95 usec/pass
 
 import random
 import timeit
@@ -41,14 +51,14 @@ print count, "points"
 print "Query box: ", bbox
 print ""
 
-# Brute force all points within a 0.1x0.1 box
-s = """
-hits = [p for p in points if p.x >= bbox[0] and p.x <= bbox[2] and p.y >= bbox[1] and p.y <= bbox[3]]
-"""
-t = timeit.Timer(stmt=s, setup='from __main__ import points, bbox')
-print "\nBrute Force:"
-print len([p for p in points if p.x >= bbox[0] and p.x <= bbox[2] and p.y >= bbox[1] and p.y <= bbox[3]]), "hits"
-print "%.2f usec/pass" % (1000000 * t.timeit(number=100)/100)
+# # Brute force all points within a 0.1x0.1 box
+# s = """
+# hits = [p for p in points if p.x >= bbox[0] and p.x <= bbox[2] and p.y >= bbox[1] and p.y <= bbox[3]]
+# """
+# t = timeit.Timer(stmt=s, setup='from __main__ import points, bbox')
+# print "\nBrute Force:"
+# print len([p for p in points if p.x >= bbox[0] and p.x <= bbox[2] and p.y >= bbox[1] and p.y <= bbox[3]]), "hits"
+# print "%.2f usec/pass" % (1000000 * t.timeit(number=100)/100)
 
 # 0.1x0.1 box using intersection
 
@@ -65,6 +75,13 @@ s = """
 hits = [points[id] for id in disk_index.intersection(bbox)]
 """
 t = timeit.Timer(stmt=s, setup='from __main__ import points, disk_index, bbox')
-print "\Disk-based Rtree Intersection:"
+print "\nDisk-based Rtree Intersection:"
 print len([points[id] for id in disk_index.intersection(bbox)]), "hits"
 print "%.2f usec/pass" % (1000000 * t.timeit(number=100)/100)
+
+import os
+try:
+    os.remove('test.dat')
+    os.remove('test.idx')
+except:
+    pass

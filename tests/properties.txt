@@ -212,4 +212,4 @@ Make a simple properties object
     RTreeError: Error in "IndexProperty_GetIndexID": Property IndexIdentifier was empty
     >>> p.index_id = -420
     >>> p.index_id
-    -420
+    -420L

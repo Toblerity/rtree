@@ -1,15 +1,119 @@
+Testing Rtree
+================
+
     >>> from rtree import index
+    >>> from rtree.index import Rtree
+
+Make an instance, index stored in memory
     
     >>> p = index.Property()
+    >>> p.storage = index.RT_Memory
     
     >>> idx = index.Index(properties=p)
     >>> idx
     <rtree.index.Index object at 0x...>
     
+Add 100 largish boxes randomly distributed over the domain
     
     >>> for i, coords in enumerate(boxes15):
     ...     idx.add(i, coords)
     
     >>> hits = [n for n in idx.intersection((0, 0, 60, 60))]
     >>> len(hits)
-    10    
+    10
+    
+    >>> hits
+    [0L, 4L, 16L, 27L, 35L, 40L, 47L, 50L, 76L, 80L]
+
+Insert an object into the index that can be pickled 
+
+    >>> idx.insert(4321, (34.3776829412, 26.7375853734, 49.3776829412, 41.7375853734), obj=42)
+
+Fetch our straggler that contains a pickled object    
+    >>> hits = [n for n in idx.intersection_obj((0, 0, 60, 60))]
+    >>> for i in hits:
+    ...     if i.id == 4321:
+    ...         i.object
+    42
+
+Find the three items nearest to this one
+    >>> hits = [n for n in idx.nearest((0,0,10,10), 3)]
+    >>> len(hits)
+    3
+    >>> hits
+    [76L, 48L, 19L]
+
+Delete index members
+
+    >>> for i, coords in enumerate(boxes15):
+    ...     idx.delete(i, coords)
+
+Delete our straggler too
+    >>> idx.delete(4321, (34.3776829412, 26.7375853734, 49.3776829412, 41.7375853734) )
+
+Check that we have deleted stuff
+
+    >>> hits = 0
+    >>> hits = [n for n in idx.intersection((0, 0, 60, 60))]
+    >>> len(hits)
+    0
+    
+#    >>> assert(idx.valid())
+
+    >>> idx2 = Rtree()
+    >>> idx2
+    <rtree.index.Rtree object at 0x...>
+
+Default page size 4096
+
+    >>> idx3 = Rtree("default")
+    >>> for i, coords in enumerate(boxes15):
+    ...     idx3.add(i, coords)
+    >>> hits = [n for n in idx3.intersection((0, 0, 60, 60))]
+    >>> len(hits)
+    10
+
+Make sure to delete the index or the file is not flushed and it 
+will be invalid
+
+    >>> del idx3
+
+Page size 3
+
+    >>> idx4 = Rtree("pagesize3", pagesize=3)
+    >>> for i, coords in enumerate(boxes15):
+    ...     idx4.add(i, coords)
+    >>> hits = [n for n in idx4.intersection((0, 0, 60, 60))]
+    >>> len(hits)
+    10
+
+Test invalid name
+
+    >>> index = Rtree("bogus/foo")
+    Traceback (most recent call last):
+    ...
+    IOError: Unable to open file 'bogus/foo' for index storage
+
+Load a persisted index
+
+    >>> import shutil
+    >>> _ = shutil.copy("default.dat", "testing.dat")
+    >>> _ = shutil.copy("default.idx", "testing.idx")
+
+    >>> idx = Rtree("testing")
+    >>> hits = [n for n in idx.intersection((0, 0, 60, 60))]
+    >>> len(hits)
+    10
+
+Clean up leftover data
+
+    >>> import os
+    >>> try:
+    ...     os.remove('default.dat')
+    ...     os.remove('default.idx')
+    ...     os.remove('pagesize3.dat')
+    ...     os.remove('pagesize3.idx')
+    ...     os.remove('testing.dat')
+    ...     os.remove('testing.idx')
+    ... except OSError:
+    ...     pass

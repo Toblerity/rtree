@@ -3,6 +3,30 @@ import core
 import ctypes
 import pickle
 
+import os
+import os.path
+
+def dump(obj):
+    import re
+    from binascii import hexlify
+    # helper function to dump memory contents in hex, with a hyphen
+    # between the bytes.
+    h = hexlify(buffer(obj))
+    return h
+#    return re.sub(r"(..)", r"\1-", h)[:-1]
+
+
+RT_Memory = 0
+RT_Disk = 1
+
+RT_Linear = 0
+RT_Quadratic = 1
+RT_Star = 2
+
+RT_RTree = 0
+RT_MVRTree = 1
+RT_TPRTree = 2
+
 class Index(object):
     def __init__(self, filename=None, properties=None, owned = True, pagesize = None):
         if properties:
@@ -20,21 +44,35 @@ class Index(object):
         self.owned = True
     
     def __del__(self):
+        try:
+            self.owned
+        except AttributeError:
+            # we were partially constructed.  We're going to let it leak
+            # in that case
+            return
         if self.owned:
             if self.handle and core:
                 core.rt.Index_Destroy(self.handle)
     
-    def insert(self, id, coordinates, obj = None):
-
+    def get_coordinate_pointers(self, coordinates):
+        try:
+            iter(coordinates)
+        except TypeError:
+            raise TypeError('Bounds must be a sequence')
+            
         mins = ctypes.c_double*self.properties.dimension
         maxs = ctypes.c_double*self.properties.dimension
 
         if self.properties.dimension == 2:
-            if len(coordinates) != 4:
-                raise RTreeError("Coordinates must be in the form minx, miny, maxx, maxy for 2D indexes")
-            
-            p_mins = mins(ctypes.c_double(coordinates[0]), ctypes.c_double(coordinates[1]))
-            p_maxs = maxs(ctypes.c_double(coordinates[2]), ctypes.c_double(coordinates[3]))
+            if len(coordinates) == 4:
+                p_mins = mins(ctypes.c_double(coordinates[0]), ctypes.c_double(coordinates[1]))
+                p_maxs = maxs(ctypes.c_double(coordinates[2]), ctypes.c_double(coordinates[3]))
+            elif len(coordinates) == 2:
+                p_mins = mins(ctypes.c_double(coordinates[0]), ctypes.c_double(coordinates[1]))
+                p_maxs = maxs(ctypes.c_double(coordinates[0]), ctypes.c_double(coordinates[1]))
+            else:
+                raise core.RTreeError("Coordinates must be in the form (minx, miny, maxx, maxy) or (x, y) for 2D indexes")
+
         elif self.properties.dimension == 3:
             if len(coordinates) != 6:
                 raise RTreeError("Coordinates must be in the form minx, miny, maxx, maxy, minz, maxz for 3D indexes")
@@ -42,11 +80,18 @@ class Index(object):
             p_mins = mins(ctypes.c_double(coordinates[0]), ctypes.c_double(coordinates[1]), ctypes.c_double(coordinates[4]))
             p_maxs = maxs(ctypes.c_double(coordinates[3]), ctypes.c_double(coordinates[4]), ctypes.c_double(coordinates[6]))
         
+        return (p_mins, p_maxs)
+    def insert(self, id, coordinates, obj = None):
+
+        p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         if obj:
             pik = pickle.dumps(obj)
             size = len(pik)
-            data = ctypes.create_string_buffer(pik)
-            data.value = pik
+            d = ctypes.create_string_buffer(pik)
+            d.value = pik
+            
+            p = ctypes.pointer(d)
+            data = ctypes.cast(p, ctypes.POINTER(ctypes.c_uint8))
             # data = (ctypes.c_ubyte * size)()
             # for i in range(size):
             #     data[i] = ord(pik[i])
@@ -57,46 +102,141 @@ class Index(object):
     add = insert
     
     def intersection(self, coordinates):
-        mins = ctypes.c_double*self.properties.dimension
-        maxs = ctypes.c_double*self.properties.dimension
-
-        if self.properties.dimension == 2:
-            if len(coordinates) != 4:
-                raise RTreeError("Coordinates must be in the form minx, miny, maxx, maxy for 2D indexes")
-            
-            p_mins = mins(ctypes.c_double(coordinates[0]), ctypes.c_double(coordinates[1]))
-            p_maxs = maxs(ctypes.c_double(coordinates[2]), ctypes.c_double(coordinates[3]))
-        elif self.properties.dimension == 3:
-            if len(coordinates) != 6:
-                raise RTreeError("Coordinates must be in the form minx, miny, maxx, maxy, minz, maxz for 3D indexes")
-            
-            p_mins = mins(ctypes.c_double(coordinates[0]), ctypes.c_double(coordinates[1]), ctypes.c_double(coordinates[4]))
-            p_maxs = maxs(ctypes.c_double(coordinates[3]), ctypes.c_double(coordinates[4]), ctypes.c_double(coordinates[6]))
+        return [i.id for i in self.intersection_obj(coordinates)]
+    
+    def intersection_obj(self, coordinates):
+        
+        p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
         p_num_results = ctypes.c_uint32(0)
-       
-        items = core.IndexItemH()
-        core.rt.Index_Intersects(self.handle, p_mins, p_maxs, self.properties.dimension, ctypes.byref(items), ctypes.byref(p_num_results))
         
-        #items = ctypes.cast(items,ctypes.POINTER(ctypes.c_void_p * p_num_results.value))
+        it = ctypes.pointer(ctypes.c_void_p())
+        
+        core.rt.Index_Intersects(   self.handle, 
+                                    p_mins, 
+                                    p_maxs, 
+                                    self.properties.dimension, 
+                                    ctypes.byref(it), 
+                                    ctypes.byref(p_num_results))
+
+        items = ctypes.cast(it,ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p * p_num_results.value)))
+
         results = []
-        import pdb;pdb.set_trace()
+
         for i in range(p_num_results.value):
             it = Item(handle=items[i])
             results.append(it)
-        print results
-        return [0,1]
+        
+        return results
+
+    def nearest_obj(self, coordinates, num_results):
+        
+        p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
+        
+        
+        it = ctypes.pointer(ctypes.c_void_p())
+        
+        core.rt.Index_NearestNeighbors( self.handle, 
+                                        p_mins, 
+                                        p_maxs, 
+                                        self.properties.dimension, 
+                                        ctypes.byref(it), 
+                                        num_results)
+
+        items = ctypes.cast(it,ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p * num_results)))
+
+        results = []
+
+        for i in range(num_results):
+            it = Item(handle=items[i])
+            results.append(it)
+        
+        return results
+    def nearest(self, coordinates, num_results):
+        return [i.id for i in self.nearest_obj(coordinates, num_results)]
+    
+    def delete(self, id, coordinates):
+        p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
+        core.rt.Index_DeleteData(self.handle, id, p_mins, p_maxs, self.properties.dimension)
+    
+    def valid(self):
+        return core.rt.Index_IsValid(self.handle)
+
+class Rtree(Index):
+    def __init__(self, *args, **kwargs):
+        
+        if args:
+            basename = args[0]
+        else:
+            basename = None
+            
+        self.properties = Property()
+        
+        if basename:
+            self.properties.storage = RT_Disk
+            self.properties.filename = basename
+            
+            # check we can read the file
+            p = os.path.abspath(basename)
+            d = os.path.dirname(p)
+            if not os.access(d, os.W_OK):
+                message = "Unable to open file '%s' for index storage"%basename
+                raise IOError(message)
+            
+        else:
+            self.properties.storage = RT_Memory
+        
+        try:
+            self.properties.pagesize = int(kwargs['pagesize'])
+        except KeyError:
+            pass
+            
+        try:
+            self.properties.overwrite = bool(kwargs['overwrite'])
+        except KeyError:
+            pass
+        
+        
+        self.handle = core.rt.Index_Create(self.properties.handle)
+        self.owned = True
 
 class Item(object):
     def __init__(self, handle=None, owned=True):
         if handle:
             self.handle = handle
+        self.owned = owned
             
     def get_id(self):
         return core.rt.IndexItem_GetID(self.handle)
     id = property(get_id)
-
     
+    def __del__(self):
+        if self.owned and core:
+            return core.rt.IndexItem_Destroy(self.handle)
+
+    def get_data(self):
+        length = ctypes.c_uint64(0)
+        d = ctypes.pointer(ctypes.c_uint8(0))
+        core.rt.IndexItem_GetData(self.handle, ctypes.byref(d), ctypes.byref(length))
+        data = ctypes.cast(d, ctypes.POINTER(ctypes.c_ubyte * length.value))
+        output = []
+        
+        # this is dumb, someone smarter please fix - hobu
+        for i in range(length.value):
+            output.append(chr(data.contents[i]))
+        output = ''.join(output)
+        return output
+    
+    def get_object(self):
+        data = self.get_data()
+        if data:
+            o = pickle.loads(data)
+            return o
+        return None
+    object = property(get_object)
+
+
+
 class Property(object):
     def __init__(self, handle = None, owned=True):
         if handle:

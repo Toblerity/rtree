@@ -77,27 +77,27 @@ SIDX_DLL IndexH Index_Create(IndexPropertyH hProp)
     VALIDATE_POINTER1(hProp, "Index_Create", NULL);   
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
     
-    // try { 
-        return (IndexH) new Index(*prop);    
-    // } catch (Tools::Exception& e)
-    // {
-    //     Error_PushError(RT_Failure, 
-    //                     e.what().c_str(), 
-    //                     "Index_Create");
-    //     return NULL;
-    // } catch (std::exception const& e)
-    // {
-    //     Error_PushError(RT_Failure, 
-    //                     e.what(), 
-    //                     "Index_Create");
-    //     return NULL;
-    // } catch (...) {
-    //     Error_PushError(RT_Failure, 
-    //                     "Unknown Error", 
-    //                     "Index_Create");
-    //     return NULL;        
-    // }
-    // return NULL;
+    try { 
+        return (IndexH) new Index(*prop); 
+    } catch (Tools::Exception& e)
+    {
+        Error_PushError(RT_Failure, 
+                        e.what().c_str(), 
+                        "Index_Create");
+        return NULL;
+    } catch (std::exception const& e)
+    {
+        Error_PushError(RT_Failure, 
+                        e.what(), 
+                        "Index_Create");
+        return NULL;
+    } catch (...) {
+        Error_PushError(RT_Failure, 
+                        "Unknown Error", 
+                        "Index_Create");
+        return NULL;        
+    }
+    return NULL;
 }
 
 SIDX_DLL void Index_Destroy(IndexH index)
@@ -184,7 +184,7 @@ SIDX_DLL RTError Index_Intersects(  IndexH index,
                                     double* pdMin, 
                                     double* pdMax, 
                                     uint32_t nDimension, 
-                                    IndexItemH* items, 
+                                    IndexItemH** items, 
                                     uint32_t* nResults)
 {
     VALIDATE_POINTER1(index, "Index_Intersects", RT_Failure);      
@@ -194,41 +194,44 @@ SIDX_DLL RTError Index_Intersects(  IndexH index,
     try {    
         idx->index().intersectsWithQuery(   SpatialIndex::Region(pdMin, pdMax, nDimension), 
                                             *visitor);
+
+        *items = (Item**) malloc (visitor->GetResultCount() * sizeof(Item*));
         
-        items = (Item**) malloc (visitor->GetResultCount() * sizeof(Item*));
-        
-        std::vector<Item*>& results = visitor->GetResults();
-        
+        std::vector<Item*> results = visitor->GetResults();
+
         // copy the Items into the newly allocated item array
         // we need to make sure to copy the actual Item instead 
         // of just the pointers, as the visitor will nuke them 
         // upon ~
         for (size_t i=0; i < visitor->GetResultCount(); ++i)
         {
-            items[i] = new Item(results[i]->GetID());
-            *items[i] = *results[i];
+            (*items)[i] = new Item(*results[i]);
+
         }
         *nResults = visitor->GetResultCount();
         
         delete visitor;
-        
+
         return RT_None;
     } catch (Tools::Exception& e)
     {
         Error_PushError(RT_Failure, 
                         e.what().c_str(), 
                         "Index_DeleteData");
+        delete visitor;
         return RT_Failure;
     } catch (std::exception const& e)
     {
         Error_PushError(RT_Failure, 
                         e.what(), 
                         "Index_DeleteData");
+        delete visitor;
         return RT_Failure;
     } catch (...) {
         Error_PushError(RT_Failure, 
                         "Unknown Error", 
                         "Index_DeleteData");
+        delete visitor;
         return RT_Failure;        
     }
     return RT_None;
@@ -238,32 +241,31 @@ SIDX_DLL RTError Index_NearestNeighbors(IndexH index,
                                         double* pdMin, 
                                         double* pdMax, 
                                         uint32_t nDimension, 
-                                        IndexItemH* items, 
-                                        uint32_t* nResults)
+                                        IndexItemH** items, 
+                                        uint32_t nResults)
 {
     VALIDATE_POINTER1(index, "Index_NearestNeighbors", RT_Failure);  
     Index* idx = static_cast<Index*>(index);
 
     Visitor* visitor = new Visitor;
     try {    
-        idx->index().nearestNeighborQuery(  *nResults,
+        idx->index().nearestNeighborQuery(  nResults,
                                             SpatialIndex::Region(pdMin, pdMax, nDimension), 
                                             *visitor);
         
-        items = (Item**) malloc (visitor->GetResultCount() * sizeof(Item*));
+        *items = (Item**) malloc (visitor->GetResultCount() * sizeof(Item*));
         
-        std::vector<Item*>& results = visitor->GetResults();
-        
+        std::vector<Item*> results = visitor->GetResults();
+
         // copy the Items into the newly allocated item array
         // we need to make sure to copy the actual Item instead 
         // of just the pointers, as the visitor will nuke them 
         // upon ~
         for (size_t i=0; i < visitor->GetResultCount(); ++i)
         {
-            items[i] = new Item(results[i]->GetID());
-            *items[i] = *results[i];
+            (*items)[i] = new Item(*results[i]);
+
         }
-        *nResults = visitor->GetResultCount();
         
         delete visitor;
         
@@ -273,17 +275,20 @@ SIDX_DLL RTError Index_NearestNeighbors(IndexH index,
         Error_PushError(RT_Failure, 
                         e.what().c_str(), 
                         "Index_DeleteData");
+        delete visitor;
         return RT_Failure;
     } catch (std::exception const& e)
     {
         Error_PushError(RT_Failure, 
                         e.what(), 
                         "Index_DeleteData");
+        delete visitor;
         return RT_Failure;
     } catch (...) {
         Error_PushError(RT_Failure, 
                         "Unknown Error", 
                         "Index_DeleteData");
+        delete visitor;
         return RT_Failure;        
     }
     return RT_None;
@@ -314,7 +319,7 @@ SIDX_DLL void IndexItem_Destroy(IndexItemH item)
 }
 
 SIDX_DLL RTError IndexItem_GetData( IndexItemH item,
-                                    uint8_t* data,
+                                    uint8_t** data,
                                     uint64_t* length)
 {
     VALIDATE_POINTER1(item, "IndexItem_GetData", RT_Failure);  
@@ -326,7 +331,7 @@ SIDX_DLL RTError IndexItem_GetData( IndexItemH item,
 SIDX_DLL uint64_t IndexItem_GetID(IndexItemH item) 
 {
     VALIDATE_POINTER1(item, "IndexItem_GetID",0); 
-    Item* it = static_cast<Item*>(item);
+    Item* it = dynamic_cast<Item*>(item);
     uint64_t value = it->GetID();
     return value;
 }
@@ -357,8 +362,8 @@ SIDX_DLL RTError IndexProperty_SetIndexType(IndexPropertyH hProp,
             throw std::runtime_error("Inputted value is not a valid index type");
         }
         Tools::Variant var;
-        var.m_varType = Tools::VT_LONG;
-        var.m_val.lVal = value;
+        var.m_varType = Tools::VT_ULONG;
+        var.m_val.ulVal = value;
         prop->setProperty("IndexType", var);
 
 
@@ -393,13 +398,13 @@ SIDX_DLL RTIndexType IndexProperty_GetIndexType(IndexPropertyH hProp)
 
     if (var.m_varType != Tools::VT_EMPTY)
     {
-        if (var.m_varType != Tools::VT_LONG) {
+        if (var.m_varType != Tools::VT_ULONG) {
             Error_PushError(RT_Failure, 
-                            "Property IndexType must be Tools::VT_LONG", 
+                            "Property IndexType must be Tools::VT_ULONG", 
                             "IndexProperty_GetIndexType");
             return RT_InvalidIndexType;
         }
-        return (RTIndexType) var.m_val.lVal;
+        return (RTIndexType) var.m_val.ulVal;
     }
 
     Error_PushError(RT_Failure, 
@@ -1183,7 +1188,7 @@ SIDX_DLL RTError IndexProperty_SetEnsureTightMBRs(  IndexPropertyH hProp,
         }
         Tools::Variant var;
         var.m_varType = Tools::VT_BOOL;
-        var.m_val.bVal = value;
+        var.m_val.blVal = value;
         prop->setProperty("EnsureTightMBRs", var);
     } catch (Tools::Exception& e)
     {
@@ -1223,7 +1228,7 @@ SIDX_DLL uint32_t IndexProperty_GetEnsureTightMBRs(IndexPropertyH hProp)
             return 0;
         }
         
-        return var.m_val.bVal;
+        return var.m_val.blVal;
     }
     
     // return nothing for an error
@@ -1249,7 +1254,7 @@ SIDX_DLL RTError IndexProperty_SetWriteThrough(IndexPropertyH hProp,
         }
         Tools::Variant var;
         var.m_varType = Tools::VT_BOOL;
-        var.m_val.bVal = value;
+        var.m_val.blVal = value;
         prop->setProperty("WriteThrough", var);
     } catch (Tools::Exception& e)
     {
@@ -1289,7 +1294,7 @@ SIDX_DLL uint32_t IndexProperty_GetWriteThrough(IndexPropertyH hProp)
             return 0;
         }
         
-        return var.m_val.bVal;
+        return var.m_val.blVal;
     }
     
     // return nothing for an error
@@ -1315,7 +1320,7 @@ SIDX_DLL RTError IndexProperty_SetOverwrite(IndexPropertyH hProp,
         }
         Tools::Variant var;
         var.m_varType = Tools::VT_BOOL;
-        var.m_val.bVal = value;
+        var.m_val.blVal = value;
         prop->setProperty("Overwrite", var);
     } catch (Tools::Exception& e)
     {
@@ -1355,7 +1360,7 @@ SIDX_DLL uint32_t IndexProperty_GetOverwrite(IndexPropertyH hProp)
             return 0;
         }
         
-        return var.m_val.bVal;
+        return var.m_val.blVal;
     }
     
     // return nothing for an error
@@ -1811,7 +1816,7 @@ SIDX_DLL RTError IndexProperty_SetIndexID(  IndexPropertyH hProp,
     {
         Tools::Variant var;
         var.m_varType = Tools::VT_LONGLONG;
-        var.m_val.ulVal = value;
+        var.m_val.llVal = value;
         prop->setProperty("IndexIdentifier", var);
     } catch (Tools::Exception& e)
     {

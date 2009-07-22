@@ -17,4 +17,4 @@ Clean up leftover data
   >>> k = Rtree('/tmp/rtree_test')
   Traceback (most recent call last):
   ...
-  TypeError: IllegalStateException: SpatialIndex::DiskStorageManager: Failed reading pageSize.
+  RTreeError: Error in "Index_Create": Spatial Index Error: IllegalStateException: SpatialIndex::DiskStorageManager: Failed reading pageSize.

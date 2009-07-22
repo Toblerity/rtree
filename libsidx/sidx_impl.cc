@@ -56,15 +56,15 @@ void Item::SetData(const uint8_t* data, uint64_t length)
     
     m_data = new uint8_t[length];
     
-    std::cout << "allocating " << m_length << " for Item::SetData" << std::endl;
-    if (length > 0 && m_data != 0)
+    if (length > 0 && m_data != 0) {
         memcpy(m_data, data, length);
+    }
 }
 
-void Item::GetData(uint8_t* data, uint64_t *length) 
+void Item::GetData(uint8_t** data, uint64_t *length) 
 {
     *length = m_length;
-    data = m_data;
+    *data = m_data;
 }
 
 const SpatialIndex::Region* Item::GetBounds() const 
@@ -92,7 +92,6 @@ Visitor::~Visitor()
 
 void Visitor::visitNode(const SpatialIndex::INode& n)
 {
-            std::cout << "visitNode" << std::endl;
     if (n.isLeaf()) m_leafIO++;
     else m_indexIO++;
 }
@@ -103,7 +102,7 @@ void Visitor::visitData(const SpatialIndex::IData& d)
     d.getShape(&pS);
     SpatialIndex::Region *r = new SpatialIndex::Region();
     pS->getMBR(*r);
-    std::cout <<"found shape: " << *r << " dimension: " <<pS->getDimension() << std::endl;
+    // std::cout <<"found shape: " << *r << " dimension: " <<pS->getDimension() << std::endl;
 
 
     // data should be an array of characters representing a Region as a string.
@@ -122,7 +121,6 @@ void Visitor::visitData(const SpatialIndex::IData& d)
     
     nResults += 1;
     
-    std::cout << "pushing back item" << std::endl;
     m_vector.push_back(item);
 }
 
@@ -221,7 +219,7 @@ Index::Index(const Tools::PropertySet& poProperties)
 
 Index::~Index() 
 {
-    std::cout << "~Index called" << std::endl;
+    // std::cout << "~Index called" << std::endl;
     
     if (m_rtree != 0)
         delete m_rtree;
@@ -275,7 +273,7 @@ SpatialIndex::IStorageManager* Index::CreateStorage()
 {
     using namespace SpatialIndex::StorageManager;
     
-    std::cout << "index type:" << GetIndexType() << std::endl;
+    // std::cout << "index type:" << GetIndexType() << std::endl;
     SpatialIndex::IStorageManager* storage = 0;
     std::string filename("");
     
@@ -293,7 +291,7 @@ SpatialIndex::IStorageManager* Index::CreateStorage()
     if (GetIndexStorage() == RT_Disk) {
 
         if (ExternalIndexExists(filename) && !filename.empty()) {
-            std::cout << "loading existing DiskStorage " << filename << std::endl;
+            // std::cout << "loading existing DiskStorage " << filename << std::endl;
             try{
                 storage = loadDiskStorageManager(filename);
                 m_idxExists = true;
@@ -305,7 +303,7 @@ SpatialIndex::IStorageManager* Index::CreateStorage()
             } 
         } else if (!filename.empty()){
             try{
-                std::cout << "creating new DiskStorage " << filename << std::endl;            
+                // std::cout << "creating new DiskStorage " << filename << std::endl;            
                 storage = returnDiskStorageManager(m_properties);
                 m_idxExists = false;
                 return storage;
@@ -315,22 +313,14 @@ SpatialIndex::IStorageManager* Index::CreateStorage()
                 throw std::runtime_error(os.str());
             }         
         } else if (filename.empty()) {
-            try{
-                SetIndexStorage(RT_Memory);
-            std::cout << "creating new createNewVLRStorageManager because filename was empty" << filename << std::endl;            
-            storage = returnMemoryStorageManager(m_properties);
-            m_idxExists = false;
-            return storage;
-            } catch (Tools::Exception& e) {
                 std::ostringstream os;
-                os << "Spatial Index Error: " << e.what();
+                os << "Spatial Index Error: filename was empty.  Set IndexStorageType to RT_Memory";
                 throw std::runtime_error(os.str());
-            }                
         }
     } else if (GetIndexStorage() == RT_Memory) {
 
         try{
-            std::cout << "creating new createNewVLRStorageManager " << filename << std::endl;            
+            // std::cout << "creating new createNewVLRStorageManager " << filename << std::endl;            
             storage = returnMemoryStorageManager(m_properties);
             m_idxExists = false;
             return storage;
@@ -350,10 +340,23 @@ bool Index::ExternalIndexExists(std::string& filename)
 
     // if we have already checked, we're done.
     if (m_idxExists == true) return true;
+
+    std::string dat("dat");
     
+    Tools::Variant var;
+    var = m_properties.getProperty("FileNameDat");
+
+    if (var.m_varType != Tools::VT_EMPTY)
+    {
+        if (var.m_varType != Tools::VT_PCHAR)
+            throw std::runtime_error("Index::ExternalIndexExists: Property FileNameDat must be Tools::VT_PCHAR");
+        
+        dat = std::string(var.m_val.pcVal);
+    }
+        
     struct stat stats;
     std::ostringstream os;
-    os << filename << ".dat";
+    os << filename << "." << dat;
 
     std::string indexname = os.str();
     
@@ -373,7 +376,6 @@ void Index::Initialize()
     m_buffer = CreateIndexBuffer(*m_storage);
 
     if (m_idxExists == true) {
-        std::cout << "loading existing index from file " << std::endl;
         m_rtree = LoadIndex();
     }
     else

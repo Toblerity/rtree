@@ -5,9 +5,6 @@ except ImportError:
     from pkgutil import extend_path
     __path__ = extend_path(__path__, __name__)
 
-from _rtree import Rtree
+from index import Rtree
 
 from core import rt
-# import indexprop
-# from indexprop import *
-

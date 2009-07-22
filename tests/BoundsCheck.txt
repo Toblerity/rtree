@@ -11,12 +11,12 @@ Adding with bogus bounds
   >>> index.add(1, (0.0, 0.0, -1.0, 1.0))
   Traceback (most recent call last):
   ...
-  ValueError: Bounding box is invalid: maxx < miny or maxy < miny
+  RTreeError: LASError in "Index_InsertData": IllegalArgumentException: Region::initialize: Low point has larger coordinates than High point.
 
   >>> index.intersection((0.0, 0.0, -1.0, 1.0))
   Traceback (most recent call last):
   ...
-  ValueError: Bounding box is invalid: maxx < miny or maxy < miny
+  RTreeError: LASError in "Index_Intersects": IllegalArgumentException: Region::initialize: Low point has larger coordinates than High point.
 
 Adding with invalid bounds argument should raise an exception
 

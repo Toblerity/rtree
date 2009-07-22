@@ -10,9 +10,9 @@ class RTreeError(Exception):
     "RTree exception, indicates a RTree-related error."
     pass
 
-class IndexItem(ctypes.Structure):
-    pass
-IndexItemH = ctypes.POINTER(IndexItem)
+# class IndexItem(ctypes.Structure):
+#     pass
+# IndexItemH = ctypes.POINTER(IndexItem)
 
 def check_return(result, func, cargs):
     "Error checking for Error calls"
@@ -151,7 +151,7 @@ rt.Index_Intersects.argtypes = [ctypes.c_void_p,
                                 ctypes.POINTER(ctypes.c_double), 
                                 ctypes.POINTER(ctypes.c_double), 
                                 ctypes.c_uint32, 
-                                ctypes.POINTER(IndexItemH),
+                                ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)),
                                 ctypes.POINTER(ctypes.c_uint32)]
 rt.Index_Intersects.restype = ctypes.c_int
 rt.Index_Intersects.errcheck = check_return
@@ -160,8 +160,8 @@ rt.Index_NearestNeighbors.argtypes = [  ctypes.c_void_p,
                                         ctypes.POINTER(ctypes.c_double), 
                                         ctypes.POINTER(ctypes.c_double), 
                                         ctypes.c_uint32, 
-                                        ctypes.POINTER(ctypes.c_void_p),
-                                        ctypes.POINTER(ctypes.c_uint32)]
+                                        ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)),
+                                        ctypes.c_uint32]
 rt.Index_NearestNeighbors.restype = ctypes.c_int
 rt.Index_NearestNeighbors.errcheck = check_return
 
@@ -169,7 +169,9 @@ rt.IndexItem_Destroy.argtypes = [ctypes.c_void_p]
 rt.IndexItem_Destroy.restype = None
 rt.IndexItem_Destroy.errcheck = check_void_done
 
-rt.IndexItem_GetData.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_ubyte), ctypes.POINTER(ctypes.c_uint32)]
+rt.IndexItem_GetData.argtypes = [   ctypes.c_void_p, 
+                                    ctypes.POINTER(ctypes.POINTER(ctypes.c_ubyte)), 
+                                    ctypes.POINTER(ctypes.c_uint64)]
 rt.IndexItem_GetData.restype = ctypes.c_int
 rt.IndexItem_GetData.errcheck = check_value
 
@@ -370,5 +372,5 @@ rt.IndexProperty_SetIndexID.restype = ctypes.c_int
 rt.IndexProperty_SetIndexID.errcheck = check_return
 
 rt.IndexProperty_GetIndexID.argtypes = [ctypes.c_void_p]
-rt.IndexProperty_GetIndexID.restype = ctypes.c_int
+rt.IndexProperty_GetIndexID.restype = ctypes.c_int64
 rt.IndexProperty_GetIndexID.errcheck = check_value

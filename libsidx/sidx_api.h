@@ -51,20 +51,20 @@ SIDX_DLL RTError Index_Intersects(  IndexH index,
                                     double* pdMin, 
                                     double* pdMax, 
                                     uint32_t nDimension, 
-                                    IndexItemH* items, 
+                                    IndexItemH** items, 
                                     uint32_t* nResults);
 
 SIDX_DLL RTError Index_NearestNeighbors(IndexH index, 
                                         double* pdMin, 
                                         double* pdMax, 
                                         uint32_t nDimension, 
-                                        IndexItemH* items, 
-                                        uint32_t* nResults);
+                                        IndexItemH** items, 
+                                        uint32_t nResults);
 
 SIDX_DLL void IndexItem_Destroy(IndexItemH item);
 SIDX_DLL uint64_t IndexItem_GetID(IndexItemH item);
 
-SIDX_DLL RTError IndexItem_GetData(IndexItemH item, uint8_t* data, uint32_t* length);
+SIDX_DLL RTError IndexItem_GetData(IndexItemH item, uint8_t** data, uint64_t* length);
 
 SIDX_DLL IndexPropertyH IndexProperty_Create();
 SIDX_DLL void IndexProperty_Destroy(IndexPropertyH hProp);
@@ -138,7 +138,6 @@ SIDX_DLL char* IndexProperty_GetFileNameExtensionDat(IndexPropertyH iprop);
 SIDX_DLL RTError IndexProperty_SetFileNameExtensionIdx(IndexPropertyH iprop, const char* value);
 SIDX_DLL char* IndexProperty_GetFileNameExtensionIdx(IndexPropertyH iprop);
 
-IndexIdentifier
 SIDX_DLL RTError IndexProperty_SetIndexID(IndexPropertyH iprop, int64_t value);
 SIDX_DLL int64_t IndexProperty_GetIndexID(IndexPropertyH iprop);
 
