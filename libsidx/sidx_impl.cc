@@ -77,11 +77,11 @@ void Item::SetBounds( const SpatialIndex::Region* b)
     m_bounds = new SpatialIndex::Region(*b);
 }
 
-Visitor::Visitor(): nResults(0)
+ObjVisitor::ObjVisitor(): nResults(0)
 {
 }
 
-Visitor::~Visitor()
+ObjVisitor::~ObjVisitor()
 {
     std::vector<Item*>::iterator it;
     for (it = m_vector.begin(); it != m_vector.end(); it++) {
@@ -90,18 +90,18 @@ Visitor::~Visitor()
 
 }
 
-void Visitor::visitNode(const SpatialIndex::INode& n)
+void ObjVisitor::visitNode(const SpatialIndex::INode& n)
 {
     if (n.isLeaf()) m_leafIO++;
     else m_indexIO++;
 }
 
-void Visitor::visitData(const SpatialIndex::IData& d)
+void ObjVisitor::visitData(const SpatialIndex::IData& d)
 {
-    SpatialIndex::IShape* pS;
-    d.getShape(&pS);
-    SpatialIndex::Region *r = new SpatialIndex::Region();
-    pS->getMBR(*r);
+    // SpatialIndex::IShape* pS;
+    // d.getShape(&pS);
+    // SpatialIndex::Region *r = new SpatialIndex::Region();
+    // pS->getMBR(*r);
     // std::cout <<"found shape: " << *r << " dimension: " <<pS->getDimension() << std::endl;
 
 
@@ -112,11 +112,11 @@ void Visitor::visitData(const SpatialIndex::IData& d)
 
     Item* item = new Item(d.getIdentifier());
     item->SetData(data, length);
-    item->SetBounds(r);
+    // item->SetBounds(r);
 
 
-    delete pS;
-    delete r;
+    // delete pS;
+    // delete r;
     delete[] data;
     
     nResults += 1;
@@ -124,14 +124,53 @@ void Visitor::visitData(const SpatialIndex::IData& d)
     m_vector.push_back(item);
 }
 
-void Visitor::visitData(std::vector<const SpatialIndex::IData*>& v)
+void ObjVisitor::visitData(std::vector<const SpatialIndex::IData*>& v)
 {
-    std::cout << v[0]->getIdentifier() << " " << v[1]->getIdentifier() << std::endl;
+    // std::cout << v[0]->getIdentifier() << " " << v[1]->getIdentifier() << std::endl;
 }
 
 
+IdVisitor::IdVisitor(): nResults(0)
+{
+}
 
+IdVisitor::~IdVisitor()
+{
 
+}
+
+void IdVisitor::visitNode(const SpatialIndex::INode& n)
+{
+
+}
+
+void IdVisitor::visitData(const SpatialIndex::IData& d)
+{
+    nResults += 1;
+    
+    m_vector.push_back(d.getIdentifier());
+}
+
+void IdVisitor::visitData(std::vector<const SpatialIndex::IData*>& v)
+{
+}
+
+BoundsQuery::BoundsQuery() 
+{
+    m_bounds = new SpatialIndex::Region;
+}
+
+void BoundsQuery::getNextEntry( const SpatialIndex::IEntry& entry, 
+                                SpatialIndex::id_type& nextEntry, 
+                                bool& hasNext) 
+{
+    SpatialIndex::IShape* ps;
+    entry.getShape(&ps);
+    ps->getMBR(*m_bounds);
+    delete ps;
+        
+    hasNext = false;
+}
 Error::Error(int code, std::string const& message, std::string const& method) :
     m_code(code),
     m_message(message),

@@ -11,13 +11,13 @@ Adding with bogus bounds
   >>> index.add(1, (0.0, 0.0, -1.0, 1.0))
   Traceback (most recent call last):
   ...
-  RTreeError: LASError in "Index_InsertData": IllegalArgumentException: Region::initialize: Low point has larger coordinates than High point.
-
+  RTreeError: Coordinates must not have minimums more than maximums
+  
   >>> index.intersection((0.0, 0.0, -1.0, 1.0))
   Traceback (most recent call last):
   ...
-  RTreeError: LASError in "Index_Intersects": IllegalArgumentException: Region::initialize: Low point has larger coordinates than High point.
-
+  RTreeError: Coordinates must not have minimums more than maximums
+  
 Adding with invalid bounds argument should raise an exception
 
   >>> index.add(1, 1)

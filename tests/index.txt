@@ -7,7 +7,6 @@ Testing Rtree
 Make an instance, index stored in memory
     
     >>> p = index.Property()
-    >>> p.storage = index.RT_Memory
     
     >>> idx = index.Index(properties=p)
     >>> idx
@@ -38,10 +37,13 @@ Fetch our straggler that contains a pickled object
 
 Find the three items nearest to this one
     >>> hits = [n for n in idx.nearest((0,0,10,10), 3)]
-    >>> len(hits)
-    3
     >>> hits
     [76L, 48L, 19L]
+    >>> len(hits)
+    3
+    
+    >>> idx.bounds()
+    [-186.673789279, 184.76138755599999, -96.717721818399994, 96.604369977800005]
 
 Delete index members
 
@@ -60,9 +62,48 @@ Check that we have deleted stuff
     
 #    >>> assert(idx.valid())
 
+Check that nearest returns *all* of the items that are nearby
     >>> idx2 = Rtree()
     >>> idx2
     <rtree.index.Rtree object at 0x...>
+
+    >>> locs = [(14, 10, 14, 10), 
+    ...         (16, 10, 16, 10)]
+    
+    >>> for i, (minx, miny, maxx, maxy) in enumerate(locs):
+    ...        idx2.add(i, (minx, miny, maxx, maxy))
+
+    >>> sorted(idx2.nearest((15, 10, 15, 10), 1))
+    [0L, 1L]
+
+
+Check that nearest returns *all* of the items that are nearby (with objects)
+    >>> idx2 = Rtree()
+    >>> idx2
+    <rtree.index.Rtree object at 0x...>
+
+    >>> locs = [(14, 10, 14, 10), 
+    ...         (16, 10, 16, 10)]
+    
+    >>> for i, (minx, miny, maxx, maxy) in enumerate(locs):
+    ...        idx2.add(i, (minx, miny, maxx, maxy), obj=42)
+
+    >>> sorted([i.id for i in idx2.nearest_obj((15, 10, 15, 10), 1)])
+    [0L, 1L]
+
+
+
+    >>> idx2 = Rtree()
+    >>> idx2
+    <rtree.index.Rtree object at 0x...>
+            
+    >>> locs = [(2, 4), (6, 8), (10, 12), (11, 13), (15, 17), (13, 20)]
+    
+    >>> for i, (start, stop) in enumerate(locs):
+    ...        idx2.add(i, (start, stop))
+    
+    >>> sorted(idx2.nearest((13, 0, 20, 2), 1))
+    [1L]
 
 Default page size 4096
 
@@ -105,6 +146,19 @@ Load a persisted index
     >>> len(hits)
     10
 
+Make a 3D index
+    >>> p = index.Property()
+    >>> p.dimension = 3
+    
+    >>> idx = index.Index(properties=p)
+    >>> idx
+    <rtree.index.Index object at 0x...>
+    
+    >>> idx.insert(1, (0, 0, 60, 60, 23.0, 42.0))
+    
+    >>> idx.intersection( (-1, -1, 62, 62, 22, 43))
+    [1L]
+    
 Clean up leftover data
 
     >>> import os

@@ -3,6 +3,7 @@
 #include <vector>
 #include <stdexcept>
 #include <sstream>
+#include <cstring>
 
 #ifdef _MSC_VER
 #include "SpatialIndex.h"
@@ -40,7 +41,7 @@ public:
     void SetBounds(const SpatialIndex::Region* );
 };
 
-class Visitor : public SpatialIndex::IVisitor
+class ObjVisitor : public SpatialIndex::IVisitor
 {
 private:
     size_t m_indexIO;
@@ -50,8 +51,8 @@ private:
 
 public:
 
-    Visitor();
-    ~Visitor();
+    ObjVisitor();
+    ~ObjVisitor();
 
     uint32_t GetResultCount() const { return nResults; }
     std::vector<Item*>& GetResults()  { return m_vector; }
@@ -59,6 +60,43 @@ public:
     void visitNode(const SpatialIndex::INode& n);
     void visitData(const SpatialIndex::IData& d);
     void visitData(std::vector<const SpatialIndex::IData*>& v);
+};
+
+class IdVisitor : public SpatialIndex::IVisitor
+{
+private:
+    std::vector<uint64_t> m_vector;
+    uint32_t nResults;
+
+public:
+
+    IdVisitor();
+    ~IdVisitor();
+
+    uint32_t GetResultCount() const { return nResults; }
+    std::vector<uint64_t>& GetResults()  { return m_vector; }
+    
+    void visitNode(const SpatialIndex::INode& n);
+    void visitData(const SpatialIndex::IData& d);
+    void visitData(std::vector<const SpatialIndex::IData*>& v);
+};
+
+
+
+class BoundsQuery : public SpatialIndex::IQueryStrategy
+{
+private:
+    SpatialIndex::Region* m_bounds;
+    
+public:
+
+    BoundsQuery();
+    ~BoundsQuery() { if (m_bounds !=0) delete m_bounds;}
+    void getNextEntry(  const SpatialIndex::IEntry& entry, 
+                        SpatialIndex::id_type& nextEntry, 
+                        bool& hasNext);
+    
+    SpatialIndex::Region* GetBounds() const {return m_bounds; }
 };
 
 class Error

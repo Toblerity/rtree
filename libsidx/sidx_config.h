@@ -30,6 +30,13 @@
 class Item;
 class Index;
 
+// struct IndexResult {
+//     uint64_t id;
+//     uint8_t* data;
+//     uint32_t length;
+//     
+// };
+
 typedef enum
 {
    RT_None = 0,

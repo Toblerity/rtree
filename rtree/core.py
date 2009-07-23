@@ -143,27 +143,60 @@ rt.Index_InsertData.argtypes = [ctypes.c_void_p,
 rt.Index_InsertData.restype = ctypes.c_int
 rt.Index_InsertData.errcheck = check_return
 
+rt.Index_GetBounds.argtypes = [ ctypes.c_void_p,
+                                ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+                                ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+                                ctypes.POINTER(ctypes.c_uint32)]
+rt.Index_GetBounds.restype = ctypes.c_int
+rt.Index_GetBounds.errcheck = check_value
+
 rt.Index_IsValid.argtypes = [ctypes.c_void_p]
 rt.Index_IsValid.restype = ctypes.c_int
 rt.Index_IsValid.errcheck = check_value
 
-rt.Index_Intersects.argtypes = [ctypes.c_void_p,
-                                ctypes.POINTER(ctypes.c_double), 
-                                ctypes.POINTER(ctypes.c_double), 
-                                ctypes.c_uint32, 
-                                ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)),
-                                ctypes.POINTER(ctypes.c_uint32)]
-rt.Index_Intersects.restype = ctypes.c_int
-rt.Index_Intersects.errcheck = check_return
+rt.Index_Intersects_obj.argtypes = [ctypes.c_void_p,
+                                    ctypes.POINTER(ctypes.c_double), 
+                                    ctypes.POINTER(ctypes.c_double), 
+                                    ctypes.c_uint32, 
+                                    ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)),
+                                    ctypes.POINTER(ctypes.c_uint32)]
+rt.Index_Intersects_obj.restype = ctypes.c_int
+rt.Index_Intersects_obj.errcheck = check_return
 
-rt.Index_NearestNeighbors.argtypes = [  ctypes.c_void_p,
-                                        ctypes.POINTER(ctypes.c_double), 
-                                        ctypes.POINTER(ctypes.c_double), 
-                                        ctypes.c_uint32, 
-                                        ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)),
-                                        ctypes.c_uint32]
-rt.Index_NearestNeighbors.restype = ctypes.c_int
-rt.Index_NearestNeighbors.errcheck = check_return
+rt.Index_Intersects_id.argtypes = [ctypes.c_void_p,
+                                    ctypes.POINTER(ctypes.c_double), 
+                                    ctypes.POINTER(ctypes.c_double), 
+                                    ctypes.c_uint32, 
+                                    ctypes.POINTER(ctypes.POINTER(ctypes.c_uint64)),
+                                    ctypes.POINTER(ctypes.c_uint32)]
+rt.Index_Intersects_id.restype = ctypes.c_int
+rt.Index_Intersects_id.errcheck = check_return
+
+rt.Index_NearestNeighbors_obj.argtypes = [  ctypes.c_void_p,
+                                            ctypes.POINTER(ctypes.c_double), 
+                                            ctypes.POINTER(ctypes.c_double), 
+                                            ctypes.c_uint32, 
+                                            ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)),
+                                            ctypes.POINTER(ctypes.c_uint32)]
+rt.Index_NearestNeighbors_obj.restype = ctypes.c_int
+rt.Index_NearestNeighbors_obj.errcheck = check_return
+
+rt.Index_NearestNeighbors_id.argtypes = [  ctypes.c_void_p,
+                                            ctypes.POINTER(ctypes.c_double), 
+                                            ctypes.POINTER(ctypes.c_double), 
+                                            ctypes.c_uint32, 
+                                            ctypes.POINTER(ctypes.POINTER(ctypes.c_uint64)),
+                                            ctypes.POINTER(ctypes.c_uint32)]
+rt.Index_NearestNeighbors_id.restype = ctypes.c_int
+rt.Index_NearestNeighbors_id.errcheck = check_return
+
+rt.Index_DestroyObjResults.argtypes = [ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)), ctypes.c_uint32]
+rt.Index_DestroyObjResults.restype = None
+rt.Index_DestroyObjResults.errcheck = check_void_done
+
+rt.Index_Free.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
+rt.Index_Free.restype = None
+rt.Index_Free.errcheck = check_void_done
 
 rt.IndexItem_Destroy.argtypes = [ctypes.c_void_p]
 rt.IndexItem_Destroy.restype = None

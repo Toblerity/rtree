@@ -47,19 +47,41 @@ SIDX_DLL RTError Index_InsertData(  IndexH index,
                             
 SIDX_DLL uint32_t Index_IsValid(IndexH index);
 
-SIDX_DLL RTError Index_Intersects(  IndexH index, 
-                                    double* pdMin, 
-                                    double* pdMax, 
-                                    uint32_t nDimension, 
-                                    IndexItemH** items, 
-                                    uint32_t* nResults);
-
-SIDX_DLL RTError Index_NearestNeighbors(IndexH index, 
+SIDX_DLL RTError Index_Intersects_obj(  IndexH index, 
                                         double* pdMin, 
                                         double* pdMax, 
                                         uint32_t nDimension, 
                                         IndexItemH** items, 
-                                        uint32_t nResults);
+                                        uint32_t* nResults);
+
+SIDX_DLL RTError Index_Intersects_id(   IndexH index, 
+                                        double* pdMin, 
+                                        double* pdMax, 
+                                        uint32_t nDimension, 
+                                        uint64_t** items, 
+                                        uint32_t* nResults);
+                                        
+SIDX_DLL RTError Index_NearestNeighbors_obj(IndexH index, 
+                                            double* pdMin, 
+                                            double* pdMax, 
+                                            uint32_t nDimension, 
+                                            IndexItemH** items, 
+                                            uint32_t* nResults);
+
+SIDX_DLL RTError Index_NearestNeighbors_id( IndexH index, 
+                                            double* pdMin, 
+                                            double* pdMax, 
+                                            uint32_t nDimension, 
+                                            uint64_t** items, 
+                                            uint32_t* nResults);
+
+SIDX_DLL RTError Index_GetBounds(   IndexH index,
+                                    double** ppdMin,
+                                    double** ppdMax,
+                                    uint32_t* nDimension);
+
+SIDX_DLL void Index_DestroyObjResults(IndexItemH* results, uint32_t nResults);
+SIDX_DLL void Index_Free(void* object);
 
 SIDX_DLL void IndexItem_Destroy(IndexItemH item);
 SIDX_DLL uint64_t IndexItem_GetID(IndexItemH item);
