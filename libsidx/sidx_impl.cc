@@ -1,17 +1,19 @@
 #include "sidx_impl.hpp"
 
-Item::Item(uint64_t id)
+Item::Item( uint64_t id): 
+            m_data(0), 
+            m_bounds(0), 
+            m_length(0)
 {
     m_id = id;
-    m_data = 0;
-    m_length = 0;
-    m_bounds = 0;
 }
 
 Item::~Item()
 {
     if (m_data != 0)
         delete m_data;
+    if (m_bounds != 0)
+        delete m_bounds;
 }
 
 Item::Item(Item const& other) : m_id(other.m_id), 
@@ -23,8 +25,11 @@ Item::Item(Item const& other) : m_id(other.m_id),
         p = std::memcpy(m_data, other.m_data, m_length);
     } else
         m_data = 0;
-    if (other.m_bounds != 0)
+
+    if (other.m_bounds != 0) 
         m_bounds = other.m_bounds->clone();
+    else 
+        m_bounds = 0;
     
 }
 
@@ -36,13 +41,17 @@ Item& Item::operator=(Item const& rhs)
         void *p = 0;
         m_id = rhs.m_id;
         m_length = rhs.m_length;
+
         if (m_length > 0) {
             m_data = new uint8_t[m_length];
             p = std::memcpy(m_data, rhs.m_data, m_length);
         } else
             m_data = 0;
+            
         if (rhs.m_bounds != 0)
             m_bounds = rhs.m_bounds->clone();
+        else 
+            m_bounds = 0;
     }
     return *this;
 }
@@ -69,7 +78,10 @@ void Item::GetData(uint8_t** data, uint64_t *length)
 
 const SpatialIndex::Region* Item::GetBounds() const 
 {
-    return m_bounds;
+    if (m_bounds == 0) 
+        return 0;
+    else
+        return m_bounds;
 }
 
 void Item::SetBounds( const SpatialIndex::Region* b)
@@ -98,10 +110,10 @@ void ObjVisitor::visitNode(const SpatialIndex::INode& n)
 
 void ObjVisitor::visitData(const SpatialIndex::IData& d)
 {
-    // SpatialIndex::IShape* pS;
-    // d.getShape(&pS);
-    // SpatialIndex::Region *r = new SpatialIndex::Region();
-    // pS->getMBR(*r);
+    SpatialIndex::IShape* pS;
+    d.getShape(&pS);
+    SpatialIndex::Region *r = new SpatialIndex::Region();
+    pS->getMBR(*r);
     // std::cout <<"found shape: " << *r << " dimension: " <<pS->getDimension() << std::endl;
 
 
@@ -112,11 +124,11 @@ void ObjVisitor::visitData(const SpatialIndex::IData& d)
 
     Item* item = new Item(d.getIdentifier());
     item->SetData(data, length);
-    // item->SetBounds(r);
+    item->SetBounds(r);
 
 
-    // delete pS;
-    // delete r;
+    delete pS;
+    delete r;
     delete[] data;
     
     nResults += 1;

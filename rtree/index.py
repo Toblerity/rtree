@@ -264,7 +264,7 @@ class Index(object):
     def valid(self):
         return core.rt.Index_IsValid(self.handle)
     
-    def bounds(self):
+    def get_bounds(self):
         pp_mins = ctypes.pointer(ctypes.c_double())
         pp_maxs = ctypes.pointer(ctypes.c_double())
         dimension = ctypes.c_uint32(0)
@@ -273,6 +273,7 @@ class Index(object):
                                 ctypes.byref(pp_mins), 
                                 ctypes.byref(pp_maxs), 
                                 ctypes.byref(dimension))
+        if (dimension.value == 0): return None
 
         mins = ctypes.cast(pp_mins,ctypes.POINTER(ctypes.c_double * dimension.value))
         maxs = ctypes.cast(pp_maxs,ctypes.POINTER(ctypes.c_double * dimension.value))
@@ -287,6 +288,7 @@ class Index(object):
         core.rt.Index_Free(ctypes.cast(p_maxs, ctypes.POINTER(ctypes.c_void_p)))
                 
         return results
+    bounds = property(get_bounds)
 
 class Rtree(Index):
     def __init__(self, *args, **kwargs):
@@ -304,6 +306,8 @@ class Item(object):
         
         self.object = None
         self.object = self.get_object()
+        self.bounds = None
+        self.bounds = self.get_bounds()
 
     def get_data(self):
         if self.object: return self.object
@@ -331,7 +335,35 @@ class Item(object):
             o = pickle.loads(data)
             return o
         return None
+    
+    def get_bounds(self):
+        # import pdb;pdb.set_trace()
+        if self.bounds: return self.bounds
+        
+        pp_mins = ctypes.pointer(ctypes.c_double())
+        pp_maxs = ctypes.pointer(ctypes.c_double())
+        dimension = ctypes.c_uint32(0)
+        
+        core.rt.IndexItem_GetBounds(self.handle, 
+                                    ctypes.byref(pp_mins), 
+                                    ctypes.byref(pp_maxs), 
+                                    ctypes.byref(dimension))
+        
+        if not dimension.value: return None
 
+        mins = ctypes.cast(pp_mins,ctypes.POINTER(ctypes.c_double * dimension.value))
+        maxs = ctypes.cast(pp_maxs,ctypes.POINTER(ctypes.c_double * dimension.value))
+        results = []
+        for i in range(dimension.value):
+            results.append(mins.contents[i])
+            results.append(maxs.contents[i])
+
+        p_mins = ctypes.cast(mins,ctypes.POINTER(ctypes.c_double))
+        p_maxs = ctypes.cast(maxs,ctypes.POINTER(ctypes.c_double))
+        core.rt.Index_Free(ctypes.cast(p_mins, ctypes.POINTER(ctypes.c_void_p)))
+        core.rt.Index_Free(ctypes.cast(p_maxs, ctypes.POINTER(ctypes.c_void_p)))
+                
+        return results
 
 
 class Property(object):

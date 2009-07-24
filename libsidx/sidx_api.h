@@ -88,6 +88,11 @@ SIDX_DLL uint64_t IndexItem_GetID(IndexItemH item);
 
 SIDX_DLL RTError IndexItem_GetData(IndexItemH item, uint8_t** data, uint64_t* length);
 
+SIDX_DLL RTError IndexItem_GetBounds(   IndexItemH item,
+                                        double** ppdMin,
+                                        double** ppdMax,
+                                        uint32_t* nDimension);
+                                    
 SIDX_DLL IndexPropertyH IndexProperty_Create();
 SIDX_DLL void IndexProperty_Destroy(IndexPropertyH hProp);
 

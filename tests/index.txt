@@ -33,7 +33,9 @@ Fetch our straggler that contains a pickled object
     >>> for i in hits:
     ...     if i.id == 4321:
     ...         i.object
+    ...         i.bounds
     42
+    [34.3776829412, 49.3776829412, 26.737585373400002, 41.737585373400002]
 
 Find the three items nearest to this one
     >>> hits = [n for n in idx.nearest((0,0,10,10), 3)]
@@ -42,7 +44,7 @@ Find the three items nearest to this one
     >>> len(hits)
     3
     
-    >>> idx.bounds()
+    >>> idx.bounds
     [-186.673789279, 184.76138755599999, -96.717721818399994, 96.604369977800005]
 
 Delete index members

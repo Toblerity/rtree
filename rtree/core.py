@@ -208,6 +208,13 @@ rt.IndexItem_GetData.argtypes = [   ctypes.c_void_p,
 rt.IndexItem_GetData.restype = ctypes.c_int
 rt.IndexItem_GetData.errcheck = check_value
 
+rt.IndexItem_GetBounds.argtypes = [ ctypes.c_void_p,
+                                    ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+                                    ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+                                    ctypes.POINTER(ctypes.c_uint32)]
+rt.IndexItem_GetBounds.restype = ctypes.c_int
+rt.IndexItem_GetBounds.errcheck = check_value
+
 rt.IndexItem_GetID.argtypes = [ctypes.c_void_p]
 rt.IndexItem_GetID.restype = ctypes.c_uint64
 rt.IndexItem_GetID.errcheck = check_value

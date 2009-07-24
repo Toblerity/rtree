@@ -444,7 +444,11 @@ SIDX_DLL RTError Index_GetBounds(   IndexH index,
         idx->index().queryStrategy( *query);
         
         const SpatialIndex::Region* bounds = query->GetBounds();
-    
+        if (bounds == 0) { 
+            *nDimension = 0;
+            delete query;
+            return RT_None;
+        }
         Tools::PropertySet ps;
         idx->index().getIndexProperties(ps);
 
@@ -549,14 +553,51 @@ SIDX_DLL RTError IndexItem_GetData( IndexItemH item,
     return RT_None;
     
 }
+
 SIDX_DLL uint64_t IndexItem_GetID(IndexItemH item) 
 {
     VALIDATE_POINTER1(item, "IndexItem_GetID",0); 
     Item* it = dynamic_cast<Item*>(item);
     uint64_t value = it->GetID();
+    printf("returning IndexItem_GetID: %d\n", value);
     return value;
 }
 
+SIDX_DLL RTError IndexItem_GetBounds(   IndexItemH item, 
+                                        double** ppdMin, 
+                                        double** ppdMax, 
+                                        uint32_t* nDimension)
+{
+    VALIDATE_POINTER1(index, "IndexItem_GetBounds", RT_Failure);
+    Item* it = dynamic_cast<Item*>(item);
+    
+    const SpatialIndex::Region* bounds = it->GetBounds();
+    
+    if (bounds == 0) { 
+        printf("bounds was zero, returning\n");
+        *nDimension = 0;
+        return RT_None;
+    }
+    *nDimension = bounds->getDimension();
+        
+    *ppdMin = (double*) malloc (*nDimension * sizeof(double));
+    *ppdMax = (double*) malloc (*nDimension * sizeof(double));
+    
+    if (ppdMin == NULL || ppdMax == NULL) {
+        Error_PushError(RT_Failure, 
+                        "Unable to allocation bounds array(s)", 
+                        "IndexItem_GetBounds");
+        return RT_Failure;           
+    }
+    
+    for (uint32_t i=0; i< *nDimension; ++i) {
+        (*ppdMin)[i] = bounds->getLow(i);
+        (*ppdMax)[i] = bounds->getHigh(i);
+    }
+    
+    
+    return RT_None;
+}
 SIDX_DLL IndexPropertyH IndexProperty_Create()
 {
     Tools::PropertySet* ps = GetDefaults();
