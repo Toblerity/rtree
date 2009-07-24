@@ -19,21 +19,45 @@ RT_MVRTree = 1
 RT_TPRTree = 2
 
 class Index(object):
-    def __init__(self,  filename=None, 
-                        properties=None, 
-                        owned = True, 
-                        pagesize = None):
-        if properties:
-            self.properties = properties
-        else:
+    def __init__(self,  *args, **kwargs):
+
+        try:
+            self.properties = kwargs['properties']
+        except KeyError:
             self.properties = Property()
             
-        if filename:
-            self.properties.filename = filename
+        if args:
+            basename = args[0]
+        else:
+            basename = None
+            
+        if basename:
+            self.properties.storage = RT_Disk
+            self.properties.filename = basename
+            
+            # check we can read the file
+            p = os.path.abspath(basename)
+            d = os.path.dirname(p)
+            if not os.access(d, os.W_OK):
+                message = "Unable to open file '%s' for index storage"%basename
+                raise IOError(message)
         else:
             self.properties.storage = RT_Memory
-        if pagesize:
-            self.properties.pagesize = pagesize
+            
+        if basename:
+            self.properties.filename = basename
+        else:
+            self.properties.storage = RT_Memory
+
+        try:
+            self.properties.pagesize = int(kwargs['pagesize'])
+        except KeyError:
+            pass
+            
+        try:
+            self.properties.overwrite = bool(kwargs['overwrite'])
+        except KeyError:
+            pass
         
         self.handle = core.rt.Index_Create(self.properties.handle)
         self.owned = True
@@ -267,40 +291,8 @@ class Index(object):
 class Rtree(Index):
     def __init__(self, *args, **kwargs):
         
-        if args:
-            basename = args[0]
-        else:
-            basename = None
-            
-        self.properties = Property()
-        
-        if basename:
-            self.properties.storage = RT_Disk
-            self.properties.filename = basename
-            
-            # check we can read the file
-            p = os.path.abspath(basename)
-            d = os.path.dirname(p)
-            if not os.access(d, os.W_OK):
-                message = "Unable to open file '%s' for index storage"%basename
-                raise IOError(message)
-            
-        else:
-            self.properties.storage = RT_Memory
-        
-        try:
-            self.properties.pagesize = int(kwargs['pagesize'])
-        except KeyError:
-            pass
-            
-        try:
-            self.properties.overwrite = bool(kwargs['overwrite'])
-        except KeyError:
-            pass
-        
-        
-        self.handle = core.rt.Index_Create(self.properties.handle)
-        self.owned = True
+        super(Rtree, self).__init__(*args, **kwargs)
+
 
 class Item(object):
     def __init__(self, handle=None, owned=False):
