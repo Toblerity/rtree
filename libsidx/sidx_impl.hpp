@@ -23,8 +23,8 @@ class Item
 private:
     uint64_t m_id;
     uint8_t* m_data;
-    uint32_t m_length;
     SpatialIndex::Region* m_bounds;
+    uint32_t m_length;
 
 public:
     Item(uint64_t id);
@@ -120,6 +120,30 @@ private:
     int m_code;
     std::string m_message;
     std::string m_method;
+};
+
+
+class DataStream : public SpatialIndex::IDataStream
+{
+public:
+    DataStream(int (*readNext)(SpatialIndex::id_type* id, double *pMin, double *pMax, uint32_t nDimension, const uint8_t* pData, size_t nDataLength));
+    ~DataStream();
+
+    SpatialIndex::IData* getNext();
+    bool hasNext() throw (Tools::NotSupportedException);
+
+    size_t size() throw (Tools::NotSupportedException);
+    void rewind() throw (Tools::NotSupportedException);
+
+protected:
+    SpatialIndex::RTree::Data* m_pNext;
+    SpatialIndex::id_type m_id;
+
+private:
+    int (*iterfunct)(SpatialIndex::id_type* id, double *pMin, double *pMax, uint32_t nDimension, const uint8_t* pData, size_t nDataLength);
+    
+    bool readData();
+
 };
 
 class Lock

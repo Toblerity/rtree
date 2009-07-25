@@ -80,6 +80,9 @@ SIDX_DLL RTError Index_GetBounds(   IndexH index,
                                     double** ppdMax,
                                     uint32_t* nDimension);
 
+SIDX_DLL IndexH Index_CreateWithStream( IndexPropertyH properties,
+                                        int (*readNext)(uint64_t *id, double *pMin, double *pMax, uint32_t nDimension, const uint8_t* pData, uint32_t nDataLength)
+                                       );
 SIDX_DLL void Index_DestroyObjResults(IndexItemH* results, uint32_t nResults);
 SIDX_DLL void Index_Free(void* object);
 

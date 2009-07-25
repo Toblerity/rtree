@@ -559,7 +559,6 @@ SIDX_DLL uint64_t IndexItem_GetID(IndexItemH item)
     VALIDATE_POINTER1(item, "IndexItem_GetID",0); 
     Item* it = dynamic_cast<Item*>(item);
     uint64_t value = it->GetID();
-    printf("returning IndexItem_GetID: %d\n", value);
     return value;
 }
 
@@ -574,7 +573,6 @@ SIDX_DLL RTError IndexItem_GetBounds(   IndexItemH item,
     const SpatialIndex::Region* bounds = it->GetBounds();
     
     if (bounds == 0) { 
-        printf("bounds was zero, returning\n");
         *nDimension = 0;
         return RT_None;
     }
