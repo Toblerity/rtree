@@ -50,7 +50,7 @@ SIDX_C_DLL char* Error_GetLastErrorMsg(void){
         return NULL;
     else {
         Error err = errors.top();
-        return strdup(err.GetMessage());
+        return STRDUP(err.GetMessage());
     }
 }
 
@@ -59,7 +59,7 @@ SIDX_C_DLL char* Error_GetLastErrorMethod(void){
         return NULL;
     else {
         Error err = errors.top();
-        return strdup(err.GetMethod());
+        return STRDUP(err.GetMethod());
     }
 }
 
@@ -1478,7 +1478,7 @@ SIDX_C_DLL RTError IndexProperty_SetEnsureTightMBRs(  IndexPropertyH hProp,
         }
         Tools::Variant var;
         var.m_varType = Tools::VT_BOOL;
-        var.m_val.blVal = value;
+        var.m_val.blVal = (bool)value;
         prop->setProperty("EnsureTightMBRs", var);
     } catch (Tools::Exception& e)
     {
@@ -1919,7 +1919,7 @@ SIDX_C_DLL RTError IndexProperty_SetFileName( IndexPropertyH hProp,
     {
         Tools::Variant var;
         var.m_varType = Tools::VT_PCHAR;
-        var.m_val.pcVal = strdup(value); // not sure if we should copy here
+        var.m_val.pcVal = STRDUP(value); // not sure if we should copy here
         prop->setProperty("FileName", var);
     } catch (Tools::Exception& e)
     {
@@ -1959,7 +1959,7 @@ SIDX_C_DLL char* IndexProperty_GetFileName(IndexPropertyH hProp)
             return NULL;
         }
         
-        return strdup(var.m_val.pcVal);
+        return STRDUP(var.m_val.pcVal);
     }
     
     // return nothing for an error
@@ -1982,7 +1982,7 @@ SIDX_C_DLL RTError IndexProperty_SetFileNameExtensionDat( IndexPropertyH hProp,
     {
         Tools::Variant var;
         var.m_varType = Tools::VT_PCHAR;
-        var.m_val.pcVal = strdup(value); // not sure if we should copy here
+        var.m_val.pcVal = STRDUP(value); // not sure if we should copy here
         prop->setProperty("FileNameDat", var);
 
     } catch (Tools::Exception& e)
@@ -2023,7 +2023,7 @@ SIDX_C_DLL char* IndexProperty_GetFileNameExtensionDat(IndexPropertyH hProp)
             return NULL;
         }
         
-        return strdup(var.m_val.pcVal);
+        return STRDUP(var.m_val.pcVal);
     }
     
     // return nothing for an error
@@ -2045,7 +2045,7 @@ SIDX_C_DLL RTError IndexProperty_SetFileNameExtensionIdx( IndexPropertyH hProp,
     {
         Tools::Variant var;
         var.m_varType = Tools::VT_PCHAR;
-        var.m_val.pcVal = strdup(value); // not sure if we should copy here
+        var.m_val.pcVal = STRDUP(value); // not sure if we should copy here
         prop->setProperty("FileNameIdx", var);
 
     } catch (Tools::Exception& e)
@@ -2086,7 +2086,7 @@ SIDX_C_DLL char* IndexProperty_GetFileNameExtensionIdx(IndexPropertyH hProp)
             return NULL;
         }
         
-        return strdup(var.m_val.pcVal);
+        return STRDUP(var.m_val.pcVal);
     }
     
     // return nothing for an error
@@ -2156,7 +2156,7 @@ SIDX_C_DLL int64_t IndexProperty_GetIndexID(IndexPropertyH hProp)
     return 0;
 }
 
-SIDX_DLL char* SIDX_Version()
+SIDX_C_DLL char* SIDX_Version()
 {
     
     std::ostringstream output;
@@ -2168,7 +2168,7 @@ SIDX_DLL char* SIDX_Version()
 #endif
 
     std::string out(output.str());
-    return strdup(out.c_str());
+    return STRDUP(out.c_str());
     
 }
 IDX_C_END

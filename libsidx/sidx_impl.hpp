@@ -8,10 +8,12 @@
 #ifdef _MSC_VER
 #include "SpatialIndex.h"
 #include <windows.h>
+#define STRDUP _strdup
 #else
 #include <spatialindex/SpatialIndex.h>
 #include <pthread.h>
 #define HAVE_PTHREAD_H 1
+#define STRDUP strdup
 #endif
 
 #include "sidx_config.h"
@@ -24,7 +26,7 @@ private:
     uint64_t m_id;
     uint8_t* m_data;
     SpatialIndex::Region* m_bounds;
-    uint32_t m_length;
+    uint64_t m_length;
 
 public:
     Item(uint64_t id);
