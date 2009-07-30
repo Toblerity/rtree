@@ -72,7 +72,7 @@ except ImportError:
 if os.name == 'nt':
     # stolen from Shapely
     # http://trac.gispython.org/projects/PCL/browser/Shapely/trunk/shapely/geos.py
-    lib_name = 'libsidx.dll'
+    lib_name = 'sidx.dll'
     try:
         local_dlls = os.path.abspath(os.__file__ + "../../../DLLs")
         original_path = os.environ['PATH']
@@ -89,8 +89,9 @@ if os.name == 'nt':
 
 elif os.name == 'posix':
     platform = os.uname()[0]
-    lib_name = 'libsidx.dylib'
+    lib_name = 'libsidx.so'
     if platform == 'Darwin':
+        lib_name = 'libsidx.dylib'
         free = ctypes.CDLL(find_library('libc')).free
     else:        
         free = ctypes.CDLL(find_library('libc.so.6')).free
