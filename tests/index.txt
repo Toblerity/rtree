@@ -33,7 +33,7 @@ Insert an object into the index that can be pickled
     >>> idx.insert(4321, (34.3776829412, 26.7375853734, 49.3776829412, 41.7375853734), obj=42)
 
 Fetch our straggler that contains a pickled object    
-    >>> hits = [n for n in idx.intersection_obj((0, 0, 60, 60))]
+    >>> hits = [n for n in idx.intersection((0, 0, 60, 60), objects=True)]
     >>> for i in hits:
     ...     if i.id == 4321:
     ...         i.object
@@ -94,7 +94,7 @@ Check that nearest returns *all* of the items that are nearby (with objects)
     >>> for i, (minx, miny, maxx, maxy) in enumerate(locs):
     ...        idx2.add(i, (minx, miny, maxx, maxy), obj=42)
 
-    >>> sorted([i.id for i in idx2.nearest_obj((15, 10, 15, 10), 1)])
+    >>> sorted([i.id for i in idx2.nearest((15, 10, 15, 10), 1, objects=True)])
     [0L, 1L]
 
 

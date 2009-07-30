@@ -156,7 +156,9 @@ class Index(object):
         core.rt.Index_InsertData(self.handle, id, p_mins, p_maxs, self.properties.dimension, data, size)
     add = insert
     
-    def intersection(self, coordinates):
+    def intersection(self, coordinates, objects=False):
+        if objects: return self._intersection_obj(coordinates)
+        
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
         p_num_results = ctypes.c_uint32(0)
@@ -183,7 +185,7 @@ class Index(object):
         
         return results
     
-    def intersection_obj(self, coordinates):
+    def _intersection_obj(self, coordinates):
         
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
@@ -211,7 +213,7 @@ class Index(object):
         
         return results
 
-    def nearest_obj(self, coordinates, num_results):
+    def _nearest_obj(self, coordinates, num_results):
         
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
@@ -238,7 +240,8 @@ class Index(object):
         core.rt.Index_DestroyObjResults(its, p_num_results.contents.value)
         return results
         
-    def nearest(self, coordinates, num_results):
+    def nearest(self, coordinates, num_results, objects=False):
+        if objects: return self._nearest_obj(coordinates, num_results)
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
         p_num_results = ctypes.pointer(ctypes.c_uint32(num_results))
