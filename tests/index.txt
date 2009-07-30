@@ -113,7 +113,7 @@ Check that nearest returns *all* of the items that are nearby (with objects)
 
 Default page size 4096
 
-    >>> idx3 = Rtree("default")
+    >>> idx3 = Rtree("defaultidx")
     >>> for i, coords in enumerate(boxes15):
     ...     idx3.add(i, coords)
     >>> hits = [n for n in idx3.intersection((0, 0, 60, 60))]
@@ -133,7 +133,9 @@ Page size 3
     >>> hits = [n for n in idx4.intersection((0, 0, 60, 60))]
     >>> len(hits)
     10
-
+    
+    del idx4
+    
 Test invalid name
 
     >>> inv = Rtree("bogus/foo")
@@ -144,8 +146,8 @@ Test invalid name
 Load a persisted index
 
     >>> import shutil
-    >>> _ = shutil.copy("default.dat", "testing.dat")
-    >>> _ = shutil.copy("default.idx", "testing.idx")
+    >>> _ = shutil.copy("defaultidx.dat", "testing.dat")
+    >>> _ = shutil.copy("defaultidx.idx", "testing.idx")
 
     # >>> import pdb;pdb.set_trace()
 
@@ -190,19 +192,22 @@ Reopen the index
     >>> idx_cust2 = Rtree('custom', properties=p2)    
     >>> hits = [n for n in idx_cust2.intersection((0, 0, 60, 60))]
     >>> len(hits)
-    10   
+    10
+    
+    >>> del idx_cust2
     
 Clean up leftover data
-
+    
+    >>> files = ['defaultidx.dat','defaultidx.idx',
+    ...          'pagesize3.dat','pagesize3.idx',
+    ...          'testing.dat','testing.idx',
+    ...          'custom.data','custom.index']
     >>> import os
-    >>> try:
-    ...     os.remove('default.dat')
-    ...     os.remove('default.idx')
-    ...     os.remove('pagesize3.dat')
-    ...     os.remove('pagesize3.idx')
-    ...     os.remove('testing.dat')
-    ...     os.remove('testing.idx')
-    ...     os.remove('custom.data')
-    ...     os.remove('custom.index')
-    ... except OSError:
-    ...     pass
+    >>> import time
+    >>> for f in files:
+    ...     try:
+    ...         os.remove(f)
+    ...     except OSError:
+    ...         time.sleep(0.1)
+    ...         os.remove(f)
+
