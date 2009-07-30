@@ -1,33 +1,29 @@
 
 from glob import glob
-from setuptools import setup, Extension
+from setuptools import setup, Library
 
 # Get text from README.txt
 readme_text = file('README.txt', 'rb').read()
 
-libsidx = Extension('libsidx',
-                  sources=[ 'libsidx/sidx_api.cc',
-                            'libsidx/sidx_impl.cc'],
-                  libraries=['spatialindex']
-                  )
-_rtree = Extension('rtree._rtree',
-                  sources=[ 'rtree/_rtreemodule.cc', 
-                            'rtree/wrapper.cc',
-                            'rtree/gispyspatialindex.cc',
-                            'libsidx/sidx_api.cc',
-                            'libsidx/sidx_impl.cc'],
-                  libraries=['spatialindex']
-                  )
-                  
+
 import os
 
 if os.name == 'nt':
     data_files=[('DLLs',[r'c:\cvs\buildkit\spatialindex\spatialindex1.dll',]),]
+    libraries = ['spatialindex_i',]
 else:
     data_files = None
-    
+    libraries = ['spatialindex',]
+
+libsidx = Library('libsidx',
+                  sources=[ 'libsidx/sidx_api.cc',
+                            'libsidx/sidx_impl.cc'],
+                  includes=['./libsidx'],
+                  libraries=libraries
+                  )
+                  
 setup(name          = 'Rtree',
-      version       = '0.4.3',
+      version       = '0.5.0',
       description   = 'R-Tree spatial index for Python GIS',
       license       = 'LGPL',
       keywords      = 'gis spatial index',
