@@ -100,6 +100,36 @@ SIDX_C_DLL IndexH Index_Create(IndexPropertyH hProp)
     return NULL;
 }
 
+SIDX_C_DLL IndexH Index_CreateWithStream( IndexPropertyH hProp,
+                                        int (*readNext)(uint64_t *id, double *pMin, double *pMax, uint32_t nDimension, const uint8_t* pData, uint32_t nDataLength)
+                                       )
+{
+    VALIDATE_POINTER1(hProp, "Index_CreateWithStream", NULL);   
+    Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
+    
+    try { 
+        return (IndexH) new Index(*prop); 
+    } catch (Tools::Exception& e)
+    {
+        Error_PushError(RT_Failure, 
+                        e.what().c_str(), 
+                        "Index_Create");
+        return NULL;
+    } catch (std::exception const& e)
+    {
+        Error_PushError(RT_Failure, 
+                        e.what(), 
+                        "Index_Create");
+        return NULL;
+    } catch (...) {
+        Error_PushError(RT_Failure, 
+                        "Unknown Error", 
+                        "Index_Create");
+        return NULL;        
+    }
+    return NULL;
+}
+
 SIDX_C_DLL void Index_Destroy(IndexH index)
 {
     VALIDATE_POINTER0(index, "Index_Destroy"); 
@@ -2126,4 +2156,19 @@ SIDX_C_DLL int64_t IndexProperty_GetIndexID(IndexPropertyH hProp)
     return 0;
 }
 
+SIDX_DLL char* SIDX_Version()
+{
+    
+    std::ostringstream output;
+
+#ifdef SIDX_RELEASE_NAME
+    output << SIDX_RELEASE_NAME;
+#else
+    output << "1.3.2";
+#endif
+
+    std::string out(output.str());
+    return strdup(out.c_str());
+    
+}
 IDX_C_END
