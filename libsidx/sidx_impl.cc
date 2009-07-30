@@ -370,26 +370,6 @@ SpatialIndex::StorageManager::IBuffer* Index::CreateIndexBuffer(SpatialIndex::IS
     return buffer;
 }
 
-SpatialIndex::ISpatialIndex* Index::LoadIndex() 
-{
-    using namespace SpatialIndex;
-    
-    ISpatialIndex* index = 0;
-    
-    try{
-        index = RTree::loadRTree(*m_buffer,m_idxId);
-        bool ret = index->isIndexValid();
-        if (ret == false) 
-            throw std::runtime_error(   "Spatial index error: index is not"
-                                        " valid after loadRTree");
-
-        return index;
-    } catch (Tools::Exception& e) {
-        std::ostringstream os;
-        os << "Spatial Index Error: " << e.what();
-        throw std::runtime_error(os.str());
-    }    
-}
 
 SpatialIndex::IStorageManager* Index::CreateStorage()
 {
@@ -411,40 +391,26 @@ SpatialIndex::IStorageManager* Index::CreateStorage()
     }
     
     if (GetIndexStorage() == RT_Disk) {
-
-        if (ExternalIndexExists(filename) && !filename.empty()) {
-            // std::cout << "loading existing DiskStorage " << filename << std::endl;
-            try{
-                storage = loadDiskStorageManager(filename);
-                m_idxExists = true;
-                return storage;
-            } catch (Tools::Exception& e) {
+        if (filename.empty()) {
                 std::ostringstream os;
-                os << "Spatial Index Error: " << e.what();
+                os << "Spatial Index Error: filename was empty.  Set IndexStorageType to RT_Memory";
                 throw std::runtime_error(os.str());
-            } 
-        } else if (!filename.empty()){
+        }
             try{
                 // std::cout << "creating new DiskStorage " << filename << std::endl;            
                 storage = returnDiskStorageManager(m_properties);
-                m_idxExists = false;
                 return storage;
             } catch (Tools::Exception& e) {
                 std::ostringstream os;
                 os << "Spatial Index Error: " << e.what();
                 throw std::runtime_error(os.str());
             }         
-        } else if (filename.empty()) {
-                std::ostringstream os;
-                os << "Spatial Index Error: filename was empty.  Set IndexStorageType to RT_Memory";
-                throw std::runtime_error(os.str());
-        }
+
     } else if (GetIndexStorage() == RT_Memory) {
 
         try{
             // std::cout << "creating new createNewVLRStorageManager " << filename << std::endl;            
             storage = returnMemoryStorageManager(m_properties);
-            m_idxExists = false;
             return storage;
         } catch (Tools::Exception& e) {
             std::ostringstream os;
@@ -457,38 +423,6 @@ SpatialIndex::IStorageManager* Index::CreateStorage()
 }
 
 
-bool Index::ExternalIndexExists(std::string& filename)
-{
-
-    // if we have already checked, we're done.
-    if (m_idxExists == true) return true;
-
-    std::string dat("dat");
-    
-    Tools::Variant var;
-    var = m_properties.getProperty("FileNameDat");
-
-    if (var.m_varType != Tools::VT_EMPTY)
-    {
-        if (var.m_varType != Tools::VT_PCHAR)
-            throw std::runtime_error("Index::ExternalIndexExists: Property FileNameDat must be Tools::VT_PCHAR");
-        
-        dat = std::string(var.m_val.pcVal);
-    }
-        
-    struct stat stats;
-    std::ostringstream os;
-    os << filename << "." << dat;
-
-    std::string indexname = os.str();
-    
-    // ret is -1 for no file existing and 0 for existing
-    int ret = stat(indexname.c_str(),&stats);
-
-    bool output = false;
-    if (ret == 0) output= true;
-    return output;
-}
 
 
 void Index::Initialize()
@@ -497,13 +431,7 @@ void Index::Initialize()
     
     m_buffer = CreateIndexBuffer(*m_storage);
 
-    if (m_idxExists == true) {
-        m_rtree = LoadIndex();
-    }
-    else
-    {
-        m_rtree = CreateIndex();
-    }
+    m_rtree = CreateIndex();
     
     m_Initialized = true;
 }
@@ -512,7 +440,6 @@ void Index::Setup()
 
 {   
 
-    m_idxExists = false;
     
     m_Initialized = false;
     m_idxId = 1;

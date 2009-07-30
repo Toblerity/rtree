@@ -94,7 +94,7 @@ if os.name == 'nt':
 
 elif os.name == 'posix':
     platform = os.uname()[0]
-    lib_name = 'libsidx.so'
+    lib_name = 'libsidx.dylib'
     if platform == 'Darwin':
         free = ctypes.CDLL(find_library('libc')).free
     else:        

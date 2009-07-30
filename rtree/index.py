@@ -36,18 +36,26 @@ class Index(object):
         if basename:
             self.properties.storage = RT_Disk
             self.properties.filename = basename
-            
+
             # check we can read the file
-            p = os.path.abspath(basename)
+            f = os.path.join('.'.join([basename,self.properties.idx_extension]))
+
+            # assume if the file exists, we're not going to overwrite it
+            # unless the user explicitly set the property to do so
+            if os.path.exists(os.path.abspath(f)):                
+                self.properties.overwrite = False
+
+                # assume we're fetching the first index_id.  If the user
+                # set it, we'll fetch that one.
+                try:
+                    self.properties.index_id
+                except core.RTreeError:
+                    self.properties.index_id=1
+            p = os.path.abspath(f)
             d = os.path.dirname(p)
             if not os.access(d, os.W_OK):
-                message = "Unable to open file '%s' for index storage"%basename
+                message = "Unable to open file '%s' for index storage"%f
                 raise IOError(message)
-        else:
-            self.properties.storage = RT_Memory
-            
-        if basename:
-            self.properties.filename = basename
         else:
             self.properties.storage = RT_Memory
 

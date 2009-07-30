@@ -218,7 +218,6 @@ private:
     SpatialIndex::ISpatialIndex* m_rtree;
     
     bool m_Initialized;
-    bool m_idxExists;
     SpatialIndex::id_type m_idxId;
     
     RTIndexType m_idxType;
@@ -231,6 +230,4 @@ private:
     SpatialIndex::IStorageManager* CreateStorage();
     SpatialIndex::StorageManager::IBuffer* CreateIndexBuffer(SpatialIndex::IStorageManager& storage);
     SpatialIndex::ISpatialIndex* CreateIndex();
-    SpatialIndex::ISpatialIndex* LoadIndex();
-    bool ExternalIndexExists(std::string& filename);
 };
