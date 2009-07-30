@@ -202,5 +202,7 @@ Clean up leftover data
     ...     os.remove('pagesize3.idx')
     ...     os.remove('testing.dat')
     ...     os.remove('testing.idx')
+    ...     os.remove('custom.data')
+    ...     os.remove('custom.index')
     ... except OSError:
     ...     pass
