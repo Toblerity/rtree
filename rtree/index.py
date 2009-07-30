@@ -18,6 +18,8 @@ RT_RTree = 0
 RT_MVRTree = 1
 RT_TPRTree = 2
 
+sidx_version = core.rt.SIDX_Version()
+
 class Index(object):
     def __init__(self,  *args, **kwargs):
 

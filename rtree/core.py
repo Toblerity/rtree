@@ -414,3 +414,6 @@ rt.IndexProperty_SetIndexID.errcheck = check_return
 rt.IndexProperty_GetIndexID.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetIndexID.restype = ctypes.c_int64
 rt.IndexProperty_GetIndexID.errcheck = check_value
+
+rt.SIDX_Version.restype = ctypes.POINTER(ctypes.c_char)
+rt.SIDX_Version.errcheck = free_returned_char_p
