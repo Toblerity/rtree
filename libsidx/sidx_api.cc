@@ -1,6 +1,6 @@
 
+#include "sidx_config.h"
 #include "sidx_impl.hpp"
-
 
 static std::stack<Error> errors;
 
@@ -26,17 +26,17 @@ static std::stack<Error> errors;
 
 IDX_C_START
 
-SIDX_DLL void Error_Reset(void) {
+SIDX_C_DLL void Error_Reset(void) {
     if (errors.empty()) return;
     for (std::size_t i=0;i<errors.size();i++) errors.pop();
 }
 
-SIDX_DLL void Error_Pop(void) {
+SIDX_C_DLL void Error_Pop(void) {
     if (errors.empty()) return;
     errors.pop();
 }
 
-SIDX_DLL int Error_GetLastErrorNum(void){
+SIDX_C_DLL int Error_GetLastErrorNum(void){
     if (errors.empty())
         return 0;
     else {
@@ -45,7 +45,7 @@ SIDX_DLL int Error_GetLastErrorNum(void){
     }
 }
 
-SIDX_DLL char* Error_GetLastErrorMsg(void){
+SIDX_C_DLL char* Error_GetLastErrorMsg(void){
     if (errors.empty()) 
         return NULL;
     else {
@@ -54,7 +54,7 @@ SIDX_DLL char* Error_GetLastErrorMsg(void){
     }
 }
 
-SIDX_DLL char* Error_GetLastErrorMethod(void){
+SIDX_C_DLL char* Error_GetLastErrorMethod(void){
     if (errors.empty()) 
         return NULL;
     else {
@@ -63,16 +63,16 @@ SIDX_DLL char* Error_GetLastErrorMethod(void){
     }
 }
 
-SIDX_DLL void Error_PushError(int code, const char *message, const char *method) {
+SIDX_C_DLL void Error_PushError(int code, const char *message, const char *method) {
     Error err = Error(code, std::string(message), std::string(method));
     errors.push(err);
 }
 
-SIDX_DLL int Error_GetErrorCount(void) {
+SIDX_C_DLL int Error_GetErrorCount(void) {
     return static_cast<int>(errors.size());
 }
 
-SIDX_DLL IndexH Index_Create(IndexPropertyH hProp)
+SIDX_C_DLL IndexH Index_Create(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "Index_Create", NULL);   
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -100,14 +100,14 @@ SIDX_DLL IndexH Index_Create(IndexPropertyH hProp)
     return NULL;
 }
 
-SIDX_DLL void Index_Destroy(IndexH index)
+SIDX_C_DLL void Index_Destroy(IndexH index)
 {
     VALIDATE_POINTER0(index, "Index_Destroy"); 
     Index* idx = (Index*) index;
     if (idx) delete idx;
 }
 
-SIDX_DLL RTError Index_DeleteData(  IndexH index, 
+SIDX_C_DLL RTError Index_DeleteData(  IndexH index, 
                                     uint64_t id, 
                                     double* pdMin, 
                                     double* pdMax, 
@@ -141,7 +141,7 @@ SIDX_DLL RTError Index_DeleteData(  IndexH index,
     return RT_None;
 }
 
-SIDX_DLL RTError Index_InsertData(  IndexH index, 
+SIDX_C_DLL RTError Index_InsertData(  IndexH index, 
                                     uint64_t id, 
                                     double* pdMin, 
                                     double* pdMax, 
@@ -206,7 +206,7 @@ SIDX_DLL RTError Index_InsertData(  IndexH index,
     return RT_None;
 }
 
-SIDX_DLL RTError Index_Intersects_obj(  IndexH index, 
+SIDX_C_DLL RTError Index_Intersects_obj(  IndexH index, 
                                         double* pdMin, 
                                         double* pdMax, 
                                         uint32_t nDimension, 
@@ -262,7 +262,7 @@ SIDX_DLL RTError Index_Intersects_obj(  IndexH index,
     return RT_None;
 }
 
-SIDX_DLL RTError Index_Intersects_id(   IndexH index, 
+SIDX_C_DLL RTError Index_Intersects_id(   IndexH index, 
                                         double* pdMin, 
                                         double* pdMax, 
                                         uint32_t nDimension, 
@@ -316,7 +316,7 @@ SIDX_DLL RTError Index_Intersects_id(   IndexH index,
     return RT_None;
 }
 
-SIDX_DLL RTError Index_NearestNeighbors_id(IndexH index, 
+SIDX_C_DLL RTError Index_NearestNeighbors_id(IndexH index, 
                                             double* pdMin, 
                                             double* pdMax, 
                                             uint32_t nDimension, 
@@ -372,7 +372,7 @@ SIDX_DLL RTError Index_NearestNeighbors_id(IndexH index,
     return RT_None;
 }
 
-SIDX_DLL RTError Index_NearestNeighbors_obj(IndexH index, 
+SIDX_C_DLL RTError Index_NearestNeighbors_obj(IndexH index, 
                                             double* pdMin, 
                                             double* pdMax, 
                                             uint32_t nDimension, 
@@ -430,7 +430,7 @@ SIDX_DLL RTError Index_NearestNeighbors_obj(IndexH index,
     return RT_None;
 }
 
-SIDX_DLL RTError Index_GetBounds(   IndexH index, 
+SIDX_C_DLL RTError Index_GetBounds(   IndexH index, 
                                     double** ppdMin, 
                                     double** ppdMax, 
                                     uint32_t* nDimension)
@@ -501,14 +501,14 @@ SIDX_DLL RTError Index_GetBounds(   IndexH index,
     return RT_None;
 }
 
-SIDX_DLL uint32_t Index_IsValid(IndexH index)
+SIDX_C_DLL uint32_t Index_IsValid(IndexH index)
 {
     VALIDATE_POINTER1(index, "Index_IsValid", 0); 
     Index* idx = static_cast<Index*>(index);
     return static_cast<uint32_t>(idx->index().isIndexValid());    
 }
 
-SIDX_DLL IndexPropertyH Index_GetProperties(IndexH index)
+SIDX_C_DLL IndexPropertyH Index_GetProperties(IndexH index)
 {
     VALIDATE_POINTER1(index, "Index_GetProperties", 0); 
     Index* idx = static_cast<Index*>(index);
@@ -518,7 +518,7 @@ SIDX_DLL IndexPropertyH Index_GetProperties(IndexH index)
     return (IndexPropertyH)ps;
 }
 
-SIDX_DLL void Index_DestroyObjResults(IndexItemH* results, uint32_t nResults)
+SIDX_C_DLL void Index_DestroyObjResults(IndexItemH* results, uint32_t nResults)
 {
     VALIDATE_POINTER0(results, "Index_DestroyObjResults");
     for (uint32_t i=0; i< nResults; ++i) {
@@ -530,20 +530,20 @@ SIDX_DLL void Index_DestroyObjResults(IndexItemH* results, uint32_t nResults)
 }
 
 
-SIDX_DLL void Index_Free(void* results)
+SIDX_C_DLL void Index_Free(void* results)
 {
     VALIDATE_POINTER0(results, "Index_Free");
     
     std::free(results);
 }
-SIDX_DLL void IndexItem_Destroy(IndexItemH item)
+SIDX_C_DLL void IndexItem_Destroy(IndexItemH item)
 {
     VALIDATE_POINTER0(item, "IndexItem_Destroy"); 
     Item* it = static_cast<Item*>(item);
     if (it != 0) delete it;
 }
 
-SIDX_DLL RTError IndexItem_GetData( IndexItemH item,
+SIDX_C_DLL RTError IndexItem_GetData( IndexItemH item,
                                     uint8_t** data,
                                     uint64_t* length)
 {
@@ -554,7 +554,7 @@ SIDX_DLL RTError IndexItem_GetData( IndexItemH item,
     
 }
 
-SIDX_DLL uint64_t IndexItem_GetID(IndexItemH item) 
+SIDX_C_DLL uint64_t IndexItem_GetID(IndexItemH item) 
 {
     VALIDATE_POINTER1(item, "IndexItem_GetID",0); 
     Item* it = dynamic_cast<Item*>(item);
@@ -562,12 +562,12 @@ SIDX_DLL uint64_t IndexItem_GetID(IndexItemH item)
     return value;
 }
 
-SIDX_DLL RTError IndexItem_GetBounds(   IndexItemH item, 
+SIDX_C_DLL RTError IndexItem_GetBounds(   IndexItemH item, 
                                         double** ppdMin, 
                                         double** ppdMax, 
                                         uint32_t* nDimension)
 {
-    VALIDATE_POINTER1(index, "IndexItem_GetBounds", RT_Failure);
+    VALIDATE_POINTER1(item, "IndexItem_GetBounds", RT_Failure);
     Item* it = dynamic_cast<Item*>(item);
     
     const SpatialIndex::Region* bounds = it->GetBounds();
@@ -596,21 +596,21 @@ SIDX_DLL RTError IndexItem_GetBounds(   IndexItemH item,
     
     return RT_None;
 }
-SIDX_DLL IndexPropertyH IndexProperty_Create()
+SIDX_C_DLL IndexPropertyH IndexProperty_Create()
 {
     Tools::PropertySet* ps = GetDefaults();
     Tools::Variant var;
     return (IndexPropertyH)ps;
 }
 
-SIDX_DLL void IndexProperty_Destroy(IndexPropertyH hProp)
+SIDX_C_DLL void IndexProperty_Destroy(IndexPropertyH hProp)
 {
     VALIDATE_POINTER0(hProp, "IndexProperty_Destroy");    
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
     if (prop != 0) delete prop;
 }
 
-SIDX_DLL RTError IndexProperty_SetIndexType(IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetIndexType(IndexPropertyH hProp, 
                                             RTIndexType value)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_SetIndexType", RT_Failure);    
@@ -648,7 +648,7 @@ SIDX_DLL RTError IndexProperty_SetIndexType(IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL RTIndexType IndexProperty_GetIndexType(IndexPropertyH hProp)
+SIDX_C_DLL RTIndexType IndexProperty_GetIndexType(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetIndexType", RT_InvalidIndexType);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -674,7 +674,7 @@ SIDX_DLL RTIndexType IndexProperty_GetIndexType(IndexPropertyH hProp)
 
 }
 
-SIDX_DLL RTError IndexProperty_SetDimension(IndexPropertyH hProp, uint32_t value)
+SIDX_C_DLL RTError IndexProperty_SetDimension(IndexPropertyH hProp, uint32_t value)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_SetDimension", RT_Failure);    
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -706,7 +706,7 @@ SIDX_DLL RTError IndexProperty_SetDimension(IndexPropertyH hProp, uint32_t value
     return RT_None;
 }
 
-SIDX_DLL uint32_t IndexProperty_GetDimension(IndexPropertyH hProp)
+SIDX_C_DLL uint32_t IndexProperty_GetDimension(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetDimension", RT_InvalidIndexType);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -733,7 +733,7 @@ SIDX_DLL uint32_t IndexProperty_GetDimension(IndexPropertyH hProp)
     return 0;
 }
 
-SIDX_DLL RTError IndexProperty_SetIndexVariant( IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetIndexVariant( IndexPropertyH hProp, 
                                                 RTIndexVariant value)
 {
     using namespace SpatialIndex;
@@ -790,7 +790,7 @@ SIDX_DLL RTError IndexProperty_SetIndexVariant( IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL RTIndexVariant IndexProperty_GetIndexVariant(IndexPropertyH hProp)
+SIDX_C_DLL RTIndexVariant IndexProperty_GetIndexVariant(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(  hProp, 
                         "IndexProperty_GetIndexVariant", 
@@ -822,7 +822,7 @@ SIDX_DLL RTIndexVariant IndexProperty_GetIndexVariant(IndexPropertyH hProp)
 
 }
 
-SIDX_DLL RTError IndexProperty_SetIndexStorage( IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetIndexStorage( IndexPropertyH hProp, 
                                                 RTStorageType value)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_SetIndexStorage", RT_Failure);    
@@ -858,7 +858,7 @@ SIDX_DLL RTError IndexProperty_SetIndexStorage( IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL RTStorageType IndexProperty_GetIndexStorage(IndexPropertyH hProp)
+SIDX_C_DLL RTStorageType IndexProperty_GetIndexStorage(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(  hProp, 
                         "IndexProperty_GetIndexStorage", 
@@ -889,7 +889,7 @@ SIDX_DLL RTStorageType IndexProperty_GetIndexStorage(IndexPropertyH hProp)
 
 }
 
-SIDX_DLL RTError IndexProperty_SetIndexCapacity(IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetIndexCapacity(IndexPropertyH hProp, 
                                                 uint32_t value)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_SetIndexCapacity", RT_Failure);    
@@ -922,7 +922,7 @@ SIDX_DLL RTError IndexProperty_SetIndexCapacity(IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL uint32_t IndexProperty_GetIndexCapacity(IndexPropertyH hProp)
+SIDX_C_DLL uint32_t IndexProperty_GetIndexCapacity(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetIndexCapacity", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -949,7 +949,7 @@ SIDX_DLL uint32_t IndexProperty_GetIndexCapacity(IndexPropertyH hProp)
     return 0;
 }
 
-SIDX_DLL RTError IndexProperty_SetLeafCapacity( IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetLeafCapacity( IndexPropertyH hProp, 
                                                 uint32_t value)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_SetLeafCapacity", RT_Failure);    
@@ -982,7 +982,7 @@ SIDX_DLL RTError IndexProperty_SetLeafCapacity( IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL uint32_t IndexProperty_GetLeafCapacity(IndexPropertyH hProp)
+SIDX_C_DLL uint32_t IndexProperty_GetLeafCapacity(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetLeafCapacity", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -1009,7 +1009,7 @@ SIDX_DLL uint32_t IndexProperty_GetLeafCapacity(IndexPropertyH hProp)
     return 0;
 }
 
-SIDX_DLL RTError IndexProperty_SetPagesize( IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetPagesize( IndexPropertyH hProp, 
                                             uint32_t value)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_SetPagesize", RT_Failure);    
@@ -1042,7 +1042,7 @@ SIDX_DLL RTError IndexProperty_SetPagesize( IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL uint32_t IndexProperty_GetPagesize(IndexPropertyH hProp)
+SIDX_C_DLL uint32_t IndexProperty_GetPagesize(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetPagesize", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -1069,7 +1069,7 @@ SIDX_DLL uint32_t IndexProperty_GetPagesize(IndexPropertyH hProp)
     return 0;
 }
 
-SIDX_DLL RTError IndexProperty_SetLeafPoolCapacity( IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetLeafPoolCapacity( IndexPropertyH hProp, 
                                                     uint32_t value)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_SetLeafPoolCapacity", RT_Failure);    
@@ -1102,7 +1102,7 @@ SIDX_DLL RTError IndexProperty_SetLeafPoolCapacity( IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL uint32_t IndexProperty_GetLeafPoolCapacity(IndexPropertyH hProp)
+SIDX_C_DLL uint32_t IndexProperty_GetLeafPoolCapacity(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetLeafPoolCapacity", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -1129,7 +1129,7 @@ SIDX_DLL uint32_t IndexProperty_GetLeafPoolCapacity(IndexPropertyH hProp)
     return 0;
 }
 
-SIDX_DLL RTError IndexProperty_SetIndexPoolCapacity(IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetIndexPoolCapacity(IndexPropertyH hProp, 
                                                     uint32_t value)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_SetIndexPoolCapacity", RT_Failure);    
@@ -1162,7 +1162,7 @@ SIDX_DLL RTError IndexProperty_SetIndexPoolCapacity(IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL uint32_t IndexProperty_GetIndexPoolCapacity(IndexPropertyH hProp)
+SIDX_C_DLL uint32_t IndexProperty_GetIndexPoolCapacity(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetIndexPoolCapacity", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -1189,7 +1189,7 @@ SIDX_DLL uint32_t IndexProperty_GetIndexPoolCapacity(IndexPropertyH hProp)
     return 0;
 }
 
-SIDX_DLL RTError IndexProperty_SetRegionPoolCapacity(IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetRegionPoolCapacity(IndexPropertyH hProp, 
                                                     uint32_t value)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_SetRegionPoolCapacity", RT_Failure);    
@@ -1222,7 +1222,7 @@ SIDX_DLL RTError IndexProperty_SetRegionPoolCapacity(IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL uint32_t IndexProperty_GetRegionPoolCapacity(IndexPropertyH hProp)
+SIDX_C_DLL uint32_t IndexProperty_GetRegionPoolCapacity(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetRegionPoolCapacity", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -1249,7 +1249,7 @@ SIDX_DLL uint32_t IndexProperty_GetRegionPoolCapacity(IndexPropertyH hProp)
     return 0;
 }
 
-SIDX_DLL RTError IndexProperty_SetPointPoolCapacity(IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetPointPoolCapacity(IndexPropertyH hProp, 
                                                     uint32_t value)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_SetPointPoolCapacity", RT_Failure);    
@@ -1282,7 +1282,7 @@ SIDX_DLL RTError IndexProperty_SetPointPoolCapacity(IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL uint32_t IndexProperty_GetPointPoolCapacity(IndexPropertyH hProp)
+SIDX_C_DLL uint32_t IndexProperty_GetPointPoolCapacity(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetPointPoolCapacity", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -1309,7 +1309,7 @@ SIDX_DLL uint32_t IndexProperty_GetPointPoolCapacity(IndexPropertyH hProp)
     return 0;
 }
 
-SIDX_DLL RTError IndexProperty_SetNearMinimumOverlapFactor( IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetNearMinimumOverlapFactor( IndexPropertyH hProp, 
                                                             uint32_t value)
 {
     VALIDATE_POINTER1(  hProp, 
@@ -1344,7 +1344,7 @@ SIDX_DLL RTError IndexProperty_SetNearMinimumOverlapFactor( IndexPropertyH hProp
     return RT_None;
 }
 
-SIDX_DLL uint32_t IndexProperty_GetNearMinimumOverlapFactor(IndexPropertyH hProp)
+SIDX_C_DLL uint32_t IndexProperty_GetNearMinimumOverlapFactor(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetNearMinimumOverlapFactor", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -1372,7 +1372,7 @@ SIDX_DLL uint32_t IndexProperty_GetNearMinimumOverlapFactor(IndexPropertyH hProp
 }
 
 
-SIDX_DLL RTError IndexProperty_SetBufferingCapacity(IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetBufferingCapacity(IndexPropertyH hProp, 
                                                 uint32_t value)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_SetBufferingCapacity", RT_Failure);    
@@ -1405,7 +1405,7 @@ SIDX_DLL RTError IndexProperty_SetBufferingCapacity(IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL uint32_t IndexProperty_GetBufferingCapacity(IndexPropertyH hProp)
+SIDX_C_DLL uint32_t IndexProperty_GetBufferingCapacity(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetBufferingCapacity", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -1432,7 +1432,7 @@ SIDX_DLL uint32_t IndexProperty_GetBufferingCapacity(IndexPropertyH hProp)
     return 0;
 }
 
-SIDX_DLL RTError IndexProperty_SetEnsureTightMBRs(  IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetEnsureTightMBRs(  IndexPropertyH hProp, 
                                                     uint32_t value)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_SetEnsureTightMBRs", RT_Failure);    
@@ -1471,7 +1471,7 @@ SIDX_DLL RTError IndexProperty_SetEnsureTightMBRs(  IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL uint32_t IndexProperty_GetEnsureTightMBRs(IndexPropertyH hProp)
+SIDX_C_DLL uint32_t IndexProperty_GetEnsureTightMBRs(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetEnsureTightMBRs", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -1498,7 +1498,7 @@ SIDX_DLL uint32_t IndexProperty_GetEnsureTightMBRs(IndexPropertyH hProp)
     return 0;
 }
 
-SIDX_DLL RTError IndexProperty_SetWriteThrough(IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetWriteThrough(IndexPropertyH hProp, 
                                                     uint32_t value)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_SetWriteThrough", RT_Failure);    
@@ -1537,7 +1537,7 @@ SIDX_DLL RTError IndexProperty_SetWriteThrough(IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL uint32_t IndexProperty_GetWriteThrough(IndexPropertyH hProp)
+SIDX_C_DLL uint32_t IndexProperty_GetWriteThrough(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetWriteThrough", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -1564,7 +1564,7 @@ SIDX_DLL uint32_t IndexProperty_GetWriteThrough(IndexPropertyH hProp)
     return 0;
 }
 
-SIDX_DLL RTError IndexProperty_SetOverwrite(IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetOverwrite(IndexPropertyH hProp, 
                                             uint32_t value)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_SetOverwrite", RT_Failure);    
@@ -1603,7 +1603,7 @@ SIDX_DLL RTError IndexProperty_SetOverwrite(IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL uint32_t IndexProperty_GetOverwrite(IndexPropertyH hProp)
+SIDX_C_DLL uint32_t IndexProperty_GetOverwrite(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetOverwrite", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -1631,7 +1631,7 @@ SIDX_DLL uint32_t IndexProperty_GetOverwrite(IndexPropertyH hProp)
 }
 
 
-SIDX_DLL RTError IndexProperty_SetFillFactor(   IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetFillFactor(   IndexPropertyH hProp, 
                                                 double value)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_SetFillFactor", RT_Failure);    
@@ -1664,7 +1664,7 @@ SIDX_DLL RTError IndexProperty_SetFillFactor(   IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL double IndexProperty_GetFillFactor(IndexPropertyH hProp)
+SIDX_C_DLL double IndexProperty_GetFillFactor(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetFillFactor", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -1691,7 +1691,7 @@ SIDX_DLL double IndexProperty_GetFillFactor(IndexPropertyH hProp)
     return 0;
 }
 
-SIDX_DLL RTError IndexProperty_SetSplitDistributionFactor(  IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetSplitDistributionFactor(  IndexPropertyH hProp, 
                                                             double value)
 {
     VALIDATE_POINTER1(  hProp, 
@@ -1726,7 +1726,7 @@ SIDX_DLL RTError IndexProperty_SetSplitDistributionFactor(  IndexPropertyH hProp
     return RT_None;
 }
 
-SIDX_DLL double IndexProperty_GetSplitDistributionFactor(IndexPropertyH hProp)
+SIDX_C_DLL double IndexProperty_GetSplitDistributionFactor(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetSplitDistributionFactor", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -1753,7 +1753,7 @@ SIDX_DLL double IndexProperty_GetSplitDistributionFactor(IndexPropertyH hProp)
     return 0;
 }
 
-SIDX_DLL RTError IndexProperty_SetTPRHorizon(IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetTPRHorizon(IndexPropertyH hProp, 
                                              double value)
 {
     VALIDATE_POINTER1(  hProp, 
@@ -1788,7 +1788,7 @@ SIDX_DLL RTError IndexProperty_SetTPRHorizon(IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL double IndexProperty_GetTPRHorizon(IndexPropertyH hProp)
+SIDX_C_DLL double IndexProperty_GetTPRHorizon(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetTPRHorizon", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -1815,7 +1815,7 @@ SIDX_DLL double IndexProperty_GetTPRHorizon(IndexPropertyH hProp)
     return 0;
 }
 
-SIDX_DLL RTError IndexProperty_SetReinsertFactor(   IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetReinsertFactor(   IndexPropertyH hProp, 
                                                     double value)
 {
     VALIDATE_POINTER1(  hProp, 
@@ -1850,7 +1850,7 @@ SIDX_DLL RTError IndexProperty_SetReinsertFactor(   IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL double IndexProperty_GetReinsertFactor(IndexPropertyH hProp)
+SIDX_C_DLL double IndexProperty_GetReinsertFactor(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetReinsertFactor", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -1877,7 +1877,7 @@ SIDX_DLL double IndexProperty_GetReinsertFactor(IndexPropertyH hProp)
     return 0;
 }
 
-SIDX_DLL RTError IndexProperty_SetFileName( IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetFileName( IndexPropertyH hProp, 
                                             const char* value)
 {
     VALIDATE_POINTER1(  hProp, 
@@ -1912,7 +1912,7 @@ SIDX_DLL RTError IndexProperty_SetFileName( IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL char* IndexProperty_GetFileName(IndexPropertyH hProp)
+SIDX_C_DLL char* IndexProperty_GetFileName(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetFileName", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -1940,7 +1940,7 @@ SIDX_DLL char* IndexProperty_GetFileName(IndexPropertyH hProp)
 }
 
 
-SIDX_DLL RTError IndexProperty_SetFileNameExtensionDat( IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetFileNameExtensionDat( IndexPropertyH hProp, 
                                                         const char* value)
 {
     VALIDATE_POINTER1(  hProp, 
@@ -1976,7 +1976,7 @@ SIDX_DLL RTError IndexProperty_SetFileNameExtensionDat( IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL char* IndexProperty_GetFileNameExtensionDat(IndexPropertyH hProp)
+SIDX_C_DLL char* IndexProperty_GetFileNameExtensionDat(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetFileNameExtensionDat", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -2003,7 +2003,7 @@ SIDX_DLL char* IndexProperty_GetFileNameExtensionDat(IndexPropertyH hProp)
     return NULL;
 }
 
-SIDX_DLL RTError IndexProperty_SetFileNameExtensionIdx( IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetFileNameExtensionIdx( IndexPropertyH hProp, 
                                                         const char* value)
 {
     VALIDATE_POINTER1(  hProp, 
@@ -2039,7 +2039,7 @@ SIDX_DLL RTError IndexProperty_SetFileNameExtensionIdx( IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL char* IndexProperty_GetFileNameExtensionIdx(IndexPropertyH hProp)
+SIDX_C_DLL char* IndexProperty_GetFileNameExtensionIdx(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetFileNameExtensionIdx", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;
@@ -2066,7 +2066,7 @@ SIDX_DLL char* IndexProperty_GetFileNameExtensionIdx(IndexPropertyH hProp)
     return NULL;
 }
 
-SIDX_DLL RTError IndexProperty_SetIndexID(  IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetIndexID(  IndexPropertyH hProp, 
                                             int64_t value)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_SetIndexID", RT_Failure);    
@@ -2099,7 +2099,7 @@ SIDX_DLL RTError IndexProperty_SetIndexID(  IndexPropertyH hProp,
     return RT_None;
 }
 
-SIDX_DLL int64_t IndexProperty_GetIndexID(IndexPropertyH hProp)
+SIDX_C_DLL int64_t IndexProperty_GetIndexID(IndexPropertyH hProp)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_GetIndexID", 0);
     Tools::PropertySet* prop = (Tools::PropertySet*)hProp;

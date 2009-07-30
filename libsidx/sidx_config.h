@@ -83,14 +83,14 @@ typedef Item *IndexItemH;
 typedef Tools::PropertySet *IndexPropertyH;
 // typedef struct PropertySetHS *IndexPropertyH;
 
-#ifndef SIDX_DLL
-#if defined(_MSC_VER) && !defined(SIDX_DISABLE_DLL)
-#  define SIDX_DLL     __declspec(dllexport)
+#ifndef SIDX_C_DLL
+#if defined(_MSC_VER)
+#  define SIDX_C_DLL     __declspec(dllexport)
 #else
 #  if defined(USE_GCC_VISIBILITY_FLAG)
-#    define SIDX_DLL     __attribute__ ((visibility("default")))
+#    define SIDX_C_DLL     __attribute__ ((visibility("default")))
 #  else
-#    define SIDX_DLL
+#    define SIDX_C_DLL
 #  endif
 #endif
 #endif
