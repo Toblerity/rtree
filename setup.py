@@ -15,7 +15,7 @@ else:
     data_files = None
     libraries = ['spatialindex',]
 
-libsidx = Library('libsidx',
+libsidx = Library('sidx',
                   sources=[ 'libsidx/sidx_api.cc',
                             'libsidx/sidx_impl.cc'],
                   includes=['./libsidx'],
