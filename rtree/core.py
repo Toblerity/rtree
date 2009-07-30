@@ -3,16 +3,11 @@ import atexit, os, re, sys
 import ctypes
 from ctypes.util import find_library
 
-from ctypes import PyDLL
 import ctypes
 
 class RTreeError(Exception):
     "RTree exception, indicates a RTree-related error."
     pass
-
-# class IndexItem(ctypes.Structure):
-#     pass
-# IndexItemH = ctypes.POINTER(IndexItem)
 
 def check_return(result, func, cargs):
     "Error checking for Error calls"
