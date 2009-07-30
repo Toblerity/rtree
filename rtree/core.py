@@ -77,7 +77,7 @@ except ImportError:
 if os.name == 'nt':
     # stolen from Shapely
     # http://trac.gispython.org/projects/PCL/browser/Shapely/trunk/shapely/geos.py
-    lib_name = 'libsidx.pyd'
+    lib_name = 'libsidx.dll'
     try:
         local_dlls = os.path.abspath(os.__file__ + "../../../DLLs")
         original_path = os.environ['PATH']
