@@ -77,7 +77,7 @@ if os.name == 'nt':
         local_dlls = os.path.abspath(os.__file__ + "../../../DLLs")
         original_path = os.environ['PATH']
         os.environ['PATH'] = "%s;%s" % (local_dlls, original_path)
-        rt = ctypes.CDLL(lib_name)
+        rt = ctypes.PyDLL(lib_name)
         def free(m):
             try:
                 free = ctypes.cdll.msvcrt.free(m)
