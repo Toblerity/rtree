@@ -11,8 +11,6 @@
 #define STRDUP _strdup
 #else
 #include <spatialindex/SpatialIndex.h>
-#include <pthread.h>
-#define HAVE_PTHREAD_H 1
 #define STRDUP strdup
 #endif
 
@@ -148,46 +146,6 @@ private:
 
 };
 
-class Lock
-{
-public:
-
-    Lock() {};
-    ~Lock() {};
-private:
-    
-}; // Lock
-
-
-class Shared : public Lock
-{
-public:
-
-#if HAVE_PTHREAD_H
-    Shared(pthread_rwlock_t* pLock) : m_pLock(pLock) {pthread_rwlock_rdlock(m_pLock);}
-    ~Shared() {pthread_rwlock_unlock(m_pLock);}
-private:
-    pthread_rwlock_t* m_pLock;
-#endif
-
-}; // Shared
-
-
-class Exclusive
-{
-public:
-#if HAVE_PTHREAD_H
-    Exclusive(pthread_rwlock_t* pLock): m_pLock(pLock) {pthread_rwlock_wrlock(m_pLock);}
-    ~Exclusive() {pthread_rwlock_unlock(m_pLock);}
-
-private:
-    pthread_rwlock_t* m_pLock;
-#endif
-}; // ExclusiveLock
-
-
-
-
 
 class Index
 {
@@ -216,12 +174,6 @@ private:
     SpatialIndex::IStorageManager* m_storage;
     SpatialIndex::StorageManager::IBuffer* m_buffer;
     SpatialIndex::ISpatialIndex* m_rtree;
-    
-    bool m_Initialized;
-    SpatialIndex::id_type m_idxId;
-    
-    RTIndexType m_idxType;
-    RTStorageType m_idxStorage;
     
     Tools::PropertySet m_properties;
 

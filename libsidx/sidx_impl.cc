@@ -428,22 +428,13 @@ SpatialIndex::IStorageManager* Index::CreateStorage()
 void Index::Initialize()
 {
     m_storage = CreateStorage();
-    
     m_buffer = CreateIndexBuffer(*m_storage);
-
     m_rtree = CreateIndex();
-    
-    m_Initialized = true;
 }
 
 void Index::Setup()
 
 {   
-
-    
-    m_Initialized = false;
-    m_idxId = 1;
-    
     m_buffer = 0;
     m_storage = 0;
     m_rtree = 0;

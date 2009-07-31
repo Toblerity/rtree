@@ -23,8 +23,6 @@
 #include <windows.h>
 #else
 #include <spatialindex/SpatialIndex.h>
-#include <pthread.h>
-#define HAVE_PTHREAD_H 1
 #endif
 
 class Item;
@@ -81,7 +79,6 @@ typedef enum
 typedef Index *IndexH;
 typedef Item *IndexItemH;
 typedef Tools::PropertySet *IndexPropertyH;
-// typedef struct PropertySetHS *IndexPropertyH;
 
 #ifndef SIDX_C_DLL
 #if defined(_MSC_VER)
