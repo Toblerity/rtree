@@ -7,14 +7,14 @@ Clean up leftover data
 
   >>> import os
   >>> try:
-  ...     os.remove('/tmp/rtree_test.dat')
-  ...     os.remove('/tmp/rtree_test.idx')
+  ...     os.remove('rtree_test.dat')
+  ...     os.remove('rtree_test.idx')
   ... except OSError:
   ...     pass
 
   >>> from rtree import Rtree
-  >>> k = Rtree('/tmp/rtree_test')
-  >>> k = Rtree('/tmp/rtree_test')
+  >>> k = Rtree('rtree_test')
+  >>> k = Rtree('rtree_test')
   Traceback (most recent call last):
   ...
   RTreeError: Error in "Index_Create": Spatial Index Error: IllegalStateException: SpatialIndex::DiskStorageManager: Failed reading pageSize.
