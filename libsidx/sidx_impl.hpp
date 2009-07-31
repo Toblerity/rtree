@@ -1,5 +1,5 @@
 /******************************************************************************
- * $Id: lasheader.cpp 1326 2009-07-29 02:52:35Z hobu $
+ * $Id$
  *
  * Project:  libsidx - A C API wrapper around libspatialindex
  * Purpose:  C++ object declarations to implement the wrapper.
