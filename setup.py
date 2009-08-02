@@ -26,7 +26,7 @@ libsidx = Library('sidx',
                             'libsidx/item.cc',
                             'libsidx/objvisitor.cc',
                             'libsidx/util.cc'],
-                  include=['./libsidx'],
+                  include_dirs=['./libsidx'],
                   libraries=libraries
                   )
                   
