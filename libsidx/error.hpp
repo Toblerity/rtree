@@ -2,7 +2,7 @@
  * $Id$
  *
  * Project:  libsidx - A C API wrapper around libspatialindex
- * Purpose:  C++ object declarations to implement the wrapper.
+ * Purpose:  C++ object declarations to implement the error object.
  * Author:   Howard Butler, hobu.inc@gmail.com
  *
  ******************************************************************************
@@ -24,30 +24,28 @@
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  ****************************************************************************/
- 
-#include <stack>
-#include <string>
-#include <vector>
-#include <stdexcept>
-#include <sstream>
-#include <cstring>
 
-#ifdef _MSC_VER
-#include "SpatialIndex.h"
-#include <windows.h>
-#define STRDUP _strdup
-#else
-#include <spatialindex/SpatialIndex.h>
-#define STRDUP strdup
-#endif
+#pragma once
 
-#include "sidx_config.h"
+class Error
+{
+public:
 
-#include "util.hpp"
-#include "item.hpp"
-#include "objvisitor.hpp"
-#include "idvisitor.hpp"
-#include "boundsquery.hpp"
-#include "error.hpp"
-#include "datastream.hpp"
-#include "index.hpp"
+    Error(int code, std::string const& message, std::string const& method);
+
+    /// Copy constructor.
+    Error(Error const& other);
+
+    /// Assignment operator.
+    Error& operator=(Error const& rhs);
+
+    int GetCode() const { return m_code; };
+    const char* GetMessage() const { return m_message.c_str(); };
+    const char* GetMethod() const { return m_method.c_str(); };    
+
+private:
+
+    int m_code;
+    std::string m_message;
+    std::string m_method;
+};

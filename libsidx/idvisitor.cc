@@ -2,7 +2,7 @@
  * $Id$
  *
  * Project:  libsidx - A C API wrapper around libspatialindex
- * Purpose:  C++ object declarations to implement the wrapper.
+ * Purpose:  C++ objects to implement the id visitor.
  * Author:   Howard Butler, hobu.inc@gmail.com
  *
  ******************************************************************************
@@ -24,30 +24,30 @@
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  ****************************************************************************/
- 
-#include <stack>
-#include <string>
-#include <vector>
-#include <stdexcept>
-#include <sstream>
-#include <cstring>
 
-#ifdef _MSC_VER
-#include "SpatialIndex.h"
-#include <windows.h>
-#define STRDUP _strdup
-#else
-#include <spatialindex/SpatialIndex.h>
-#define STRDUP strdup
-#endif
+#include "sidx_impl.hpp"
 
-#include "sidx_config.h"
+IdVisitor::IdVisitor(): nResults(0)
+{
+}
 
-#include "util.hpp"
-#include "item.hpp"
-#include "objvisitor.hpp"
-#include "idvisitor.hpp"
-#include "boundsquery.hpp"
-#include "error.hpp"
-#include "datastream.hpp"
-#include "index.hpp"
+IdVisitor::~IdVisitor()
+{
+
+}
+
+void IdVisitor::visitNode(const SpatialIndex::INode& n)
+{
+
+}
+
+void IdVisitor::visitData(const SpatialIndex::IData& d)
+{
+    nResults += 1;
+    
+    m_vector.push_back(d.getIdentifier());
+}
+
+void IdVisitor::visitData(std::vector<const SpatialIndex::IData*>& v)
+{
+}

@@ -24,30 +24,42 @@
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  ****************************************************************************/
- 
-#include <stack>
-#include <string>
-#include <vector>
-#include <stdexcept>
-#include <sstream>
-#include <cstring>
 
-#ifdef _MSC_VER
-#include "SpatialIndex.h"
-#include <windows.h>
-#define STRDUP _strdup
-#else
-#include <spatialindex/SpatialIndex.h>
-#define STRDUP strdup
-#endif
+#pragma once
 
-#include "sidx_config.h"
+class Index
+{
 
-#include "util.hpp"
-#include "item.hpp"
-#include "objvisitor.hpp"
-#include "idvisitor.hpp"
-#include "boundsquery.hpp"
-#include "error.hpp"
-#include "datastream.hpp"
-#include "index.hpp"
+public:
+    Index(const Tools::PropertySet& poProperties);
+    ~Index();
+
+    const Tools::PropertySet& GetProperties() { return m_properties; }
+
+    bool insertFeature(uint64_t id, double *min, double *max);
+    
+    RTIndexType GetIndexType();
+    void SetIndexType(RTIndexType v);
+
+    RTStorageType GetIndexStorage();
+    void SetIndexStorage(RTStorageType v);
+    
+    RTIndexVariant GetIndexVariant();
+    void SetIndexVariant(RTStorageType v);
+    
+    SpatialIndex::ISpatialIndex& index() {return *m_rtree;}
+private:
+
+    void Initialize();
+    SpatialIndex::IStorageManager* m_storage;
+    SpatialIndex::StorageManager::IBuffer* m_buffer;
+    SpatialIndex::ISpatialIndex* m_rtree;
+    
+    Tools::PropertySet m_properties;
+
+
+    void Setup();
+    SpatialIndex::IStorageManager* CreateStorage();
+    SpatialIndex::StorageManager::IBuffer* CreateIndexBuffer(SpatialIndex::IStorageManager& storage);
+    SpatialIndex::ISpatialIndex* CreateIndex();
+};

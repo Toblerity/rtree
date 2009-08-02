@@ -2,7 +2,7 @@
  * $Id$
  *
  * Project:  libsidx - A C API wrapper around libspatialindex
- * Purpose:  C++ object declarations to implement the wrapper.
+ * Purpose:  C++ object declarations to implement the datastream.
  * Author:   Howard Butler, hobu.inc@gmail.com
  *
  ******************************************************************************
@@ -25,29 +25,28 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  ****************************************************************************/
  
-#include <stack>
-#include <string>
-#include <vector>
-#include <stdexcept>
-#include <sstream>
-#include <cstring>
+#pragma once
 
-#ifdef _MSC_VER
-#include "SpatialIndex.h"
-#include <windows.h>
-#define STRDUP _strdup
-#else
-#include <spatialindex/SpatialIndex.h>
-#define STRDUP strdup
-#endif
+class DataStream : public SpatialIndex::IDataStream
+{
+public:
+    DataStream(int (*readNext)(SpatialIndex::id_type* id, double *pMin, double *pMax, uint32_t nDimension, const uint8_t* pData, size_t nDataLength));
+    ~DataStream();
 
-#include "sidx_config.h"
+    SpatialIndex::IData* getNext();
+    bool hasNext() throw (Tools::NotSupportedException);
 
-#include "util.hpp"
-#include "item.hpp"
-#include "objvisitor.hpp"
-#include "idvisitor.hpp"
-#include "boundsquery.hpp"
-#include "error.hpp"
-#include "datastream.hpp"
-#include "index.hpp"
+    size_t size() throw (Tools::NotSupportedException);
+    void rewind() throw (Tools::NotSupportedException);
+
+protected:
+    SpatialIndex::RTree::Data* m_pNext;
+    SpatialIndex::id_type m_id;
+
+private:
+    int (*iterfunct)(SpatialIndex::id_type* id, double *pMin, double *pMax, uint32_t nDimension, const uint8_t* pData, size_t nDataLength);
+    
+    bool readData();
+
+};
+

@@ -2,7 +2,7 @@
  * $Id$
  *
  * Project:  libsidx - A C API wrapper around libspatialindex
- * Purpose:  C++ object declarations to implement the wrapper.
+ * Purpose:  C++ objects to implement the error object.
  * Author:   Howard Butler, hobu.inc@gmail.com
  *
  ******************************************************************************
@@ -24,30 +24,31 @@
  * along with this library; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  ****************************************************************************/
- 
-#include <stack>
-#include <string>
-#include <vector>
-#include <stdexcept>
-#include <sstream>
-#include <cstring>
 
-#ifdef _MSC_VER
-#include "SpatialIndex.h"
-#include <windows.h>
-#define STRDUP _strdup
-#else
-#include <spatialindex/SpatialIndex.h>
-#define STRDUP strdup
-#endif
+#include "sidx_impl.hpp"
 
-#include "sidx_config.h"
+Error::Error(int code, std::string const& message, std::string const& method) :
+    m_code(code),
+    m_message(message),
+    m_method(method)
+{
+}
 
-#include "util.hpp"
-#include "item.hpp"
-#include "objvisitor.hpp"
-#include "idvisitor.hpp"
-#include "boundsquery.hpp"
-#include "error.hpp"
-#include "datastream.hpp"
-#include "index.hpp"
+Error::Error(Error const& other) :
+    m_code(other.m_code),
+    m_message(other.m_message),
+    m_method(other.m_method)
+{
+}
+
+Error& Error::operator=(Error const& rhs)
+{
+    if (&rhs != this)
+    {
+        m_code = rhs.m_code;
+        m_message = rhs.m_message;
+        m_method = rhs.m_method;
+
+    }
+    return *this;
+}
