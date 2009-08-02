@@ -17,8 +17,16 @@ else:
 
 libsidx = Library('sidx',
                   sources=[ 'libsidx/sidx_api.cc',
-                            'libsidx/sidx_impl.cc'],
-                  includes=['./libsidx'],
+                            # 'libsidx/sidx_impl.cc',
+                            'libsidx/boundsquery.cc',
+                            'libsidx/datastream.cc',
+                            'libsidx/error.cc',
+                            'libsidx/idvisitor.cc',
+                            'libsidx/index.cc',
+                            'libsidx/item.cc',
+                            'libsidx/objvisitor.cc',
+                            'libsidx/util.cc'],
+                  include=['./libsidx'],
                   libraries=libraries
                   )
                   
