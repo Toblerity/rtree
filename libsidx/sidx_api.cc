@@ -2122,7 +2122,7 @@ SIDX_C_DLL char* IndexProperty_GetFileNameExtensionIdx(IndexPropertyH hProp)
     return NULL;
 }
 
-SIDX_C_DLL RTError IndexProperty_SetIndexID(  IndexPropertyH hProp, 
+SIDX_C_DLL RTError IndexProperty_SetIndexID(IndexPropertyH hProp, 
                                             int64_t value)
 {
     VALIDATE_POINTER1(hProp, "IndexProperty_SetIndexID", RT_Failure);    

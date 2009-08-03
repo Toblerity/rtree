@@ -31,7 +31,9 @@
 DataStream::DataStream(int (*readNext)(SpatialIndex::id_type * id, double *pMin, double *pMax, uint32_t nDimension, const uint8_t* pData, size_t nDataLength)) :m_pNext(0)
 {
     iterfunct = readNext;
-    bool read = readData();
+    
+    // Read the first one.
+    readData();
 }
 
 DataStream::~DataStream()

@@ -195,7 +195,22 @@ Reopen the index
     10
     
     >>> del idx_cust2
-    
+
+A stream of data need that needs to be an iterator that will raise a 
+StopIteration.  It must be in the following form:
+
+(id, (minx, maxx, miny, maxy, minz, maxz, ..., ..., mink, maxk), object)
+
+The object can be None, but you must put a place holder of 'None' there.
+Because of the desire for kD support, we must not interleave the 
+coordinates when using a stream.
+    >>> data = []
+    >>> for i, (minx, miny, maxx, maxy) in enumerate(boxes15):
+    ...        data.append((i, (minx, maxx, miny, maxy), None))
+    >>> len(data)
+    100
+    >>> strm_idx = index.Rtree('stream', data, properties = p)
+
 Clean up leftover data
     
     >>> files = ['defaultidx.dat','defaultidx.idx',

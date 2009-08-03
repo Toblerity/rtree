@@ -32,6 +32,12 @@ class Index(object):
             basename = args[0]
         else:
             basename = None
+        
+        try:
+            args[1]
+            stream = args[1]
+        except:
+            stream = None
             
         if basename:
             self.properties.storage = RT_Disk
