@@ -127,14 +127,15 @@ SIDX_C_DLL IndexH Index_Create(IndexPropertyH hProp)
 }
 
 SIDX_C_DLL IndexH Index_CreateWithStream( IndexPropertyH hProp,
-                                        int (*readNext)(uint64_t *id, double *pMin, double *pMax, uint32_t nDimension, const uint8_t* pData, uint32_t nDataLength)
+                                        int (*readNext)(SpatialIndex::id_type *id, double *pMin, double *pMax, uint32_t nDimension, const uint8_t* pData, size_t nDataLength)
                                        )
 {
     VALIDATE_POINTER1(hProp, "Index_CreateWithStream", NULL);   
     Tools::PropertySet* prop = static_cast<Tools::PropertySet*>(hProp);
+
     
     try { 
-        return (IndexH) new Index(*prop); 
+        return (IndexH) new Index(*prop, readNext); 
     } catch (Tools::Exception& e)
     {
         Error_PushError(RT_Failure, 

@@ -75,7 +75,10 @@ class Index(object):
         except KeyError:
             pass
         
-        self.handle = core.rt.Index_Create(self.properties.handle)
+        if stream:
+            self.handle = self._create_idx_from_stream(self.properties, stream)
+        else:
+            self.handle = core.rt.Index_Create(self.properties.handle)
         self.owned = True
     
     def __del__(self):
@@ -309,6 +312,36 @@ class Index(object):
         return results
     bounds = property(get_bounds)
 
+    def _create_idx_from_stream(self, properties, stream):
+        """A stream of data need that needs to be an iterator that will raise a 
+        StopIteration.  It must be in the following form:
+
+        (id, (minx, maxx, miny, maxy, minz, maxz, ..., ..., mink, maxk), object)
+
+        The object can be None, but you must put a place holder of 'None' there.
+        Because of the desire for kD support, we must not interleave the 
+        coordinates when using a stream."""
+        def py_next_item(id, coordinates, obj):
+            p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
+            dimension = properties.dimension
+            if obj:
+                pik = pickle.dumps(obj)
+                size = len(pik)
+                d = ctypes.create_string_buffer(pik)
+                d.value = pik
+
+                p = ctypes.pointer(d)
+                data = ctypes.cast(p, ctypes.POINTER(ctypes.c_uint8))
+            else:
+                data = ctypes.c_ubyte(0)
+                size = 0
+            print 'in py_next_item!'
+            import pdb;pdb.set_trace()
+            yield (id, p_mins, p_maxs, dimension, data, size)
+            
+        next = core.NEXTFUNC(py_next_item)
+        return core.rt.Index_CreateWithStream(properties.handle, next)
+        
 class Rtree(Index):
     def __init__(self, *args, **kwargs):
         

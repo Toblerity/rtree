@@ -113,6 +113,18 @@ rt.Index_Create.argtypes = [ctypes.c_void_p]
 rt.Index_Create.restype = ctypes.c_void_p
 rt.Index_Create.errcheck = check_void
 
+NEXTFUNC = ctypes.CFUNCTYPE(ctypes.c_int, 
+                            ctypes.POINTER(ctypes.c_uint64),
+                            ctypes.POINTER(ctypes.c_double),
+                            ctypes.POINTER(ctypes.c_double),
+                            ctypes.c_uint32,
+                            ctypes.POINTER(ctypes.c_ubyte),
+                            ctypes.c_size_t)
+
+rt.Index_CreateWithStream.argtypes = [ctypes.c_void_p, NEXTFUNC] 
+rt.Index_CreateWithStream.restype = ctypes.c_void_p
+rt.Index_CreateWithStream.errcheck = check_void
+
 rt.Index_Destroy.argtypes = [ctypes.c_void_p]
 rt.Index_Destroy.restype = None
 rt.Index_Destroy.errcheck = check_void_done
