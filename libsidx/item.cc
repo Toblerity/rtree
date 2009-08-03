@@ -46,10 +46,9 @@ Item::~Item()
 Item::Item(Item const& other) : m_id(other.m_id), 
                                 m_length(other.m_length)
 {
-    void *p = 0;
     if (m_length > 0) {
         m_data = new uint8_t[m_length];
-        p = std::memcpy(m_data, other.m_data, m_length);
+        memcpy(m_data, other.m_data, m_length);
     } else
         m_data = 0;
 
@@ -65,13 +64,12 @@ Item& Item::operator=(Item const& rhs)
 
     if (&rhs != this )
     {
-        void *p = 0;
         m_id = rhs.m_id;
         m_length = rhs.m_length;
 
         if (m_length > 0) {
             m_data = new uint8_t[m_length];
-            p = std::memcpy(m_data, rhs.m_data, m_length);
+            memcpy(m_data, rhs.m_data, m_length);
         } else
             m_data = 0;
             
