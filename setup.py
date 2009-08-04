@@ -23,7 +23,7 @@ else:
     
     from setuptools import Extension
 
-libsidx = Extension('sidx',
+libsidx = Extension('libsidx',
                   sources=[ 'libsidx/sidx_api.cc',
                             # 'libsidx/sidx_impl.cc',
                             'libsidx/boundsquery.cc',
