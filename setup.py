@@ -1,6 +1,7 @@
 
 from glob import glob
-from setuptools import setup, Library
+from setuptools import setup
+
 
 # Get text from README.txt
 readme_text = file('README.txt', 'rb').read()
@@ -11,11 +12,18 @@ import os
 if os.name == 'nt':
     data_files=[('DLLs',[r'c:\cvs\buildkit\spatialindex\spatialindex1.dll',]),]
     libraries = ['spatialindex_i',]
+    
+    # because Extension building without init{modulename} doesn't work 
+    # on windows
+    from setuptools import Library as Extension
+
 else:
     data_files = None
     libraries = ['spatialindex',]
+    
+    from setuptools import Extension
 
-libsidx = Library('sidx',
+libsidx = Extension('sidx',
                   sources=[ 'libsidx/sidx_api.cc',
                             # 'libsidx/sidx_impl.cc',
                             'libsidx/boundsquery.cc',
