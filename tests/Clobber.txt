@@ -18,3 +18,10 @@ Clean up leftover data
   Traceback (most recent call last):
   ...
   RTreeError: Error in "Index_Create": Spatial Index Error: IllegalStateException: SpatialIndex::DiskStorageManager: Failed reading pageSize.
+  
+  >>> del k
+  >>> try:
+  ...     os.remove('rtree_test.dat')
+  ...     os.remove('rtree_test.idx')
+  ... except OSError:
+  ...     pass
