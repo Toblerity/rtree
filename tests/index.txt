@@ -251,20 +251,3 @@ Try streaming against a persisted index
     
     >>> hits[0].object
     42
-    
-Clean up leftover data
-    
-    >>> files = ['defaultidx.dat','defaultidx.idx',
-    ...          'pagesize3.dat','pagesize3.idx',
-    ...          'testing.dat','testing.idx',
-    ...          'custom.data','custom.index',
-    ...          'streamed.idx','streamed.dat']
-    >>> import os
-    >>> import time
-    >>> for f in files:
-    ...     try:
-    ...         os.remove(f)
-    ...     except OSError:
-    ...         time.sleep(0.1)
-    ...         os.remove(f)
-
