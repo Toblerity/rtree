@@ -65,7 +65,7 @@ bool DataStream::readData()
     }
     
     SpatialIndex::Region r = SpatialIndex::Region(pMin, pMax, nDimension);
-    m_pNext = new SpatialIndex::RTree::Data::Data(nDataLength, (byte*)p_data, r, id);
+    m_pNext = new SpatialIndex::RTree::Data(nDataLength, (byte*)p_data, r, id);
 
     return true;
 }
