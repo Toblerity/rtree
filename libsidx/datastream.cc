@@ -55,7 +55,7 @@ bool DataStream::readData()
     }
     
     int ret = iterfunct(&id, &pMin, &pMax, &nDimension, &p_data, &nDataLength);
- q  
+
     // The callback should return anything other than 0 
     // when it is done.
     if (ret != 0) 
