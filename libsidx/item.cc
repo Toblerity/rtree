@@ -38,7 +38,7 @@ Item::Item( uint64_t id):
 Item::~Item()
 {
     if (m_data != 0)
-        delete m_data;
+        delete[] m_data;
     if (m_bounds != 0)
         delete m_bounds;
 }
@@ -87,6 +87,10 @@ void Item::SetData(const uint8_t* data, uint64_t length)
     
     // Don't do anything if we have no length
     if (m_length < 1) return;
+
+    if (m_data != 0) {
+        delete[] m_data;
+    }
     
     m_data = new uint8_t[length];
     
