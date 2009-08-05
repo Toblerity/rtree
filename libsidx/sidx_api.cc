@@ -139,18 +139,18 @@ SIDX_C_DLL IndexH Index_CreateWithStream( IndexPropertyH hProp,
     {
         Error_PushError(RT_Failure, 
                         e.what().c_str(), 
-                        "Index_Create");
+                        "Index_CreateWithStream");
         return NULL;
     } catch (std::exception const& e)
     {
         Error_PushError(RT_Failure, 
                         e.what(), 
-                        "Index_Create");
+                        "Index_CreateWithStream");
         return NULL;
     } catch (...) {
         Error_PushError(RT_Failure, 
                         "Unknown Error", 
-                        "Index_Create");
+                        "Index_CreateWithStream");
         return NULL;        
     }
     return NULL;
