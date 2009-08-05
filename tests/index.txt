@@ -196,11 +196,13 @@ Reopen the index
     
     >>> del idx_cust2
 
-  >>> r = Rtree()
-  >>> r.add(1, (2, 2))
-  >>> r.add(1, (3, 3))
-  >>> r.intersection((0, 0, 5, 5))
-  [1L, 1L]
+Adding the same id twice does not overwrite existing data
+
+    >>> r = Rtree()
+    >>> r.add(1, (2, 2))
+    >>> r.add(1, (3, 3))
+    >>> r.intersection((0, 0, 5, 5))
+    [1L, 1L]
 
 A stream of data need that needs to be an iterator that will raise a 
 StopIteration.  It must be in the following form:
@@ -233,12 +235,30 @@ coordinates when using a stream.
     >>> hits[0].object
     42
 
+Try streaming against a persisted index
+    >>> strm_idx = index.Rtree('streamed', data, properties = p)
+
+    >>> hits = [n for n in strm_idx.intersection((0, 0, 60, 60))]
+    >>> len(hits)
+    10
+    
+    >>> sorted(hits)
+    [0L, 4L, 16L, 27L, 35L, 40L, 47L, 50L, 76L, 80L]
+
+    >>> hits = [n for n in strm_idx.intersection((0, 0, 60, 60), objects=True)]
+    >>> len(hits)
+    10
+    
+    >>> hits[0].object
+    42
+    
 Clean up leftover data
     
     >>> files = ['defaultidx.dat','defaultidx.idx',
     ...          'pagesize3.dat','pagesize3.idx',
     ...          'testing.dat','testing.idx',
-    ...          'custom.data','custom.index']
+    ...          'custom.data','custom.index',
+    ...          'streamed.idx','streamed.dat']
     >>> import os
     >>> import time
     >>> for f in files:
