@@ -126,7 +126,7 @@ SIDX_C_DLL IndexH Index_Create(IndexPropertyH hProp)
 }
 
 SIDX_C_DLL IndexH Index_CreateWithStream( IndexPropertyH hProp,
-                                        int (*readNext)(SpatialIndex::id_type *id, double *pMin, double *pMax, uint32_t nDimension, const uint8_t* pData, size_t nDataLength)
+                                        int (*readNext)(SpatialIndex::id_type *id, double **pMin, double **pMax, uint32_t *nDimension, const uint8_t **pData, size_t *nDataLength)
                                        )
 {
     VALIDATE_POINTER1(hProp, "Index_CreateWithStream", NULL);   

@@ -27,17 +27,21 @@ class Index(object):
             self.properties = kwargs['properties']
         except KeyError:
             self.properties = Property()
-            
-        if args:
-            basename = args[0]
-        else:
-            basename = None
         
-        try:
-            args[1]
-            stream = args[1]
-        except:
-            stream = None
+        stream = None
+        basename = None
+        if args:
+            if isinstance(args[0], str):
+                basename = args[0]
+            else:
+                stream = args[0]
+        
+        if not stream:
+            try:
+                args[1]
+                stream = args[1]
+            except:
+                pass
             
         if basename:
             self.properties.storage = RT_Disk
@@ -76,7 +80,7 @@ class Index(object):
             pass
         
         if stream:
-            self.handle = self._create_idx_from_stream(self.properties, stream)
+            self.handle = self._create_idx_from_stream(stream)
         else:
             self.handle = core.rt.Index_Create(self.properties.handle)
         self.owned = True
@@ -312,7 +316,7 @@ class Index(object):
         return results
     bounds = property(get_bounds)
 
-    def _create_idx_from_stream(self, properties, stream):
+    def _create_idx_from_stream(self, stream):
         """A stream of data need that needs to be an iterator that will raise a 
         StopIteration.  It must be in the following form:
 
@@ -321,26 +325,59 @@ class Index(object):
         The object can be None, but you must put a place holder of 'None' there.
         Because of the desire for kD support, we must not interleave the 
         coordinates when using a stream."""
-        def py_next_item(id, coordinates, obj):
-            p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
-            dimension = properties.dimension
+        
+        stream_iter = iter(stream)
+
+        def py_next_item(p_id, p_mins, p_maxs, p_dimension, p_data, p_length):
+
+            
+            try:
+                item = stream_iter.next()
+            except StopIteration:
+               # we're done 
+               return -1
+            
+            # set the id
+            p_id[0] = item[0]
+            
+            # set the mins
+            coordinates = item[1]
+            darray = ctypes.c_double * self.properties.dimension
+            mins = darray()
+            maxs = darray()
+            for i in range(self.properties.dimension):
+                mins[i] = coordinates[i*2]
+                maxs[i] = coordinates[(i*2)+1]
+            
+            p_mins[0] = ctypes.cast(mins, ctypes.POINTER(ctypes.c_double))
+            p_maxs[0] = ctypes.cast(maxs, ctypes.POINTER(ctypes.c_double))
+
+            # set the dimension
+            p_dimension[0] = self.properties.dimension
+            obj = item[2]
             if obj:
+
                 pik = pickle.dumps(obj)
                 size = len(pik)
                 d = ctypes.create_string_buffer(pik)
                 d.value = pik
-
-                p = ctypes.pointer(d)
-                data = ctypes.cast(p, ctypes.POINTER(ctypes.c_uint8))
-            else:
-                data = ctypes.c_ubyte(0)
-                size = 0
-            print 'in py_next_item!'
-            import pdb;pdb.set_trace()
-            yield (id, p_mins, p_maxs, dimension, data, size)
             
+                p = ctypes.pointer(d)
+                data = ctypes.cast(p, ctypes.POINTER(ctypes.c_ubyte))
+
+            else:
+                data = ctypes.pointer(ctypes.c_ubyte(0))
+                size = 0
+            
+            p_data[0] = ctypes.cast(data, ctypes.POINTER(ctypes.c_ubyte)) #ctypes.pointer(ctypes.c_ubyte(0))
+            p_length[0] = size
+
+
+            return 0
+
+
         next = core.NEXTFUNC(py_next_item)
-        return core.rt.Index_CreateWithStream(properties.handle, next)
+        return core.rt.Index_CreateWithStream(self.properties.handle, next)
         
 class Rtree(Index):
     def __init__(self, *args, **kwargs):

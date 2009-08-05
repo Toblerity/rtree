@@ -100,7 +100,7 @@ Index::~Index()
 }
 
 Index::Index(   const Tools::PropertySet& poProperties, 
-                int (*readNext)(SpatialIndex::id_type *id, double *pMin, double *pMax, uint32_t nDimension, const uint8_t* pData, size_t nDataLength)) 
+                int (*readNext)(SpatialIndex::id_type *id, double **pMin, double **pMax, uint32_t *nDimension, const uint8_t **pData, size_t *nDataLength)) 
 {
     using namespace SpatialIndex;
         
@@ -118,7 +118,7 @@ Index::Index(   const Tools::PropertySet& poProperties,
     uint32_t nIdxLeafCap = 100;
     uint32_t nIdxDimension = 2;
     SpatialIndex::RTree::RTreeVariant eVariant = SpatialIndex::RTree::RV_RSTAR;
-    SpatialIndex::id_type *m_IdxIdentifier = 0;
+    SpatialIndex::id_type m_IdxIdentifier;
 
     // Fetch a bunch of properties.  We can't bulk load an rtree using merely 
     // properties, we have to use the helper method(s).
@@ -163,10 +163,10 @@ Index::Index(   const Tools::PropertySet& poProperties,
     var = m_properties.getProperty("TreeVariant");
     if (var.m_varType != Tools::VT_EMPTY)
     {
-        if (var.m_varType != Tools::VT_ULONG)
-            throw std::runtime_error("Index::Index (streaming): Property TreeVariant must be Tools::VT_ULONG");
+        if (var.m_varType != Tools::VT_LONG)
+            throw std::runtime_error("Index::Index (streaming): Property TreeVariant must be Tools::VT_LONG");
         
-        eVariant = static_cast<SpatialIndex::RTree::RTreeVariant>(var.m_val.ulVal);
+        eVariant = static_cast<SpatialIndex::RTree::RTreeVariant>(var.m_val.lVal);
     }
 
     var = m_properties.getProperty("IndexIdentifier");
@@ -175,7 +175,7 @@ Index::Index(   const Tools::PropertySet& poProperties,
         if (var.m_varType != Tools::VT_LONGLONG)
             throw std::runtime_error("Index::Index (streaming): Property IndexIdentifier must be Tools::VT_LONGLONG");
         
-        m_IdxIdentifier = &var.m_val.llVal;
+        m_IdxIdentifier = var.m_val.llVal;
     }
     
     m_rtree = RTree::createAndBulkLoadNewRTree(   SpatialIndex::RTree::BLM_STR,
@@ -186,7 +186,7 @@ Index::Index(   const Tools::PropertySet& poProperties,
                                                   nIdxLeafCap,
                                                   nIdxDimension,
                                                   eVariant,
-                                                  *m_IdxIdentifier);
+                                                  m_IdxIdentifier);
 }
     
 

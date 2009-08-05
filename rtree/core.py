@@ -72,7 +72,7 @@ except ImportError:
 if os.name == 'nt':
     # stolen from Shapely
     # http://trac.gispython.org/projects/PCL/browser/Shapely/trunk/shapely/geos.py
-    lib_name = 'sidx.dll'
+    lib_name = 'libsidx.dll'
     try:
         local_dlls = os.path.abspath(os.__file__ + "../../../DLLs")
         original_path = os.environ['PATH']
@@ -91,7 +91,6 @@ elif os.name == 'posix':
     platform = os.uname()[0]
     lib_name = 'libsidx.so'
     if platform == 'Darwin':
-        lib_name = 'libsidx.dylib'
         free = ctypes.CDLL(find_library('libc')).free
     else:        
         free = ctypes.CDLL(find_library('libc.so.6')).free
@@ -115,11 +114,11 @@ rt.Index_Create.errcheck = check_void
 
 NEXTFUNC = ctypes.CFUNCTYPE(ctypes.c_int, 
                             ctypes.POINTER(ctypes.c_uint64),
-                            ctypes.POINTER(ctypes.c_double),
-                            ctypes.POINTER(ctypes.c_double),
-                            ctypes.c_uint32,
-                            ctypes.POINTER(ctypes.c_ubyte),
-                            ctypes.c_size_t)
+                            ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+                            ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+                            ctypes.POINTER(ctypes.c_uint32),
+                            ctypes.POINTER(ctypes.POINTER(ctypes.c_ubyte)),
+                            ctypes.POINTER(ctypes.c_size_t))
 
 rt.Index_CreateWithStream.argtypes = [ctypes.c_void_p, NEXTFUNC] 
 rt.Index_CreateWithStream.restype = ctypes.c_void_p

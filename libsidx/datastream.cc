@@ -28,7 +28,7 @@
 #include "sidx_impl.hpp"
 
 
-DataStream::DataStream(int (*readNext)(SpatialIndex::id_type * id, double *pMin, double *pMax, uint32_t nDimension, const uint8_t* pData, size_t nDataLength)) :m_pNext(0)
+DataStream::DataStream(int (*readNext)(SpatialIndex::id_type * id, double **pMin, double **pMax, uint32_t *nDimension, const uint8_t** pData, size_t *nDataLength)) :m_pNext(0),m_bDoneReading(false)
 {
     iterfunct = readNext;
     
@@ -43,30 +43,38 @@ DataStream::~DataStream()
 
 bool DataStream::readData()
 {
-    SpatialIndex::id_type* id=0;
-    double **pMin=0;
-    double **pMax=0;
-    uint32_t *nDimension=0;
-    const uint8_t** pData=0;
-    size_t *nDataLength=0;
+    SpatialIndex::id_type id;
+    double *pMin=0;
+    double *pMax=0;
+    uint32_t nDimension=0;
+    const uint8_t *p_data=0;
+    size_t nDataLength=0;
     
-    int ret = iterfunct(id, *pMin, *pMax, *nDimension, *pData, *nDataLength);
-
+    if (m_bDoneReading == true) {
+        return false;
+    }
+    
+    int ret = iterfunct(&id, &pMin, &pMax, &nDimension, &p_data, &nDataLength);
+ q  
     // The callback should return anything other than 0 
     // when it is done.
-    if (ret) return false;
+    if (ret != 0) 
+    {
+        m_bDoneReading = true;
+        return false;
+    }
     
+    SpatialIndex::Region r = SpatialIndex::Region(pMin, pMax, nDimension);
+    m_pNext = new SpatialIndex::RTree::Data::Data(nDataLength, (byte*)p_data, r, id);
 
-    SpatialIndex::Region r = SpatialIndex::Region(*pMin, *pMax, *nDimension);
-    m_pNext = new SpatialIndex::RTree::Data(*nDataLength, (byte*)*pData, r, *id);
-    
-     // std::cout << "Read point " << r <<  "Id: " << m_id << std::endl;
     return true;
 }
 
 
 SpatialIndex::IData* DataStream::getNext()
 {
+    // std::cout << "DataStream::getNext called ..." << std::endl;
+
     if (m_pNext == 0) return 0;
 
     SpatialIndex::RTree::Data* ret = m_pNext;
@@ -77,7 +85,7 @@ SpatialIndex::IData* DataStream::getNext()
 
 bool DataStream::hasNext() throw (Tools::NotSupportedException)
 {
-    std::cout << "LASIndexDataStream::hasNext called ..." << std::endl;
+    // std::cout << "DataStream::hasNext called ..." << std::endl;
     return (m_pNext != 0);
 }
 
@@ -89,11 +97,11 @@ size_t DataStream::size() throw (Tools::NotSupportedException)
 void DataStream::rewind() throw (Tools::NotSupportedException)
 {
     throw Tools::NotSupportedException("Operation not supported.");
-    std::cout << "LASIndexDataStream::rewind called..." << std::endl;
+    // std::cout << "DataStream::rewind called..." << std::endl;
 
-    // if (m_pNext != 0)
-    // {
-    //  delete m_pNext;
-    //  m_pNext = 0;
-    // }
+    if (m_pNext != 0)
+    {
+     delete m_pNext;
+     m_pNext = 0;
+    }
 }
