@@ -1,2 +1,10 @@
-recursive-include rtree *.h
+include README.txt
+include MANIFEST.in
+include CHANGES.txt
+include DEPENDENCIES.txt
+include FAQ.txt
+recursive-include libsidx *.hpp
+recursive-include libsidx *.cc
+recursive-include libsidx *.h
+
 
