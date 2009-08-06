@@ -70,8 +70,6 @@ except ImportError:
     HAS_NUMPY = False
 
 if os.name == 'nt':
-    # stolen from Shapely
-    # http://trac.gispython.org/projects/PCL/browser/Shapely/trunk/shapely/geos.py
     lib_name = 'libsidx.dll'
     try:
         local_dlls = os.path.abspath(os.__file__ + "../../../DLLs")
@@ -85,16 +83,15 @@ if os.name == 'nt':
                 pass
     except (ImportError, WindowsError):
         raise
-
-
 elif os.name == 'posix':
     platform = os.uname()[0]
     lib_name = 'libsidx.so'
+    local_library_path = os.path.abspath(os.path.dirname(__file__) + "/..")
     if platform == 'Darwin':
         free = ctypes.CDLL(find_library('libc')).free
-    else:        
+    else:
         free = ctypes.CDLL(find_library('libc.so.6')).free
-    rt = ctypes.CDLL(lib_name)
+    rt = ctypes.CDLL(os.path.join(local_library_path, lib_name))
 else:
     raise RTreeError('Unsupported OS "%s"' % os.name)
 
