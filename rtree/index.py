@@ -382,14 +382,7 @@ class Item(object):
         core.rt.IndexItem_GetData(self.handle, ctypes.byref(d), ctypes.byref(length))
         if not length.value:
             return None
-        data = ctypes.cast(d, ctypes.POINTER(ctypes.c_ubyte * length.value))
-        output = []
-        
-        # this is dumb, someone smarter please fix - hobu
-        for i in range(length.value):
-            output.append(chr(data.contents[i]))
-        output = ''.join(output)
-        return output
+        return ctypes.string_at(d, length.value)
     
     def get_object(self):
         # short circuit this so we only do it at construction time
@@ -429,7 +422,6 @@ class Item(object):
         core.rt.Index_Free(ctypes.cast(p_maxs, ctypes.POINTER(ctypes.c_void_p)))
                 
         return results
-
 
 class Property(object):
     def __init__(self, handle = None, owned=True):

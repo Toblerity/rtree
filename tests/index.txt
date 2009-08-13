@@ -92,11 +92,10 @@ Check that nearest returns *all* of the items that are nearby (with objects)
     ...         (16, 10, 16, 10)]
     
     >>> for i, (minx, miny, maxx, maxy) in enumerate(locs):
-    ...        idx2.add(i, (minx, miny, maxx, maxy), obj=42)
+    ...        idx2.add(i, (minx, miny, maxx, maxy), obj={'a': 42})
 
-    >>> sorted([i.id for i in idx2.nearest((15, 10, 15, 10), 1, objects=True)])
-    [0L, 1L]
-
+    >>> sorted([(i.id, i.object) for i in idx2.nearest((15, 10, 15, 10), 1, objects=True)])
+    [(0L, {'a': 42}), (1L, {'a': 42})]
 
 
     >>> idx2 = Rtree()
