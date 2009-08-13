@@ -30,8 +30,8 @@
 class ObjVisitor : public SpatialIndex::IVisitor
 {
 private:
-    size_t m_indexIO;
-    size_t m_leafIO;
+    uint32_t m_indexIO;
+    uint32_t m_leafIO;
     std::vector<Item*> m_vector;
     uint32_t nResults;
 

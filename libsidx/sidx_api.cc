@@ -126,7 +126,7 @@ SIDX_C_DLL IndexH Index_Create(IndexPropertyH hProp)
 }
 
 SIDX_C_DLL IndexH Index_CreateWithStream( IndexPropertyH hProp,
-                                        int (*readNext)(SpatialIndex::id_type *id, double **pMin, double **pMax, uint32_t *nDimension, const uint8_t **pData, size_t *nDataLength)
+                                        int (*readNext)(SpatialIndex::id_type *id, double **pMin, double **pMax, uint32_t *nDimension, const uint8_t **pData, uint32_t *nDataLength)
                                        )
 {
     VALIDATE_POINTER1(hProp, "Index_CreateWithStream", NULL);   
@@ -203,7 +203,7 @@ SIDX_C_DLL RTError Index_InsertData(  IndexH index,
                                     double* pdMax, 
                                     uint32_t nDimension,
                                     const uint8_t* pData, 
-                                    size_t nDataLength)
+                                    uint32_t nDataLength)
 {
     VALIDATE_POINTER1(index, "Index_InsertData", RT_Failure);      
 
@@ -285,7 +285,7 @@ SIDX_C_DLL RTError Index_Intersects_obj(  IndexH index,
         // we need to make sure to copy the actual Item instead 
         // of just the pointers, as the visitor will nuke them 
         // upon ~
-        for (size_t i=0; i < visitor->GetResultCount(); ++i)
+        for (uint32_t i=0; i < visitor->GetResultCount(); ++i)
         {
             (*items)[i] = new Item(*results[i]);
 
@@ -339,7 +339,7 @@ SIDX_C_DLL RTError Index_Intersects_id(   IndexH index,
         
         std::vector<uint64_t>& results = visitor->GetResults();
 
-        for (size_t i=0; i < *nResults; ++i)
+        for (uint32_t i=0; i < *nResults; ++i)
         {
             (*ids)[i] = results[i];
 
@@ -395,7 +395,7 @@ SIDX_C_DLL RTError Index_NearestNeighbors_id(IndexH index,
 
         *nResults = results.size();
         
-        for (size_t i=0; i < *nResults; ++i)
+        for (uint32_t i=0; i < *nResults; ++i)
         {
             (*ids)[i] = results[i];
 
@@ -454,7 +454,7 @@ SIDX_C_DLL RTError Index_NearestNeighbors_obj(IndexH index,
         // we need to make sure to copy the actual Item instead 
         // of just the pointers, as the visitor will nuke them 
         // upon ~
-        for (size_t i=0; i < visitor->GetResultCount(); ++i)
+        for (uint32_t i=0; i < visitor->GetResultCount(); ++i)
         {
             (*items)[i] = new Item(*results[i]);
 

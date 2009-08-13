@@ -115,7 +115,7 @@ NEXTFUNC = ctypes.CFUNCTYPE(ctypes.c_int,
                             ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
                             ctypes.POINTER(ctypes.c_uint32),
                             ctypes.POINTER(ctypes.POINTER(ctypes.c_ubyte)),
-                            ctypes.POINTER(ctypes.c_size_t))
+                            ctypes.POINTER(ctypes.c_uint32))
 
 rt.Index_CreateWithStream.argtypes = [ctypes.c_void_p, NEXTFUNC] 
 rt.Index_CreateWithStream.restype = ctypes.c_void_p
@@ -143,7 +143,7 @@ rt.Index_InsertData.argtypes = [ctypes.c_void_p,
                                 ctypes.POINTER(ctypes.c_double), 
                                 ctypes.c_uint32, 
                                 ctypes.POINTER(ctypes.c_ubyte), 
-                                ctypes.c_size_t]
+                                ctypes.c_uint32]
 rt.Index_InsertData.restype = ctypes.c_int
 rt.Index_InsertData.errcheck = check_return
 

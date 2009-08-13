@@ -100,7 +100,7 @@ Index::~Index()
 }
 
 Index::Index(   const Tools::PropertySet& poProperties, 
-                int (*readNext)(SpatialIndex::id_type *id, double **pMin, double **pMax, uint32_t *nDimension, const uint8_t **pData, size_t *nDataLength)) 
+                int (*readNext)(SpatialIndex::id_type *id, double **pMin, double **pMax, uint32_t *nDimension, const uint8_t **pData, uint32_t *nDataLength)) 
 {
     using namespace SpatialIndex;
         

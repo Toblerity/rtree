@@ -28,7 +28,7 @@
 #include "sidx_impl.hpp"
 
 
-DataStream::DataStream(int (*readNext)(SpatialIndex::id_type * id, double **pMin, double **pMax, uint32_t *nDimension, const uint8_t** pData, size_t *nDataLength)) :m_pNext(0),m_bDoneReading(false)
+DataStream::DataStream(int (*readNext)(SpatialIndex::id_type * id, double **pMin, double **pMax, uint32_t *nDimension, const uint8_t** pData, uint32_t *nDataLength)) :m_pNext(0),m_bDoneReading(false)
 {
     iterfunct = readNext;
     
@@ -48,7 +48,7 @@ bool DataStream::readData()
     double *pMax=0;
     uint32_t nDimension=0;
     const uint8_t *p_data=0;
-    size_t nDataLength=0;
+    uint32_t nDataLength=0;
     
     if (m_bDoneReading == true) {
         return false;
@@ -89,7 +89,7 @@ bool DataStream::hasNext() throw (Tools::NotSupportedException)
     return (m_pNext != 0);
 }
 
-size_t DataStream::size() throw (Tools::NotSupportedException)
+uint32_t DataStream::size() throw (Tools::NotSupportedException)
 {
     throw Tools::NotSupportedException("Operation not supported.");
 }

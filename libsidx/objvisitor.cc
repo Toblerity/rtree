@@ -57,7 +57,7 @@ void ObjVisitor::visitData(const SpatialIndex::IData& d)
 
     // data should be an array of characters representing a Region as a string.
     uint8_t* data = 0;
-    size_t length = 0;
+    uint32_t length = 0;
     d.getData(length, &data);
 
     Item* item = new Item(d.getIdentifier());
