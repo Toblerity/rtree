@@ -185,18 +185,8 @@ class Index(object):
                                         ctypes.byref(it), 
                                         ctypes.byref(p_num_results))
 
-        items = ctypes.cast(it,ctypes.POINTER(ctypes.c_uint64 * p_num_results.value))
+        return list(self._get_ids(it, p_num_results.value))
 
-        results = []
-
-        for i in range(p_num_results.value):
-            results.append(items.contents[i])
-        
-        
-        its = ctypes.cast(items,ctypes.POINTER(ctypes.c_void_p))
-        core.rt.Index_Free(its)
-        
-        return results
     
     def _intersection_obj(self, coordinates):
         
@@ -212,19 +202,27 @@ class Index(object):
                                         self.properties.dimension, 
                                         ctypes.byref(it), 
                                         ctypes.byref(p_num_results))
+        return list(self._get_objects(it, p_num_results.value))
 
-        items = ctypes.cast(it,ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p * p_num_results.value)))
+    def _get_objects(self, it, num_results):
+        # take the pointer, yield the result objects and free
+        items = ctypes.cast(it,ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p * num_results)))
 
-        results = []
+        for i in xrange(num_results):
+            yield Item(handle=items[i])
 
-        for i in range(p_num_results.value):
-            it = Item(handle=items[i])
-            results.append(it)
-        
-        items = ctypes.cast(items,ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)))
-        core.rt.Index_DestroyObjResults(items, p_num_results.value)
-        
-        return results
+        its = ctypes.cast(items,ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)))
+        core.rt.Index_DestroyObjResults(its, num_results)
+
+    def _get_ids(self, it, num_results):
+        # take the pointer, yield the results  and free
+        items = ctypes.cast(it,ctypes.POINTER(ctypes.c_uint64 * num_results))
+
+        for i in xrange(num_results):
+            yield items.contents[i]
+
+        its = ctypes.cast(items,ctypes.POINTER(ctypes.c_void_p))
+        core.rt.Index_Free(its)
 
     def _nearest_obj(self, coordinates, num_results):
         
@@ -241,17 +239,7 @@ class Index(object):
                                             ctypes.byref(it), 
                                             p_num_results)
 
-        items = ctypes.cast(it,ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p * p_num_results.contents.value)))
-        
-        results = []
-
-        for i in range(p_num_results.contents.value):
-            it = Item(handle=items[i])
-            results.append(it)
-        
-        its = ctypes.cast(items,ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)))
-        core.rt.Index_DestroyObjResults(its, p_num_results.contents.value)
-        return results
+        return list(self._get_objects(it, p_num_results.contents.value))
         
     def nearest(self, coordinates, num_results, objects=False):
         if objects: return self._nearest_obj(coordinates, num_results)
@@ -269,20 +257,8 @@ class Index(object):
                                             ctypes.byref(it), 
                                             p_num_results)
 
+        return list(self._get_ids(it, p_num_results.contents.value))
 
-        # import pdb;pdb.set_trace()
-        items = ctypes.cast(it,ctypes.POINTER(ctypes.c_uint64 * p_num_results.contents.value))
-
-        results = []
-#        import pdb;pdb.set_trace()
-        for i in range(p_num_results.contents.value):
-            results.append(items.contents[i])
-        
-        its = ctypes.cast(items,ctypes.POINTER(ctypes.c_void_p))
-        core.rt.Index_Free(its)
-        
-        return results
-    
     def delete(self, id, coordinates):
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         core.rt.Index_DeleteData(self.handle, id, p_mins, p_maxs, self.properties.dimension)
