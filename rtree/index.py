@@ -1,7 +1,10 @@
 
 import core
 import ctypes
-import pickle
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 import os
 import os.path
@@ -149,28 +152,38 @@ class Index(object):
         
         return (p_mins, p_maxs)
 
+    def _serialize(self, obj, dumps=pickle.dumps):
+        serialized = dumps(obj)
+        size = len(serialized)
+
+        d = ctypes.create_string_buffer(serialized)
+        d.value = serialized
+        p = ctypes.pointer(d)
+
+        return size, ctypes.cast(p, ctypes.POINTER(ctypes.c_uint8))
+
     def insert(self, id, coordinates, obj = None):
 
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         if obj:
-            pik = pickle.dumps(obj)
-            size = len(pik)
-            d = ctypes.create_string_buffer(pik)
-            d.value = pik
-            
-            p = ctypes.pointer(d)
-            data = ctypes.cast(p, ctypes.POINTER(ctypes.c_uint8))
-            # data = (ctypes.c_ubyte * size)()
-            # for i in range(size):
-            #     data[i] = ord(pik[i])
+            size, data = self._serialize(obj)
         else:
             data = ctypes.c_ubyte(0)
             size = 0
         core.rt.Index_InsertData(self.handle, id, p_mins, p_maxs, self.properties.dimension, data, size)
     add = insert
     
-    def intersection(self, coordinates, objects=False):
-        if objects: return self._intersection_obj(coordinates)
+    def intersection(self, coordinates, objects=False, as_list=True):
+        """\
+        return the items in the index that intersect the bounds given
+        in `coordinates` 
+        if `objects` is true, the objects will be returned, wrapped
+        in an Item class, with each object available as item.object
+        if `as_list` is False, the method will return an iterator of 
+        the results.
+        """
+
+        if objects: return self._intersection_obj(coordinates, as_list)
         
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
@@ -185,10 +198,12 @@ class Index(object):
                                         ctypes.byref(it), 
                                         ctypes.byref(p_num_results))
 
-        return list(self._get_ids(it, p_num_results.value))
+        if as_list:
+            return list(self._get_ids(it, p_num_results.value))
+        return self._get_ids(it, p_num_results.value)
 
     
-    def _intersection_obj(self, coordinates):
+    def _intersection_obj(self, coordinates, as_list):
         
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
@@ -202,7 +217,9 @@ class Index(object):
                                         self.properties.dimension, 
                                         ctypes.byref(it), 
                                         ctypes.byref(p_num_results))
-        return list(self._get_objects(it, p_num_results.value))
+        if as_list:
+            return list(self._get_objects(it, p_num_results.value))
+        return self._get_objects(it, p_num_results.value)
 
     def _get_objects(self, it, num_results):
         # take the pointer, yield the result objects and free
@@ -332,15 +349,7 @@ class Index(object):
             p_dimension[0] = self.properties.dimension
             obj = item[2]
             if obj:
-
-                pik = pickle.dumps(obj)
-                size = len(pik)
-                d = ctypes.create_string_buffer(pik)
-                d.value = pik
-            
-                p = ctypes.pointer(d)
-                data = ctypes.cast(p, ctypes.POINTER(ctypes.c_ubyte))
-
+                size, data = self._serialize(obj)
             else:
                 data = ctypes.pointer(ctypes.c_ubyte(0))
                 size = 0

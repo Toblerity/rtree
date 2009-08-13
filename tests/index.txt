@@ -41,6 +41,21 @@ Fetch our straggler that contains a pickled object
     42
     [34.3776829412, 49.3776829412, 26.737585373400002, 41.737585373400002]
 
+
+Can also get the results back as an iterator by requesting as_list=False
+    >>> iterator = idx.intersection((0, 0, 60, 60), objects=True, as_list=False)
+    >>> iterator
+    <generator object ...>
+
+    >>> len(list(iterator)) == len(hits)
+    True
+
+    >>> itlist = sorted(list(idx.intersection((0, 0, 60, 60), objects=False, as_list=False)))
+    >>> aslist = sorted(idx.intersection((0, 0, 60, 60), objects=False))
+    >>> itlist == aslist
+    True
+
+
 Find the three items nearest to this one
     >>> hits = [n for n in idx.nearest((0,0,10,10), 3)]
     >>> hits
