@@ -127,7 +127,7 @@ Check that nearest returns *all* of the items that are nearby (with objects)
 
 Default page size 4096
 
-    >>> idx3 = Rtree("defaultidx")
+    >>> idx3 = Rtree(u"defaultidx")
     >>> for i, coords in enumerate(boxes15):
     ...     idx3.add(i, coords)
     >>> hits = [n for n in idx3.intersection((0, 0, 60, 60))]

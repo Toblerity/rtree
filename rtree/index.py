@@ -34,7 +34,7 @@ class Index(object):
         stream = None
         basename = None
         if args:
-            if isinstance(args[0], str):
+            if isinstance(args[0], basestring):
                 basename = args[0]
             else:
                 stream = args[0]
