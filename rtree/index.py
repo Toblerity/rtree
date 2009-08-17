@@ -23,6 +23,35 @@ RT_TPRTree = 2
 
 sidx_version = core.rt.SIDX_Version()
 
+
+def _get_bounds(handle, bounds_fn, interleaved):
+    pp_mins = ctypes.pointer(ctypes.c_double())
+    pp_maxs = ctypes.pointer(ctypes.c_double())
+    dimension = ctypes.c_uint32(0)
+    
+    bounds_fn(handle, 
+            ctypes.byref(pp_mins), 
+            ctypes.byref(pp_maxs), 
+            ctypes.byref(dimension))
+    if (dimension.value == 0): return None
+
+    mins = ctypes.cast(pp_mins,ctypes.POINTER(ctypes.c_double \
+                                                      * dimension.value))
+    maxs = ctypes.cast(pp_maxs,ctypes.POINTER(ctypes.c_double \
+                                                      * dimension.value))
+
+    results = [mins.contents[i] for i in range(dimension.value)]
+    results += [maxs.contents[i] for i in range(dimension.value)]
+
+    p_mins = ctypes.cast(mins,ctypes.POINTER(ctypes.c_double))
+    p_maxs = ctypes.cast(maxs,ctypes.POINTER(ctypes.c_double))
+    core.rt.Index_Free(ctypes.cast(p_mins, ctypes.POINTER(ctypes.c_void_p))) 
+    core.rt.Index_Free(ctypes.cast(p_maxs, ctypes.POINTER(ctypes.c_void_p)))
+    if interleaved: # they want bbox order.    
+        return results
+    return Index.deinterleave(results)
+
+
 class Index(object):
     def __init__(self,  *args, **kwargs):
 
@@ -30,6 +59,9 @@ class Index(object):
             self.properties = kwargs['properties']
         except KeyError:
             self.properties = Property()
+
+        # interleaved True gives 'bbox' order.
+        self.interleaved = bool(kwargs.get('interleaved', True))
         
         stream = None
         basename = None
@@ -105,51 +137,33 @@ class Index(object):
             iter(coordinates)
         except TypeError:
             raise TypeError('Bounds must be a sequence')
-
+        dimension = self.properties.dimension
         
-        mins = ctypes.c_double*self.properties.dimension
-        maxs = ctypes.c_double*self.properties.dimension
+        mins = ctypes.c_double * dimension
+        maxs = ctypes.c_double * dimension
 
-        if self.properties.dimension == 2:
-            if len(coordinates) == 4:
-                if  (coordinates [0] > coordinates[2]) or \
-                    (coordinates[1] > coordinates[3]):
-                    raise core.RTreeError("Coordinates must not have minimums more than maximums")
+        if not self.interleaved:
+            coordinates = Index.interleave(coordinates)
 
-                p_mins = mins(  ctypes.c_double(coordinates[0]), 
-                                ctypes.c_double(coordinates[1]))
+        # it's a point make it into a bbox. [x, y] => [x, y, x, y]
+        if len(coordinates) == dimension:
+            coordinates = coordinates + coordinates
 
-                p_maxs = maxs(  ctypes.c_double(coordinates[2]), 
-                                ctypes.c_double(coordinates[3]))
+        if len(coordinates) != dimension * 2:
+            raise core.RTreeError("Coordinates must be in the form "
+                                    "(minx, miny, maxx, maxy) or (x, y) for 2D indexes")
 
-            elif len(coordinates) == 2:
-                p_mins = mins(  ctypes.c_double(coordinates[0]), 
-                                ctypes.c_double(coordinates[1]))
-                                
-                p_maxs = maxs(  ctypes.c_double(coordinates[0]), 
-                                ctypes.c_double(coordinates[1]))
-            else:
-                raise core.RTreeError(  "Coordinates must be in the form "
-                                        "(minx, miny, maxx, maxy) or (x, y) for 2D indexes")
-
-        elif self.properties.dimension == 3:
-            if  (coordinates[0] > coordinates[3]) or \
-                (coordinates[1] > coordinates[4]) or \
-                (coordinates[4] > coordinates[5]):
+        # so here all coords are in the form:
+        # [xmin, ymin, zmin, xmax, ymax, zmax]
+        for i in range(dimension):
+            if not coordinates[i] <= coordinates[i + dimension]:
                 raise core.RTreeError("Coordinates must not have minimums more than maximums")
 
-            if len(coordinates) != 6:
-                raise core.RTreeError(  "Coordinates must be in the form "
-                                        "(minx, miny, maxx, maxy, minz, maxz) for 3D indexes")
-            
-            p_mins = mins(  ctypes.c_double(coordinates[0]), 
-                            ctypes.c_double(coordinates[1]), 
-                            ctypes.c_double(coordinates[4]))
+            p_mins = mins(*[ctypes.c_double(\
+                                coordinates[i]) for i in range(dimension)])
+            p_maxs = maxs(*[ctypes.c_double(\
+                            coordinates[i + dimension]) for i in range(dimension)])
 
-            p_maxs = maxs(  ctypes.c_double(coordinates[3]), 
-                            ctypes.c_double(coordinates[4]), 
-                            ctypes.c_double(coordinates[5]))
-        
         return (p_mins, p_maxs)
 
     def _serialize(self, obj, dumps=pickle.dumps):
@@ -276,38 +290,62 @@ class Index(object):
 
         return list(self._get_ids(it, p_num_results.contents.value))
 
+    def get_bounds(self, coordinate_interleaved=None):
+        if coordinate_interleaved is None:
+            coordinate_interleaved = self.interleaved
+        return _get_bounds(self.handle, core.rt.Index_GetBounds, coordinate_interleaved)
+    bounds = property(get_bounds)
+
     def delete(self, id, coordinates):
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         core.rt.Index_DeleteData(self.handle, id, p_mins, p_maxs, self.properties.dimension)
     
     def valid(self):
         return core.rt.Index_IsValid(self.handle)
-    
-    def get_bounds(self):
-        pp_mins = ctypes.pointer(ctypes.c_double())
-        pp_maxs = ctypes.pointer(ctypes.c_double())
-        dimension = ctypes.c_uint32(0)
+
+    @classmethod
+    def deinterleave(self, interleaved):
+        """
+        [xmin, ymin, xmax, ymax] => [xmin, xmax, ymin, ymax]
+
+        >>> Index.deinterleave([0, 10, 1, 11])
+        [0, 1, 10, 11]
+
+        >>> Index.deinterleave([0, 1, 2, 10, 11, 12])
+        [0, 10, 1, 11, 2, 12]
+
+        """
+        assert len(interleaved) % 2 == 0, ("must be a pairwise list")
+        dimension = len(interleaved) / 2
+        di = []
+        for i in range(dimension):
+            di.extend([interleaved[i], interleaved[i + dimension]])
+        return di
+
+    @classmethod
+    def interleave(self, deinterleaved):
+        """
+        [xmin, xmax, ymin, ymax, zmin, zmax] => [xmin, ymin, zmin, xmax, ymax, zmax]
+
+        >>> Index.interleave([0, 1, 10, 11])
+        [0, 10, 1, 11]
+
+        >>> Index.interleave([0, 10, 1, 11, 2, 12])
+        [0, 1, 2, 10, 11, 12]
+
+        >>> Index.interleave((-1, 1, 58, 62, 22, 24))
+        [-1, 58, 22, 1, 62, 24]
+
+        """
+        assert len(deinterleaved) % 2 == 0, ("must be a pairwise list")
+        dimension = len(deinterleaved) / 2
+        interleaved = []
+        for i in range(2):
+            interleaved.extend([deinterleaved[i + j] \
+                                for j in range(0, len(deinterleaved), 2)])
+        return interleaved
         
-        core.rt.Index_GetBounds(self.handle, 
-                                ctypes.byref(pp_mins), 
-                                ctypes.byref(pp_maxs), 
-                                ctypes.byref(dimension))
-        if (dimension.value == 0): return None
-
-        mins = ctypes.cast(pp_mins,ctypes.POINTER(ctypes.c_double * dimension.value))
-        maxs = ctypes.cast(pp_maxs,ctypes.POINTER(ctypes.c_double * dimension.value))
-        results = []
-        for i in range(dimension.value):
-            results.append(mins.contents[i])
-            results.append(maxs.contents[i])
-
-        p_mins = ctypes.cast(mins,ctypes.POINTER(ctypes.c_double))
-        p_maxs = ctypes.cast(maxs,ctypes.POINTER(ctypes.c_double))
-        core.rt.Index_Free(ctypes.cast(p_mins, ctypes.POINTER(ctypes.c_void_p)))
-        core.rt.Index_Free(ctypes.cast(p_maxs, ctypes.POINTER(ctypes.c_void_p)))
-                
-        return results
-    bounds = property(get_bounds)
+    
 
     def _create_idx_from_stream(self, stream):
         """A stream of data need that needs to be an iterator that will raise a 
@@ -380,8 +418,8 @@ class Item(object):
         
         self.object = None
         self.object = self.get_object()
-        self.bounds = None
-        self.bounds = self.get_bounds()
+        self.bbox = _get_bounds(self.handle, core.rt.IndexItem_GetBounds, True)
+        self.bounds = Index.deinterleave(self.bbox) 
 
     def get_data(self):
         if self.object: return self.object
@@ -403,34 +441,6 @@ class Item(object):
             return o
         return None
     
-    def get_bounds(self):
-        # import pdb;pdb.set_trace()
-        if self.bounds: return self.bounds
-        
-        pp_mins = ctypes.pointer(ctypes.c_double())
-        pp_maxs = ctypes.pointer(ctypes.c_double())
-        dimension = ctypes.c_uint32(0)
-        
-        core.rt.IndexItem_GetBounds(self.handle, 
-                                    ctypes.byref(pp_mins), 
-                                    ctypes.byref(pp_maxs), 
-                                    ctypes.byref(dimension))
-        
-        if not dimension.value: return None
-
-        mins = ctypes.cast(pp_mins,ctypes.POINTER(ctypes.c_double * dimension.value))
-        maxs = ctypes.cast(pp_maxs,ctypes.POINTER(ctypes.c_double * dimension.value))
-        results = []
-        for i in range(dimension.value):
-            results.append(mins.contents[i])
-            results.append(maxs.contents[i])
-
-        p_mins = ctypes.cast(mins,ctypes.POINTER(ctypes.c_double))
-        p_maxs = ctypes.cast(maxs,ctypes.POINTER(ctypes.c_double))
-        core.rt.Index_Free(ctypes.cast(p_mins, ctypes.POINTER(ctypes.c_void_p)))
-        core.rt.Index_Free(ctypes.cast(p_maxs, ctypes.POINTER(ctypes.c_void_p)))
-                
-        return results
 
 class Property(object):
     def __init__(self, handle = None, owned=True):

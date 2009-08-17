@@ -37,9 +37,9 @@ Fetch our straggler that contains a pickled object
     >>> for i in hits:
     ...     if i.id == 4321:
     ...         i.object
-    ...         i.bounds
+    ...         i.bbox
     42
-    [34.3776829412, 49.3776829412, 26.737585373400002, 41.737585373400002]
+    [34.3776829412, 26.737585373400002, 49.3776829412, 41.737585373400002]
 
 
 Can also get the results back as an iterator by requesting as_list=False
@@ -63,7 +63,13 @@ Find the three items nearest to this one
     >>> len(hits)
     3
     
+
+Default order is [xmin, ymin, xmax, ymax]
     >>> idx.bounds
+    [-186.673789279, -96.717721818399994, 184.76138755599999, 96.604369977800005]
+
+To get in order [xmin, xmax, ymin, ymax (... for n-d indexes)] use the kwarg:
+    >>> idx.get_bounds(coordinate_interleaved=False)
     [-186.673789279, 184.76138755599999, -96.717721818399994, 96.604369977800005]
 
 Delete index members
@@ -174,13 +180,35 @@ Make a 3D index
     >>> p = index.Property()
     >>> p.dimension = 3
     
-    >>> idx3d = index.Index(properties=p)
+
+with interleaved=False, the order of input and output is: 
+(xmin, xmax, ymin, ymax, zmin, zmax)
+
+    >>> idx3d = index.Index(properties=p, interleaved=False)
     >>> idx3d
     <rtree.index.Index object at 0x...>
     
-    >>> idx3d.insert(1, (0, 0, 60, 60, 23.0, 42.0))
+    >>> idx3d.insert(1, (0, 0, 60, 60, 22, 22.0))
     
-    >>> idx3d.intersection( (-1, -1, 62, 62, 22, 43))
+    >>> idx3d.intersection((-1, 1, 58, 62, 22, 24))
+    [1L]
+
+
+Make a 4D index
+    >>> p = index.Property()
+    >>> p.dimension = 4
+    
+
+with interleaved=False, the order of input and output is: 
+(xmin, xmax, ymin, ymax, zmin, zmax, kmin, kmax)
+
+    >>> idx4d = index.Index(properties=p, interleaved=False)
+    >>> idx4d
+    <rtree.index.Index object at 0x...>
+    
+    >>> idx4d.insert(1, (0, 0, 60, 60, 22, 22.0, 128, 142))
+    
+    >>> idx4d.intersection((-1, 1, 58, 62, 22, 24, 120, 150))
     [1L]
 
 Check that we can make an index with custom filename extensions
