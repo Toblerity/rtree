@@ -33,7 +33,7 @@ def test_suite():
                               optionflags=optionflags,
                               setUp=setUp)
          for filename
-         in list_doctests()])
+         in sorted(list_doctests())])
 
 if __name__ == "__main__":
     runner = unittest.TextTestRunner()
