@@ -53,8 +53,74 @@ def _get_bounds(handle, bounds_fn, interleaved):
 
 
 class Index(object):
+    """An R-Tree, MVR-Tree, or TPR-Tree indexing object"""
+    
     def __init__(self,  *args, **kwargs):
+        """Creates a new index
+        
+        :param filename: 
+            The first argument in the constructor is assumed to be a filename 
+            determining that a file-based storage for the index should be used.  
+            If the first argument is not of type basestring, it is then 
+            assumed to be an input index item stream.
+        
+        :param stream:
+            If the first argument in the constructor is not of type basestring, 
+            it is assumed to be an interable stream of data that will raise a 
+            StopIteration.  It must be in deinterleaved form::
+            
+                (id, (minx, maxx, miny, maxy, minz, maxz, ..., ..., mink, maxk), object)
 
+            The object can be None, but you must put a place holder of ``None`` there.
+            Because of the desire for kD support, we must not interleave the 
+            coordinates when using a stream.
+        
+        :param interleaved: True or False, defaults to True.
+            This parameter determines the coordinate order for all methods that 
+            take in coordinates.  
+
+        :param properties: An :class:`index.Property` object 
+            This object sets both the creation and instantiation properties 
+            for the object and they are passed down into libspatialindex.  
+            A few properties are curried from instantiation parameters 
+            for you like ``pagesize`` and ``overwrite``
+            to ensure compatibility with previous versions of the library.  All 
+            other properties must be set on the object.
+            
+        .. warning::
+            The coordinate ordering for all functions are sensitive the the 
+            index's :attr:`interleaved` data member.  If :attr:`interleaved` 
+            is False, the coordinates must be in the form 
+            [xmin, xmax, ymin, ymax, ..., ..., kmin, kmax]. If :attr:`interleaved` 
+            is True, the coordinates must be in the form 
+            [xmin, ymin, ..., kmin, xmax, ymax, ..., kmax].
+
+        A basic example
+
+        ::
+
+            >>> p = index.Property()
+    
+            >>> idx = index.Index(properties=p)
+            >>> idx
+            <rtree.index.Index object at 0x...>
+    
+        Insert an item into the index::
+
+            >>> idx.insert(4321, (34.3776829412, 26.7375853734, 49.3776829412, 41.7375853734), obj=42)
+
+        Query::
+        
+            >>> hits = [n for n in idx.intersection((0, 0, 60, 60), objects=True)]
+            >>> for i in hits:
+            ...     if i.id == 4321:
+            ...         i.object
+            ...         i.bbox
+            42
+            [34.3776829412, 26.737585373400002, 49.3776829412, 41.737585373400002]
+
+
+        """
         try:
             self.properties = kwargs['properties']
         except KeyError:
@@ -177,7 +243,22 @@ class Index(object):
         return size, ctypes.cast(p, ctypes.POINTER(ctypes.c_uint8))
 
     def insert(self, id, coordinates, obj = None):
+        """Inserts an item into the index with the given coordinates.  
+        
+        :param id: long integer
+            A long integer that is the identifier for this index entry.  IDs 
+            need not be unique to be inserted into the index, and it is up 
+            to the user to ensure they are unique if this is a requirement.
 
+        :param coordinates: sequence or array
+            This may be an object that satisfieds the numpy array 
+            protocol, providing the index's dimension * 2 coordinate 
+            pairs representing the mink and maxk coordinates in 
+            each dimension defining the bounds of the query window.
+        
+        :param obj: a pickleable object.  If not None, this object will be 
+            stored in the index with the :attr:`id`.  
+        """
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         if obj:
             size, data = self._serialize(obj)
@@ -188,13 +269,21 @@ class Index(object):
     add = insert
     
     def intersection(self, coordinates, objects=False, as_list=True):
-        """\
-        return the items in the index that intersect the bounds given
-        in `coordinates` 
-        if `objects` is true, the objects will be returned, wrapped
-        in an Item class, with each object available as item.object
-        if `as_list` is False, the method will return an iterator of 
-        the results.
+        """Return ids or objects in the index that intersect the given coordinates.
+        
+        :param coordinates: sequence or array
+            This may be an object that satisfieds the numpy array 
+            protocol, providing the index's dimension * 2 coordinate 
+            pairs representing the mink and maxk coordinates in 
+            each dimension defining the bounds of the query window.
+        
+        :param objects: True or False
+            If True, the intersection method will return index objects that 
+            were pickled when they were stored with each index entry, as 
+            well as the id and bounds of the index entries.
+            
+        :param as_list: true or False
+            If False, the method will return an iterator of the results.
         """
 
         if objects: return self._intersection_obj(coordinates, as_list)
@@ -273,11 +362,30 @@ class Index(object):
         return list(self._get_objects(it, p_num_results.contents.value))
         
     def nearest(self, coordinates, num_results, objects=False):
+        """Returns the ``k``-nearest objects to the given coordinates.
+        
+        :param coordinates: sequence or array
+            This may be an object that satisfieds the numpy array 
+            protocol, providing the index's dimension * 2 coordinate 
+            pairs representing the mink and maxk coordinates in 
+            each dimension defining the bounds of the query window.
+        
+        :param num_results: integer
+            The number of results to return nearest to the given coordinates.
+            If two index entries are equidistant, *both* are returned.  
+            This property means that :attr:`num_results` may return more 
+            items than specified
+        
+        :param objects: True or False
+            If True, the nearest method will return index objects that 
+            were pickled when they were stored with each index entry, as 
+            well as the id and bounds of the index entries.
+        
+        """
         if objects: return self._nearest_obj(coordinates, num_results)
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
         p_num_results = ctypes.pointer(ctypes.c_uint32(num_results))
-        # p_num_results.contents = ctypes.c_uint32(num_results)
         
         it = ctypes.pointer(ctypes.c_uint64())
         
@@ -291,12 +399,37 @@ class Index(object):
         return list(self._get_ids(it, p_num_results.contents.value))
 
     def get_bounds(self, coordinate_interleaved=None):
+        """Returns the bounds of the index
+        
+        :param coordinate_interleaved: If True, the coordinates are turned 
+            in the form [xmin, ymin, ..., kmin, xmax, ymax, ..., kmax], 
+            otherwise they are returned as 
+            [xmin, xmax, ymin, ymax, ..., ..., kmin, kmax].  If not specified,
+            the :attr:`interleaved` member of the index is used, which 
+            defaults to True.
+            
+        """
         if coordinate_interleaved is None:
             coordinate_interleaved = self.interleaved
         return _get_bounds(self.handle, core.rt.Index_GetBounds, coordinate_interleaved)
     bounds = property(get_bounds)
 
     def delete(self, id, coordinates):
+        """Deletes items from the index with the given ``'id'`` within the 
+        specified coordinates.
+        
+        :param id: long integer
+            A long integer that is the identifier for this index entry.  IDs 
+            need not be unique to be inserted into the index, and it is up 
+            to the user to ensure they are unique if this is a requirement.
+
+        :param coordinates: sequence or array
+            This may be an object that satisfieds the numpy array 
+            protocol, providing the index's dimension * 2 coordinate 
+            pairs representing the mink and maxk coordinates in 
+            each dimension defining the bounds of the query window.
+     
+        """
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         core.rt.Index_DeleteData(self.handle, id, p_mins, p_maxs, self.properties.dimension)
     
@@ -348,14 +481,7 @@ class Index(object):
     
 
     def _create_idx_from_stream(self, stream):
-        """A stream of data need that needs to be an iterator that will raise a 
-        StopIteration.  It must be in the following form:
-
-        (id, (minx, maxx, miny, maxy, minz, maxz, ..., ..., mink, maxk), object)
-
-        The object can be None, but you must put a place holder of 'None' there.
-        Because of the desire for kD support, we must not interleave the 
-        coordinates when using a stream."""
+        """"""
         
         stream_iter = iter(stream)
 
@@ -392,7 +518,7 @@ class Index(object):
                 data = ctypes.pointer(ctypes.c_ubyte(0))
                 size = 0
             
-            p_data[0] = ctypes.cast(data, ctypes.POINTER(ctypes.c_ubyte)) #ctypes.pointer(ctypes.c_ubyte(0))
+            p_data[0] = ctypes.cast(data, ctypes.POINTER(ctypes.c_ubyte))
             p_length[0] = size
 
 
