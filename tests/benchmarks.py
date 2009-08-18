@@ -38,24 +38,41 @@ bounds = (minx, miny, maxx, maxy)
 count = 50000
 points = []
 
-# props = rtree.index.Property()
-# props.point_pool_capacity = 100000
-# props.region_pool_capacity = 6000
-# props.index_capacity = 10
-# props.leaf_capacity = 10
-# props.dimension=2
 # index = Rtree(properties = props)
 index = Rtree()
-
-
-
 disk_index = Rtree('test', overwrite=1)
+
 for i in xrange(count):
     x = random.randrange(minx, maxx) * random.random()
     y = random.randrange(miny, maxy) * random.random()
     points.append(Point(x, y))
-    index.add(i, (x, y))
-    disk_index.add(i, (x,y))
+
+i = 0
+coordinates = []
+for point in points:
+    index.add(i, (point.x, point.y))
+    disk_index.add(i, (point.x,point.y))
+    i+=1
+    coordinates.append((i, (point.x, point.x, point.y, point.y), None))
+
+s ="""
+bulk = Rtree(coordinates[0:2000])
+"""
+t = timeit.Timer(stmt=s, setup='from __main__ import coordinates, Rtree')
+print "\nStream load:"
+print "%.2f usec/pass" % (1000000 * t.timeit(number=100)/100)
+
+s ="""
+idx = Rtree()
+i = 0
+for point in points[0:2000]:
+    idx.add(i, (point.x, point.y))
+    i+=1
+"""
+t = timeit.Timer(stmt=s, setup='from __main__ import points, Rtree')
+print "\nOne-at-a-time load:"
+print "%.2f usec/pass" % (1000000 * t.timeit(number=100)/100)
+
 
 bbox = (240000, 130000, 400000, 350000)
 
