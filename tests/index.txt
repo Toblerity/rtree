@@ -21,7 +21,7 @@ Add 100 largish boxes randomly distributed over the domain
     >>> for i, coords in enumerate(boxes15):
     ...     idx.add(i, coords)
     
-    >>> hits = [n for n in idx.intersection((0, 0, 60, 60))]
+    >>> hits = idx.intersection((0, 0, 60, 60))
     >>> len(hits)
     10
     
@@ -33,7 +33,7 @@ Insert an object into the index that can be pickled
     >>> idx.insert(4321, (34.3776829412, 26.7375853734, 49.3776829412, 41.7375853734), obj=42)
 
 Fetch our straggler that contains a pickled object    
-    >>> hits = [n for n in idx.intersection((0, 0, 60, 60), objects=True)]
+    >>> hits = idx.intersection((0, 0, 60, 60), objects=True)
     >>> for i in hits:
     ...     if i.id == 4321:
     ...         i.object
@@ -57,7 +57,7 @@ Can also get the results back as an iterator by requesting as_list=False
 
 
 Find the three items nearest to this one
-    >>> hits = [n for n in idx.nearest((0,0,10,10), 3)]
+    >>> hits = idx.nearest((0,0,10,10), 3)
     >>> hits
     [76L, 48L, 19L]
     >>> len(hits)
@@ -83,7 +83,7 @@ Delete our straggler too
 Check that we have deleted stuff
 
     >>> hits = 0
-    >>> hits = [n for n in idx.intersection((0, 0, 60, 60))]
+    >>> hits = idx.intersection((0, 0, 60, 60))
     >>> len(hits)
     0
     
@@ -136,7 +136,7 @@ Default page size 4096
     >>> idx3 = Rtree(u"defaultidx")
     >>> for i, coords in enumerate(boxes15):
     ...     idx3.add(i, coords)
-    >>> hits = [n for n in idx3.intersection((0, 0, 60, 60))]
+    >>> hits = idx3.intersection((0, 0, 60, 60))
     >>> len(hits)
     10
 
@@ -150,7 +150,7 @@ Page size 3
     >>> idx4 = Rtree("pagesize3", pagesize=3)
     >>> for i, coords in enumerate(boxes15):
     ...     idx4.add(i, coords)
-    >>> hits = [n for n in idx4.intersection((0, 0, 60, 60))]
+    >>> hits = idx4.intersection((0, 0, 60, 60))
     >>> len(hits)
     10
     
@@ -172,7 +172,7 @@ Load a persisted index
     # >>> import pdb;pdb.set_trace()
 
     >>> idx = Rtree("testing")
-    >>> hits = [n for n in idx.intersection((0, 0, 60, 60))]
+    >>> hits = idx.intersection((0, 0, 60, 60))
     >>> len(hits)
     10
 
@@ -220,7 +220,7 @@ Check that we can make an index with custom filename extensions
     >>> idx_cust = Rtree('custom', properties=p)
     >>> for i, coords in enumerate(boxes15):
     ...     idx_cust.add(i, coords)
-    >>> hits = [n for n in idx_cust.intersection((0, 0, 60, 60))]
+    >>> hits = idx_cust.intersection((0, 0, 60, 60))
     >>> len(hits)
     10
     
@@ -232,7 +232,7 @@ Reopen the index
     >>> p2.idx_extension = 'index'
     
     >>> idx_cust2 = Rtree('custom', properties=p2)    
-    >>> hits = [n for n in idx_cust2.intersection((0, 0, 60, 60))]
+    >>> hits = idx_cust2.intersection((0, 0, 60, 60))
     >>> len(hits)
     10
     
@@ -247,47 +247,49 @@ Adding the same id twice does not overwrite existing data
     [1L, 1L]
 
 A stream of data need that needs to be an iterator that will raise a 
-StopIteration.  It must be in the following form:
-
-(id, (minx, maxx, miny, maxy, minz, maxz, ..., ..., mink, maxk), object)
+StopIteration. The order depends on the interleaved kwarg sent to the 
+constructor.
 
 The object can be None, but you must put a place holder of 'None' there.
-Because of the desire for kD support, we must not interleave the 
-coordinates when using a stream.
 
     >>> p = index.Property()
-    >>> data = []
-    >>> for i, (minx, miny, maxx, maxy) in enumerate(boxes15):
-    ...        data.append((i, (minx, maxx, miny, maxy), 42))
-    >>> len(data)
-    100
-    >>> strm_idx = index.Rtree(data, properties = p)
+    >>> def data_gen(interleaved=True):
+    ...    for i, (minx, miny, maxx, maxy) in enumerate(boxes15):
+    ...        if interleaved:
+    ...            yield (i, (minx, miny, maxx, maxy), 42)
+    ...        else:
+    ...            yield (i, (minx, maxx, miny, maxy), 42)
 
-    >>> hits = [n for n in strm_idx.intersection((0, 0, 60, 60))]
+    >>> strm_idx = index.Rtree(data_gen(), properties = p)
+
+    >>> hits = strm_idx.intersection((0, 0, 60, 60))
+
     >>> len(hits)
     10
+    
     
     >>> sorted(hits)
     [0L, 4L, 16L, 27L, 35L, 40L, 47L, 50L, 76L, 80L]
 
-    >>> hits = [n for n in strm_idx.intersection((0, 0, 60, 60), objects=True)]
+    >>> hits = strm_idx.intersection((0, 0, 60, 60), objects=True)
     >>> len(hits)
     10
     
     >>> hits[0].object
     42
 
-Try streaming against a persisted index
-    >>> strm_idx = index.Rtree('streamed', data, properties = p)
+Try streaming against a persisted index without interleaving.
+    >>> strm_idx = index.Rtree('streamed', data_gen(interleaved=False), properties = p, interleaved=False)
 
-    >>> hits = [n for n in strm_idx.intersection((0, 0, 60, 60))]
+Note the arguments to intersection must be xmin, xmax, ymin, ymax for interleaved=False
+    >>> hits = strm_idx.intersection((0, 60, 0, 60))
     >>> len(hits)
     10
     
     >>> sorted(hits)
     [0L, 4L, 16L, 27L, 35L, 40L, 47L, 50L, 76L, 80L]
 
-    >>> hits = [n for n in strm_idx.intersection((0, 0, 60, 60), objects=True)]
+    >>> hits = strm_idx.intersection((0, 60, 0, 60), objects=True)
     >>> len(hits)
     10
     

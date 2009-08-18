@@ -493,15 +493,23 @@ class Index(object):
             except StopIteration:
                # we're done 
                return -1
+
+
             
             # set the id
             p_id[0] = item[0]
             
             # set the mins
             coordinates = item[1]
+            if self.interleaved:
+                coordinates = Index.deinterleave(coordinates)
+
             darray = ctypes.c_double * self.properties.dimension
             mins = darray()
             maxs = darray()
+
+            # this code assumes the coords ar not interleaved. 
+            # xmin, xmax, ymin, ymax, zmin, zmax
             for i in range(self.properties.dimension):
                 mins[i] = coordinates[i*2]
                 maxs[i] = coordinates[(i*2)+1]
