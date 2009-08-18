@@ -508,25 +508,26 @@ class Index(object):
     
 
     def _create_idx_from_stream(self, stream):
-        """"""
+        """This function is used to instantiate the index given an 
+        iterable stream of data.  """
         
         stream_iter = iter(stream)
 
         def py_next_item(p_id, p_mins, p_maxs, p_dimension, p_data, p_length):
-
+            """This function must fill pointers to individual entries that will
+            be added to the index.  The C API will actually call this function
+            to fill out the pointers.  If this function returns anything other 
+            than 0, it is assumed that the stream of data is done."""
             
             try:
                 item = stream_iter.next()
             except StopIteration:
                # we're done 
                return -1
-
-
             
             # set the id
             p_id[0] = item[0]
             
-            # set the mins
             coordinates = item[1]
             if self.interleaved:
                 coordinates = Index.deinterleave(coordinates)
@@ -556,18 +557,14 @@ class Index(object):
             p_data[0] = ctypes.cast(data, ctypes.POINTER(ctypes.c_ubyte))
             p_length[0] = size
 
-
             return 0
 
 
         next = core.NEXTFUNC(py_next_item)
         return core.rt.Index_CreateWithStream(self.properties.handle, next)
-        
-class Rtree(Index):
-    def __init__(self, *args, **kwargs):
-        
-        super(Rtree, self).__init__(*args, **kwargs)
 
+# An alias to preserve backward compatibility
+Rtree = Index
 
 class Item(object):
     def __init__(self, handle=None, owned=False):
