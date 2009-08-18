@@ -512,7 +512,8 @@ class Index(object):
         stream_iter = iter(stream)
         dimension = self.properties.dimension
         darray = ctypes.c_double * dimension
-
+        mins = darray()
+        maxs = darray()
         def py_next_item(p_id, p_mins, p_maxs, p_dimension, p_data, p_length):
             """This function must fill pointers to individual entries that will
             be added to the index.  The C API will actually call this function
@@ -529,8 +530,7 @@ class Index(object):
             if self.interleaved:
                 coordinates = Index.deinterleave(coordinates)
 
-            mins = darray()
-            maxs = darray()
+            
 
             # this code assumes the coords ar not interleaved. 
             # xmin, xmax, ymin, ymax, zmin, zmax
