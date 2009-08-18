@@ -58,7 +58,7 @@ class Index(object):
     def __init__(self,  *args, **kwargs):
         """Creates a new index
         
-        :param filename: 
+        :param filename:
             The first argument in the constructor is assumed to be a filename 
             determining that a file-based storage for the index should be used.  
             If the first argument is not of type basestring, it is then 
@@ -251,7 +251,7 @@ class Index(object):
             to the user to ensure they are unique if this is a requirement.
 
         :param coordinates: sequence or array
-            This may be an object that satisfieds the numpy array 
+            This may be an object that satisfies the numpy array 
             protocol, providing the index's dimension * 2 coordinate 
             pairs representing the mink and maxk coordinates in 
             each dimension defining the bounds of the query window.
@@ -279,7 +279,7 @@ class Index(object):
         """Return ids or objects in the index that intersect the given coordinates.
         
         :param coordinates: sequence or array
-            This may be an object that satisfieds the numpy array 
+            This may be an object that satisfies the numpy array 
             protocol, providing the index's dimension * 2 coordinate 
             pairs representing the mink and maxk coordinates in 
             each dimension defining the bounds of the query window.
@@ -383,7 +383,7 @@ class Index(object):
         """Returns the ``k``-nearest objects to the given coordinates.
         
         :param coordinates: sequence or array
-            This may be an object that satisfieds the numpy array 
+            This may be an object that satisfies the numpy array 
             protocol, providing the index's dimension * 2 coordinate 
             pairs representing the mink and maxk coordinates in 
             each dimension defining the bounds of the query window.
@@ -445,7 +445,7 @@ class Index(object):
             to the user to ensure they are unique if this is a requirement.
 
         :param coordinates: sequence or array
-            This may be an object that satisfieds the numpy array 
+            This may be an object that satisfies the numpy array 
             protocol, providing the index's dimension * 2 coordinate 
             pairs representing the mink and maxk coordinates in 
             each dimension defining the bounds of the query window.
