@@ -510,6 +510,8 @@ class Index(object):
         iterable stream of data.  """
         
         stream_iter = iter(stream)
+        dimension = self.properties.dimension
+        darray = ctypes.c_double * dimension
 
         def py_next_item(p_id, p_mins, p_maxs, p_dimension, p_data, p_length):
             """This function must fill pointers to individual entries that will
@@ -518,25 +520,21 @@ class Index(object):
             than 0, it is assumed that the stream of data is done."""
             
             try:
-                item = stream_iter.next()
+                p_id[0], coordinates, obj = stream_iter.next()
             except StopIteration:
                # we're done 
                return -1
             
             # set the id
-            p_id[0] = item[0]
-            
-            coordinates = item[1]
             if self.interleaved:
                 coordinates = Index.deinterleave(coordinates)
 
-            darray = ctypes.c_double * self.properties.dimension
             mins = darray()
             maxs = darray()
 
             # this code assumes the coords ar not interleaved. 
             # xmin, xmax, ymin, ymax, zmin, zmax
-            for i in range(self.properties.dimension):
+            for i in range(dimension):
                 mins[i] = coordinates[i*2]
                 maxs[i] = coordinates[(i*2)+1]
             
@@ -544,8 +542,7 @@ class Index(object):
             p_maxs[0] = ctypes.cast(maxs, ctypes.POINTER(ctypes.c_double))
 
             # set the dimension
-            p_dimension[0] = self.properties.dimension
-            obj = item[2]
+            p_dimension[0] = dimension
             if obj:
                 size, data = self._serialize(obj)
             else:
