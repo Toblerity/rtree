@@ -74,8 +74,6 @@ class Index(object):
                 (id, (minx, maxx, miny, maxy, minz, maxz, ..., ..., mink, maxk), object)
 
             The object can be None, but you must put a place holder of ``None`` there.
-            Because of the desire for kD support, we must not interleave the 
-            coordinates when using a stream.
         
         :param interleaved: True or False, defaults to True.
             This parameter determines the coordinate order for all methods that 
@@ -567,9 +565,15 @@ class Index(object):
 Rtree = Index
 
 class Item(object):
+    """A container for index entries"""
     def __init__(self, handle=None, owned=False):
+        """There should be no reason to instantiate these yourself.  Items are 
+        created automatically when you do an .insert() given the parameters of the 
+        function."""
+        
         if handle:
             self.handle = handle
+
         self.owned = owned
             
         self.id = core.rt.IndexItem_GetID(self.handle)
