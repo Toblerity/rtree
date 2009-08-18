@@ -67,7 +67,9 @@ class Index(object):
         :param stream:
             If the first argument in the constructor is not of type basestring, 
             it is assumed to be an interable stream of data that will raise a 
-            StopIteration.  It must be in deinterleaved form::
+            StopIteration.  It must be in the form defined by the :attr:`interleaved`
+            attribute of the index.  The following example would assume 
+            :attr:`interleaved` is False::
             
                 (id, (minx, maxx, miny, maxy, minz, maxz, ..., ..., mink, maxk), object)
 
@@ -111,14 +113,13 @@ class Index(object):
 
         Query::
         
-            >>> hits = [n for n in idx.intersection((0, 0, 60, 60), objects=True)]
+            >>> hits = idx.intersection((0, 0, 60, 60), objects=True)
             >>> for i in hits:
             ...     if i.id == 4321:
             ...         i.object
             ...         i.bbox
             42
             [34.3776829412, 26.737585373400002, 49.3776829412, 41.737585373400002]
-
 
         """
         try:
@@ -162,6 +163,7 @@ class Index(object):
                     self.properties.index_id
                 except core.RTreeError:
                     self.properties.index_id=1
+                    
             p = os.path.abspath(f)
             d = os.path.dirname(p)
             if not os.access(d, os.W_OK):
@@ -257,7 +259,14 @@ class Index(object):
             each dimension defining the bounds of the query window.
         
         :param obj: a pickleable object.  If not None, this object will be 
-            stored in the index with the :attr:`id`.  
+            stored in the index with the :attr:`id`.
+
+        The following example inserts an entry into the index with id `4321`, 
+        and the object it stores with that id is the number `42`.  The coordinate 
+        ordering in this instance is the default (interleaved=True) ordering::
+        
+            >>> idx.insert(4321, (34.3776829412, 26.7375853734, 49.3776829412, 41.7375853734), obj=42)
+
         """
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         if obj:
@@ -284,6 +293,17 @@ class Index(object):
             
         :param as_list: true or False
             If False, the method will return an iterator of the results.
+        
+        The following example queries the index for any objects any objects 
+        that were stored in the index intersect the bounds given in the coordinates::
+        
+            >>> hits = idx.intersection((0, 0, 60, 60), objects=True)
+            >>> for i in hits:
+            ...     if i.id == 4321:
+            ...         i.object
+            ...         i.bbox
+            42
+            [34.3776829412, 26.737585373400002, 49.3776829412, 41.737585373400002]         
         """
 
         if objects: return self._intersection_obj(coordinates, as_list)
@@ -381,6 +401,9 @@ class Index(object):
             were pickled when they were stored with each index entry, as 
             well as the id and bounds of the index entries.
         
+        Example of finding the three items nearest to this one::
+
+            >>> hits = idx.nearest((0,0,10,10), 3)
         """
         if objects: return self._nearest_obj(coordinates, num_results)
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
@@ -428,7 +451,11 @@ class Index(object):
             protocol, providing the index's dimension * 2 coordinate 
             pairs representing the mink and maxk coordinates in 
             each dimension defining the bounds of the query window.
-     
+        
+        Example::
+        
+            >>> idx.delete(4321, (34.3776829412, 26.7375853734, 49.3776829412, 41.7375853734) )
+
         """
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         core.rt.Index_DeleteData(self.handle, id, p_mins, p_maxs, self.properties.dimension)
