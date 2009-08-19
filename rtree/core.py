@@ -70,7 +70,7 @@ except ImportError:
     HAS_NUMPY = False
 
 if os.name == 'nt':
-    lib_name = 'libsidx.dll'
+    lib_name = 'libspatialindex_c.dll'
     try:
         local_dlls = os.path.abspath(os.__file__ + "../../../DLLs")
         original_path = os.environ['PATH']
@@ -85,9 +85,10 @@ if os.name == 'nt':
         raise
 elif os.name == 'posix':
     platform = os.uname()[0]
-    lib_name = 'libsidx.so'
+    lib_name = 'libspatialindex_c.so'
     local_library_path = os.path.abspath(os.path.dirname(__file__) + "/..")
     if platform == 'Darwin':
+        lib_name = 'libspatialindex_c.dylib'
         free = ctypes.CDLL(find_library('libc')).free
     else:
         free = ctypes.CDLL(find_library('libc.so.6')).free
