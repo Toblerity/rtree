@@ -346,21 +346,23 @@ class Index(object):
         # take the pointer, yield the result objects and free
         items = ctypes.cast(it,ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p * num_results)))
 
-        for i in xrange(num_results):
-            yield Item(handle=items[i])
-
-        its = ctypes.cast(items,ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)))
-        core.rt.Index_DestroyObjResults(its, num_results)
+        try:
+            for i in xrange(num_results):
+                yield Item(handle=items[i])
+        finally:
+            its = ctypes.cast(items,ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)))
+            core.rt.Index_DestroyObjResults(its, num_results)
 
     def _get_ids(self, it, num_results):
         # take the pointer, yield the results  and free
         items = ctypes.cast(it,ctypes.POINTER(ctypes.c_uint64 * num_results))
 
-        for i in xrange(num_results):
-            yield items.contents[i]
-
-        its = ctypes.cast(items,ctypes.POINTER(ctypes.c_void_p))
-        core.rt.Index_Free(its)
+        try:
+            for i in xrange(num_results):
+                yield items.contents[i]
+        finally:
+            its = ctypes.cast(items,ctypes.POINTER(ctypes.c_void_p))
+            core.rt.Index_Free(its)
 
     def _nearest_obj(self, coordinates, num_results):
         
