@@ -10,6 +10,8 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
+   
+   README
 
 .. autoclass:: rtree.index.Index
     :members: __init__, insert, intersection, nearest, delete, bounds

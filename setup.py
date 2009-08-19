@@ -4,7 +4,7 @@ from setuptools import setup
 
 
 # Get text from README.txt
-readme_text = file('README.txt', 'rb').read()
+readme_text = file('docs/source/README.txt', 'rb').read()
 
 
 import os
