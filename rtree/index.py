@@ -516,6 +516,9 @@ class Index(object):
         darray = ctypes.c_double * dimension
         mins = darray()
         maxs = darray()
+        no_data = ctypes.cast(ctypes.pointer(ctypes.c_ubyte(0)), 
+                              ctypes.POINTER(ctypes.c_ubyte))
+
         def py_next_item(p_id, p_mins, p_maxs, p_dimension, p_data, p_length):
             """This function must fill pointers to individual entries that will
             be added to the index.  The C API will actually call this function
@@ -545,14 +548,12 @@ class Index(object):
 
             # set the dimension
             p_dimension[0] = dimension
-            if obj:
-                size, data = self._serialize(obj)
+            if obj is None:
+                p_data[0] = no_data 
+                p_length[0] = 0
             else:
-                data = ctypes.pointer(ctypes.c_ubyte(0))
-                size = 0
-            
-            p_data[0] = ctypes.cast(data, ctypes.POINTER(ctypes.c_ubyte))
-            p_length[0] = size
+                p_length[0], data = self._serialize(obj)
+                p_data[0] = ctypes.cast(data, ctypes.POINTER(ctypes.c_ubyte))
 
             return 0
 
