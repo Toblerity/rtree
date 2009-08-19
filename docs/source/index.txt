@@ -12,9 +12,9 @@ Contents:
    :maxdepth: 2
    
    README
+   class
 
-.. autoclass:: rtree.index.Index
-    :members: __init__, insert, intersection, nearest, delete, bounds
+
 
 Indices and tables
 ==================

@@ -1,0 +1,10 @@
+.. _class:
+
+Class Documentation
+------------------------------------------------------------------------------
+
+.. autoclass:: rtree.index.Index
+    :members: __init__, insert, intersection, nearest, delete, bounds
+    
+.. autoclass:: rtree.index.Property
+    :members: 

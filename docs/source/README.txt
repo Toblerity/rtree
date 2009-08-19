@@ -1,5 +1,7 @@
-Rtree
-=====
+.. _home:
+
+Rtree: Spatial indexing for Python
+------------------------------------------------------------------------------
 
 Whether for in-memory feature stores, Plone content, or whatever -- we need an
 index to speed up the search for objects that intersect with a spatial bounding
@@ -16,11 +18,12 @@ completely refactored to use a new internal architecture (ctypes + a C API
 over `libspatialindex`_). This refactoring has resulted in a number of new
 features and much more flexibility. See CHANGES.txt_ for more detail.
 
+.. _Rtree: http://pypi.python.org/pypi/Rtree/
 .. _CHANGES.txt: http://trac.gispython.org/lab/browser/Rtree/trunk/CHANGES.txt
 
 
 Index Protocol
---------------
+------------------------------------------------------------------------------
 
 In a nutshell::
 
@@ -44,7 +47,7 @@ Ids can be ints or long ints; index queries return long ints.
 
 
 Pickles
-**********
+..............................................................................
 
 Rtree also supports inserting pickleable objects into the index (called a clustered 
 index in `libspatialindex`_ parlance).  The following inserts the 
@@ -60,7 +63,7 @@ to intersection::
 
 
 3D indexes
-**********
+..............................................................................
 
 As of Rtree version 0.5.0, you can create 3D (actually kD) `R-trees`_. The
 following is a 3D index that is to be stored on disk. Persisted indexes are
@@ -80,10 +83,10 @@ stored on disk as the files ``3d_index.data`` and ``3d_index.index``::
   [1L]
 
 Installation
-------------
+------------------------------------------------------------------------------
 
 \*nix 
-********************
+..............................................................................
 
 First, download and install version 1.4.0 of the `libspatialindex`_ library from:
 
@@ -109,7 +112,7 @@ You can build and test in place like::
   $ python setup.py test
 
 Windows 
-********************
+..............................................................................
 
 The Windows DLLs of both libsidx and `libspatialindex`_ are pre-compiled in 
 windows installers that are available from `PyPI`_.  Installation on Windows 
@@ -119,7 +122,7 @@ is as easy as::
 
 
 Usage
------
+------------------------------------------------------------------------------
 
 See `tests/index.txt`_ for more detail on index usage and `tests/properties.txt`_ 
 for index properties that can be set and manipulated.  Refer to `libspatialindex`_ 
@@ -129,12 +132,14 @@ documentation or code for more detail on their meanings and usage.
 .. _tests/properties.txt: http://trac.gispython.org/lab/browser/Rtree/trunk/tests/properties.txt
 
 Performance
-------------
+------------------------------------------------------------------------------
 
-See the tests/benchmarks.py file for a comparison.
+See the `tests/benchmarks.py`_ file for a comparison.
+
+.. _tests/benchmarks.py: http://trac.gispython.org/lab/browser/Rtree/trunk/tests/benchmarks.py
 
 Support
--------
+------------------------------------------------------------------------------
 
 For current information about this project, see the wiki_.
 
