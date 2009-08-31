@@ -10,7 +10,8 @@ readme_text = file('docs/source/README.txt', 'rb').read()
 import os
 
 if os.name == 'nt':
-    data_files=[('DLLs',[r'c:\cvs\buildkit\spatialindex\spatialindex1.dll',]),]
+    data_files=[('DLLs',[r'c:\cvs\buildkit\spatialindex\spatialindex1.dll',
+                         r'c:\cvs\buildkit\spatialindex\spatialindex1_c.dll',]),]
 else:
     data_files = None
     

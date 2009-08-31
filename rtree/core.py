@@ -70,7 +70,7 @@ except ImportError:
     HAS_NUMPY = False
 
 if os.name == 'nt':
-    lib_name = 'libspatialindex_c.dll'
+    lib_name = 'spatialindex1_c.dll'
     try:
         local_dlls = os.path.abspath(os.__file__ + "../../../DLLs")
         original_path = os.environ['PATH']
