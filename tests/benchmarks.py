@@ -19,7 +19,6 @@ except:
     pass
 
 from rtree import Rtree
-import rtree
 
 # a very basic Geometry
 class Point(object):
@@ -38,6 +37,9 @@ bounds = (minx, miny, maxx, maxy)
 count = 50000
 points = []
 
+#insert_object = None
+insert_object = {'a': range(100), 'b': 10, 'c': object(), 'd': dict(x=1), 'e': Point(2, 3)}
+
 # index = Rtree(properties = props)
 index = Rtree()
 disk_index = Rtree('test', overwrite=1)
@@ -53,12 +55,12 @@ for point in points:
     index.add(i, (point.x, point.y))
     disk_index.add(i, (point.x,point.y))
     i+=1
-    coordinates.append((i, (point.x, point.x, point.y, point.y), None))
+    coordinates.append((i, (point.x, point.x, point.y, point.y), insert_object))
 
 s ="""
 bulk = Rtree(coordinates[0:2000])
 """
-t = timeit.Timer(stmt=s, setup='from __main__ import coordinates, Rtree')
+t = timeit.Timer(stmt=s, setup='from __main__ import coordinates, Rtree, insert_object')
 print "\nStream load:"
 print "%.2f usec/pass" % (1000000 * t.timeit(number=100)/100)
 
@@ -66,10 +68,10 @@ s ="""
 idx = Rtree()
 i = 0
 for point in points[0:2000]:
-    idx.add(i, (point.x, point.y))
+    idx.add(i, (point.x, point.y), insert_object)
     i+=1
 """
-t = timeit.Timer(stmt=s, setup='from __main__ import points, Rtree')
+t = timeit.Timer(stmt=s, setup='from __main__ import points, Rtree, insert_object')
 print "\nOne-at-a-time load:"
 print "%.2f usec/pass" % (1000000 * t.timeit(number=100)/100)
 
@@ -91,21 +93,27 @@ print "%.2f usec/pass" % (1000000 * t.timeit(number=100)/100)
 
 # 0.1x0.1 box using intersection
 
-s = """
-hits = [points[id] for id in index.intersection(bbox)]
-"""
-t = timeit.Timer(stmt=s, setup='from __main__ import points, index, bbox')
+if insert_object is None:
+    s = """
+    hits = [points[id] for id in index.intersection(bbox)]
+    """
+else:
+    s = """
+    hits = [p.object for p in index.intersection(bbox, objects=insert_object)]
+    """
+
+t = timeit.Timer(stmt=s, setup='from __main__ import points, index, bbox, insert_object')
 print "\nMemory-based Rtree Intersection:"
 print len([points[id] for id in index.intersection(bbox)]), "hits"
 print "%.2f usec/pass" % (1000000 * t.timeit(number=100)/100)
 
 
-s = """
-hits = [points[id] for id in disk_index.intersection(bbox)]
-"""
-t = timeit.Timer(stmt=s, setup='from __main__ import points, disk_index, bbox')
+# run same test on disk_index.
+s = s.replace("index.", "disk_index.")
+
+t = timeit.Timer(stmt=s, setup='from __main__ import points, disk_index, bbox, insert_object')
 print "\nDisk-based Rtree Intersection:"
-print len([points[id] for id in disk_index.intersection(bbox)]), "hits"
+print len(disk_index.intersection(bbox)), "hits"
 print "%.2f usec/pass" % (1000000 * t.timeit(number=100)/100)
 
 import os

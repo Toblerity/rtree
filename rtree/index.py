@@ -570,6 +570,7 @@ Rtree = Index
 
 class Item(object):
     """A container for index entries"""
+    __slots__ = ('handle', 'owned', 'id', 'object', 'bounds')
     def __init__(self, handle=None, owned=False):
         """There should be no reason to instantiate these yourself.  Items are 
         created automatically when you do an .insert() given the parameters of the 
@@ -584,11 +585,14 @@ class Item(object):
         
         self.object = None
         self.object = self.get_object()
-        self.bbox = _get_bounds(self.handle, core.rt.IndexItem_GetBounds, True)
-        self.bounds = Index.deinterleave(self.bbox) 
+        self.bounds = _get_bounds(self.handle, core.rt.IndexItem_GetBounds, False)
+
+    @property
+    def bbox(self):
+        return Index.interleave(self.bounds)
 
     def get_data(self):
-        if self.object: return self.object
+        if self.object is not None: return self.object
         
         length = ctypes.c_uint64(0)
         d = ctypes.pointer(ctypes.c_uint8(0))
@@ -599,13 +603,11 @@ class Item(object):
     
     def get_object(self):
         # short circuit this so we only do it at construction time
-        if self.object: return self.object
+        if self.object is not None: return self.object
         
         data = self.get_data()
-        if data:
-            o = pickle.loads(data)
-            return o
-        return None
+        if data is None: return None
+        return pickle.loads(data)
     
 
 class Property(object):
