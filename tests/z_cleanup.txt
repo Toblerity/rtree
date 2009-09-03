@@ -4,7 +4,8 @@
     ...          'pagesize3.dat','pagesize3.idx',
     ...          'testing.dat','testing.idx',
     ...          'custom.data','custom.index',
-    ...          'streamed.idx','streamed.dat']
+    ...          'streamed.idx','streamed.dat',
+    ...          'overwriteme.idx', 'overwriteme.dat']
     >>> import os
     >>> import time
     >>> for f in files:
