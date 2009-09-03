@@ -295,3 +295,9 @@ Note the arguments to intersection must be xmin, xmax, ymin, ymax for interleave
     
     >>> hits[0].object
     42
+
+    >>> hits = strm_idx.intersection((0, 60, 0, 60), objects='raw')
+    >>> hits[0]
+    42
+
+    >>> del strm_idx

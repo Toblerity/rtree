@@ -116,6 +116,16 @@ print "\nDisk-based Rtree Intersection:"
 print len(disk_index.intersection(bbox)), "hits"
 print "%.2f usec/pass" % (1000000 * t.timeit(number=100)/100)
 
+
+if insert_object:
+    s = """
+        hits = disk_index.intersection(bbox, objects="raw")
+        """
+    t = timeit.Timer(stmt=s, setup='from __main__ import points, disk_index, bbox, insert_object')
+    print "\nDisk-based Rtree Intersection without Item() wrapper (objects='raw'):"
+    print len(disk_index.intersection(bbox)), "raw hits"
+    print "%.2f usec/pass" % (1000000 * t.timeit(number=100)/100)
+
 import os
 try:
     os.remove('test.dat')

@@ -51,6 +51,13 @@ def _get_bounds(handle, bounds_fn, interleaved):
         return results
     return Index.deinterleave(results)
 
+def _get_data(handle):
+    length = ctypes.c_uint64(0)
+    d = ctypes.pointer(ctypes.c_uint8(0))
+    core.rt.IndexItem_GetData(handle, ctypes.byref(d), ctypes.byref(length))
+    if not length.value:
+        return None
+    return ctypes.string_at(d, length.value)
 
 class Index(object):
     """An R-Tree, MVR-Tree, or TPR-Tree indexing object"""
@@ -284,10 +291,11 @@ class Index(object):
             pairs representing the mink and maxk coordinates in 
             each dimension defining the bounds of the query window.
         
-        :param objects: True or False
+        :param objects: True or False or 'raw'
             If True, the intersection method will return index objects that 
             were pickled when they were stored with each index entry, as 
             well as the id and bounds of the index entries.
+            If 'raw', the objects will be returned without the Item wrapper.
             
         :param as_list: true or False
             If False, the method will return an iterator of the results.
@@ -304,7 +312,7 @@ class Index(object):
             [34.3776829412, 26.737585373400002, 49.3776829412, 41.737585373400002]         
         """
 
-        if objects: return self._intersection_obj(coordinates, as_list)
+        if objects: return self._intersection_obj(coordinates, as_list, objects)
         
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
@@ -324,7 +332,7 @@ class Index(object):
         return self._get_ids(it, p_num_results.value)
 
     
-    def _intersection_obj(self, coordinates, as_list):
+    def _intersection_obj(self, coordinates, as_list, objects):
         
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
@@ -339,17 +347,26 @@ class Index(object):
                                         ctypes.byref(it), 
                                         ctypes.byref(p_num_results))
         if as_list:
-            return list(self._get_objects(it, p_num_results.value))
-        return self._get_objects(it, p_num_results.value)
+            return list(self._get_objects(it, p_num_results.value, objects))
+        return self._get_objects(it, p_num_results.value, objects)
 
-    def _get_objects(self, it, num_results):
+    def _get_objects(self, it, num_results, objects):
         # take the pointer, yield the result objects and free
         items = ctypes.cast(it, ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p * num_results)))
         its = ctypes.cast(items, ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)))
 
         try:
-            for i in xrange(num_results):
-                yield Item(handle=items[i])
+            if objects != 'raw':
+                for i in xrange(num_results):
+                    yield Item(handle=items[i])
+            else:
+                for i in xrange(num_results):
+                    data = _get_data(items[i])
+                    if data is None: 
+                        yield data
+                    else:
+                        yield pickle.loads(data)
+
             core.rt.Index_DestroyObjResults(its, num_results)
         except: # need to catch all exceptions, not just rtree.
             core.rt.Index_DestroyObjResults(its, num_results)
@@ -368,7 +385,7 @@ class Index(object):
             core.rt.Index_Free(its)
             raise
 
-    def _nearest_obj(self, coordinates, num_results):
+    def _nearest_obj(self, coordinates, num_results, objects):
         
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
@@ -383,7 +400,7 @@ class Index(object):
                                             ctypes.byref(it), 
                                             p_num_results)
 
-        return list(self._get_objects(it, p_num_results.contents.value))
+        return list(self._get_objects(it, p_num_results.contents.value, objects))
         
     def nearest(self, coordinates, num_results, objects=False):
         """Returns the ``k``-nearest objects to the given coordinates.
@@ -409,7 +426,7 @@ class Index(object):
 
             >>> hits = idx.nearest((0,0,10,10), 3)
         """
-        if objects: return self._nearest_obj(coordinates, num_results)
+        if objects: return self._nearest_obj(coordinates, num_results, objects)
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
         p_num_results = ctypes.pointer(ctypes.c_uint32(num_results))
@@ -591,21 +608,10 @@ class Item(object):
     def bbox(self):
         return Index.interleave(self.bounds)
 
-    def get_data(self):
-        if self.object is not None: return self.object
-        
-        length = ctypes.c_uint64(0)
-        d = ctypes.pointer(ctypes.c_uint8(0))
-        core.rt.IndexItem_GetData(self.handle, ctypes.byref(d), ctypes.byref(length))
-        if not length.value:
-            return None
-        return ctypes.string_at(d, length.value)
-    
     def get_object(self):
         # short circuit this so we only do it at construction time
         if self.object is not None: return self.object
-        
-        data = self.get_data()
+        data = _get_data(self.handle)
         if data is None: return None
         return pickle.loads(data)
     
