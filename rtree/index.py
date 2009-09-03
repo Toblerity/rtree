@@ -127,10 +127,7 @@ class Index(object):
             [34.3776829412, 26.737585373400002, 49.3776829412, 41.737585373400002]
 
         """
-        try:
-            self.properties = kwargs['properties']
-        except KeyError:
-            self.properties = Property()
+        self.properties = kwargs.get('properties', Property())
 
         # interleaved True gives 'bbox' order.
         self.interleaved = bool(kwargs.get('interleaved', True))
@@ -139,37 +136,38 @@ class Index(object):
         basename = None
         if args:
             if isinstance(args[0], basestring):
+                # they sent in a filename
                 basename = args[0]
+                # they sent in a filename, stream
+                if len(args) > 1:
+                    stream = args[1]
             else:
                 stream = args[0]
         
-        if not stream:
-            try:
-                args[1]
-                stream = args[1]
-            except:
-                pass
             
         if basename:
             self.properties.storage = RT_Disk
             self.properties.filename = basename
 
             # check we can read the file
-            f = os.path.join('.'.join([basename,self.properties.idx_extension]))
+            f = basename + "." + self.properties.idx_extension
+            p = os.path.abspath(f)
+
 
             # assume if the file exists, we're not going to overwrite it
             # unless the user explicitly set the property to do so
-            if os.path.exists(os.path.abspath(f)):                
-                self.properties.overwrite = False
+            if os.path.exists(p):                
+
+                self.properties.overwrite = bool(kwargs.get('overwrite', False))
 
                 # assume we're fetching the first index_id.  If the user
                 # set it, we'll fetch that one.
-                try:
-                    self.properties.index_id
-                except core.RTreeError:
-                    self.properties.index_id=1
+                if not self.properties.overwrite:
+                    try:
+                        self.properties.index_id
+                    except core.RTreeError:
+                        self.properties.index_id=1
                     
-            p = os.path.abspath(f)
             d = os.path.dirname(p)
             if not os.access(d, os.W_OK):
                 message = "Unable to open file '%s' for index storage"%f
@@ -182,11 +180,6 @@ class Index(object):
         except KeyError:
             pass
             
-        try:
-            self.properties.overwrite = bool(kwargs['overwrite'])
-        except KeyError:
-            pass
-        
         if stream:
             self.handle = self._create_idx_from_stream(stream)
         else:

@@ -1,0 +1,8 @@
+
+make sure a file-based index is overwriteable.
+
+    >>> from rtree.index import Rtree
+    >>> r = Rtree('overwriteme')
+    >>> del r    
+    >>> r = Rtree('overwriteme', overwrite=True)
+
