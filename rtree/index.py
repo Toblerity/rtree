@@ -61,6 +61,8 @@ def _get_data(handle):
 
 class Index(object):
     """An R-Tree, MVR-Tree, or TPR-Tree indexing object"""
+    dumps = pickle.dumps
+    loads = pickle.loads
     
     def __init__(self,  *args, **kwargs):
         """Creates a new index
@@ -232,8 +234,8 @@ class Index(object):
 
         return (p_mins, p_maxs)
 
-    def _serialize(self, obj, dumps=pickle.dumps):
-        serialized = dumps(obj)
+    def _serialize(self, obj):
+        serialized = self.dumps(obj)
         size = len(serialized)
 
         d = ctypes.create_string_buffer(serialized)
@@ -351,14 +353,14 @@ class Index(object):
         try:
             if objects != 'raw':
                 for i in xrange(num_results):
-                    yield Item(handle=items[i])
+                    yield Item(self.loads, handle=items[i])
             else:
                 for i in xrange(num_results):
                     data = _get_data(items[i])
                     if data is None: 
                         yield data
                     else:
-                        yield pickle.loads(data)
+                        yield self.loads(data)
 
             core.rt.Index_DestroyObjResults(its, num_results)
         except: # need to catch all exceptions, not just rtree.
@@ -581,7 +583,7 @@ Rtree = Index
 class Item(object):
     """A container for index entries"""
     __slots__ = ('handle', 'owned', 'id', 'object', 'bounds')
-    def __init__(self, handle=None, owned=False):
+    def __init__(self, loads, handle=None, owned=False):
         """There should be no reason to instantiate these yourself.  Items are 
         created automatically when you do an .insert() given the parameters of the 
         function."""
@@ -594,19 +596,19 @@ class Item(object):
         self.id = core.rt.IndexItem_GetID(self.handle)
         
         self.object = None
-        self.object = self.get_object()
+        self.object = self.get_object(loads)
         self.bounds = _get_bounds(self.handle, core.rt.IndexItem_GetBounds, False)
 
     @property
     def bbox(self):
         return Index.interleave(self.bounds)
 
-    def get_object(self):
+    def get_object(self, loads):
         # short circuit this so we only do it at construction time
         if self.object is not None: return self.object
         data = _get_data(self.handle)
         if data is None: return None
-        return pickle.loads(data)
+        return loads(data)
     
 
 class Property(object):

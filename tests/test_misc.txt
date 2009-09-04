@@ -6,3 +6,17 @@ make sure a file-based index is overwriteable.
     >>> del r    
     >>> r = Rtree('overwriteme', overwrite=True)
 
+
+the default serializer is pickle, can use any by overriding dumps, loads
+
+    >>> r = Rtree()
+    >>> try: 
+    ...     import simplejson
+    ...     r.dumps = simplejson.dumps
+    ...     r.loads = simplejson.loads
+    ...     r.add(0, (0, 0, 1, 1), {"a": 22, "b": [1, "ccc"]})
+    ...     r.nearest((0, 0), 1, objects="raw")
+    ... except ImportError: 
+    ...     print "no import, failed"
+    ...     [{'a': 22, 'b': [1, 'ccc']}]
+    [{'a': 22, 'b': [1, 'ccc']}] 
