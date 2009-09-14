@@ -199,6 +199,17 @@ class Index(object):
             if self.handle and core:
                 core.rt.Index_Destroy(self.handle)
     
+    def close(self):
+        """Force a flush of the index to storage. Renders index                 
+        inaccessible.
+        """
+        if self.handle and core:
+            core.rt.Index_Destroy(self.handle)
+            self.handle = None
+            self.owned = False
+        else:
+            raise IOError, "Unclosable index"
+            
     def get_coordinate_pointers(self, coordinates):
 
         try:
