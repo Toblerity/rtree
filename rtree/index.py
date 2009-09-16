@@ -23,6 +23,7 @@ RT_TPRTree = 2
 
 sidx_version = core.rt.SIDX_Version()
 
+__all__ = ['Rtree', 'Index', 'Property']
 
 def _get_bounds(handle, bounds_fn, interleaved):
     pp_mins = ctypes.pointer(ctypes.c_double())
@@ -80,7 +81,7 @@ class Index(object):
             attribute of the index.  The following example would assume 
             :attr:`interleaved` is False::
             
-                (id, (minx, maxx, miny, maxy, minz, maxz, ..., ..., mink, maxk), object)
+            (id, (minx, maxx, miny, maxy, minz, maxz, ..., ..., mink, maxk), object)
 
             The object can be None, but you must put a place holder of ``None`` there.
         
@@ -107,11 +108,11 @@ class Index(object):
         A basic example
 
         ::
-
+            >>> from rtree import index
             >>> p = index.Property()
     
             >>> idx = index.Index(properties=p)
-            >>> idx
+            >>> idx  # doctest: +ELLIPSIS
             <rtree.index.Index object at 0x...>
     
         Insert an item into the index::
@@ -127,6 +128,20 @@ class Index(object):
             ...         i.bbox
             42
             [34.3776829412, 26.737585373400002, 49.3776829412, 41.737585373400002]
+
+
+        Using custom serializers
+
+        ::
+            >>> import simplejson
+            >>> class JSONIndex(index.Index):
+            ...     dumps = lambda self, obj: simplejson.dumps(obj)
+            ...     loads = lambda self, json: simplejson.loads(json)
+
+            >>> json_idx = JSONIndex()
+            >>> json_idx.insert(1, (0, 1, 0, 1), {"nums": [23, 45], "letters": "abcd"})
+            >>> json_idx.nearest((0, 0), 1, objects="raw")
+            [{'letters': 'abcd', 'nums': [23, 45]}]
 
         """
         self.properties = kwargs.get('properties', Property())
@@ -307,15 +322,17 @@ class Index(object):
             If False, the method will return an iterator of the results.
         
         The following example queries the index for any objects any objects 
-        that were stored in the index intersect the bounds given in the coordinates::
-        
+        that were stored in the index intersect the bounds given in the coordinates:
+
             >>> hits = idx.intersection((0, 0, 60, 60), objects=True)
-            >>> for i in hits:
-            ...     if i.id == 4321:
-            ...         i.object
-            ...         i.bbox
-            42
-            [34.3776829412, 26.737585373400002, 49.3776829412, 41.737585373400002]         
+            >>> [(item.object, item.bbox) for item in hits if item.id == 4321]
+            [(42, [34.3776829412, 26.737585373400002, 49.3776829412, 41.737585373400002])]
+
+        If the Item() wrapper is not used, it is faster to request the 'raw' objects:
+
+            >>> idx.intersection((0, 0, 60, 60), objects=True)
+
+
         """
 
         if objects: return self._intersection_obj(coordinates, as_list, objects)
@@ -423,14 +440,16 @@ class Index(object):
             This property means that :attr:`num_results` may return more 
             items than specified
         
-        :param objects: True or False
+        :param objects: True / False / 'raw'
             If True, the nearest method will return index objects that 
             were pickled when they were stored with each index entry, as 
             well as the id and bounds of the index entries.
+            If 'raw', it will return the object as entered into the database
+            without the Item() wrapper.
         
         Example of finding the three items nearest to this one::
 
-            >>> hits = idx.nearest((0,0,10,10), 3)
+            >>> hits = idx.nearest((0, 0, 10, 10), 3, objects=True)
         """
         if objects: return self._nearest_obj(coordinates, num_results, objects)
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
