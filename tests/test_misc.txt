@@ -19,4 +19,4 @@ the default serializer is pickle, can use any by overriding dumps, loads
     ... except ImportError: 
     ...     print "no import, failed"
     ...     [{'a': 22, 'b': [1, 'ccc']}]
-    [{'a': 22, 'b': [1, 'ccc']}] 
+    [{u'a': 22, u'b': [1, u'ccc']}] 
