@@ -194,6 +194,17 @@ rt.Index_NearestNeighbors_id.argtypes = [  ctypes.c_void_p,
 rt.Index_NearestNeighbors_id.restype = ctypes.c_int
 rt.Index_NearestNeighbors_id.errcheck = check_return
 
+rt.Index_GetLeaves.argtypes = [ ctypes.c_void_p,
+                                ctypes.POINTER(ctypes.c_uint32), 
+                                ctypes.POINTER(ctypes.POINTER(ctypes.c_uint32)), 
+                                ctypes.POINTER(ctypes.POINTER(ctypes.c_int64)), 
+                                ctypes.POINTER(ctypes.POINTER(ctypes.POINTER(ctypes.c_int64))),
+                                ctypes.POINTER(ctypes.POINTER(ctypes.POINTER(ctypes.c_double))),
+                                ctypes.POINTER(ctypes.POINTER(ctypes.POINTER(ctypes.c_double))),
+                                ctypes.POINTER(ctypes.c_uint32)]
+rt.Index_GetLeaves.restype = ctypes.c_int
+rt.Index_GetLeaves.errcheck = check_return
+
 rt.Index_DestroyObjResults.argtypes = [ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)), ctypes.c_uint32]
 rt.Index_DestroyObjResults.restype = None
 rt.Index_DestroyObjResults.errcheck = check_void_done

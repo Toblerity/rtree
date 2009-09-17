@@ -602,6 +602,69 @@ class Index(object):
         next = core.NEXTFUNC(py_next_item)
         return core.rt.Index_CreateWithStream(self.properties.handle, next)
 
+    def leaves(self):
+        leaf_node_count = ctypes.c_uint32()
+        p_leafsizes = ctypes.pointer(ctypes.c_uint32())
+        p_leafids  = ctypes.pointer(ctypes.c_int64())
+        pp_childids = ctypes.pointer(ctypes.pointer(ctypes.c_int64()))
+
+        pp_mins = ctypes.pointer(ctypes.pointer(ctypes.c_double()))
+        pp_maxs = ctypes.pointer(ctypes.pointer(ctypes.c_double()))
+        dimension = ctypes.c_uint32(0)
+
+    
+        core.rt.Index_GetLeaves(   self.handle, 
+                                ctypes.byref(leaf_node_count),
+                                ctypes.byref(p_leafsizes),
+                                ctypes.byref(p_leafids),
+                                ctypes.byref(pp_childids),
+                                ctypes.byref(pp_mins),
+                                ctypes.byref(pp_maxs),
+                                ctypes.byref(dimension)
+                            )
+        
+        output = []
+
+        count = leaf_node_count.value
+        sizes = ctypes.cast(p_leafsizes, ctypes.POINTER(ctypes.c_uint32 * count))
+        ids = ctypes.cast(p_leafids, ctypes.POINTER(ctypes.c_int64 * count))
+        child =  ctypes.cast(pp_childids, ctypes.POINTER(ctypes.POINTER(ctypes.c_int64) * count))
+        mins =  ctypes.cast(pp_mins, ctypes.POINTER(ctypes.POINTER(ctypes.c_double) * count))
+        maxs =  ctypes.cast(pp_maxs, ctypes.POINTER(ctypes.POINTER(ctypes.c_double) * count))
+        for i in range(count):
+            p_child_ids = child.contents[i]
+            
+            id = ids.contents[i]
+            size = sizes.contents[i]
+            child_ids_array =  ctypes.cast(p_child_ids, ctypes.POINTER(ctypes.c_int64 * size))
+            
+            child_ids = []
+            for j in range(size):
+                child_ids.append(child_ids_array.contents[j])
+            
+            # free the child ids list
+            core.rt.Index_Free(ctypes.cast(p_child_ids, ctypes.POINTER(ctypes.c_void_p))) 
+            
+            p_mins = mins.contents[i]
+            p_maxs = maxs.contents[i]
+
+            p_mins = ctypes.cast(p_mins, ctypes.POINTER(ctypes.c_double * dimension.value))
+            p_maxs = ctypes.cast(p_maxs, ctypes.POINTER(ctypes.c_double * dimension.value))
+                        
+            bounds = []
+            bounds = [p_mins.contents[i] for i in range(dimension.value)]
+            bounds += [p_mins.contents[i] for i in range(dimension.value)]
+            
+            # free the bounds
+            p_mins = ctypes.cast(p_mins,ctypes.POINTER(ctypes.c_double))
+            p_maxs = ctypes.cast(p_maxs,ctypes.POINTER(ctypes.c_double))
+            core.rt.Index_Free(ctypes.cast(p_mins, ctypes.POINTER(ctypes.c_void_p))) 
+            core.rt.Index_Free(ctypes.cast(p_maxs, ctypes.POINTER(ctypes.c_void_p)))
+                
+            output.append((id, child_ids, bounds))
+
+        return output
+        
 # An alias to preserve backward compatibility
 Rtree = Index
 

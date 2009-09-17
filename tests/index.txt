@@ -301,3 +301,15 @@ Note the arguments to intersection must be xmin, xmax, ymin, ymax for interleave
     42
 
     >>> del strm_idx
+
+    >>> p = index.Property()
+    >>> p.leaf_capacity = 100
+    >>> p.fill_factor = 0.5
+    >>> p.index_capacity = 10
+    >>> p.near_minimum_overlap_factor = 7
+    >>> idx = index.Index(data_gen(interleaved=False), properties = p, interleaved=False)
+
+    >>> leaves = idx.leaves()
+    >>> leaves[0]
+    (0L, [2L, 92L, 51L, 55L, 26L], [-132.41727847799999, -96.717721818399994, -132.41727847799999, -96.717721818399994])
+    >>> del idx
