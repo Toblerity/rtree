@@ -5,7 +5,7 @@ Testing Rtree
     >>> from rtree.index import Rtree
 
 Ensure libspatialindex version is >= 1.4.0
-    >>> index.sidx_version.split('.')[1] >= 4
+    >>> index.__version__.split('.')[1] >= 4
     True
     
 Make an instance, index stored in memory
