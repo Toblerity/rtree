@@ -21,7 +21,7 @@ RT_RTree = 0
 RT_MVRTree = 1
 RT_TPRTree = 2
 
-sidx_version = core.rt.SIDX_Version()
+__version__ = core.rt.SIDX_Version()
 
 __all__ = ['Rtree', 'Index', 'Property']
 
@@ -354,7 +354,6 @@ class Index(object):
             return list(self._get_ids(it, p_num_results.value))
         return self._get_ids(it, p_num_results.value)
 
-    
     def _intersection_obj(self, coordinates, as_list, objects):
         
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
@@ -550,8 +549,6 @@ class Index(object):
             interleaved.extend([deinterleaved[i + j] \
                                 for j in range(0, len(deinterleaved), 2)])
         return interleaved
-        
-    
 
     def _create_idx_from_stream(self, stream):
         """This function is used to instantiate the index given an 
@@ -580,8 +577,6 @@ class Index(object):
             # set the id
             if self.interleaved:
                 coordinates = Index.deinterleave(coordinates)
-
-            
 
             # this code assumes the coords ar not interleaved. 
             # xmin, xmax, ymin, ymax, zmin, zmax
@@ -639,7 +634,6 @@ class Item(object):
         data = _get_data(self.handle)
         if data is None: return None
         return loads(data)
-    
 
 class Property(object):
     """An index property object is a container that contains a number of 
