@@ -324,13 +324,15 @@ class Index(object):
         The following example queries the index for any objects any objects 
         that were stored in the index intersect the bounds given in the coordinates:
 
+            >>> idx.insert(4321, (34.3776829412, 26.7375853734, 49.3776829412, 41.7375853734), obj=42)
+
             >>> hits = idx.intersection((0, 0, 60, 60), objects=True)
             >>> [(item.object, item.bbox) for item in hits if item.id == 4321]
             [(42, [34.3776829412, 26.737585373400002, 49.3776829412, 41.737585373400002])]
 
         If the Item() wrapper is not used, it is faster to request the 'raw' objects:
-
-            >>> idx.intersection((0, 0, 60, 60), objects=True)
+            >>> idx.intersection((0, 0, 60, 60), objects="raw")
+            [42]
 
 
         """
