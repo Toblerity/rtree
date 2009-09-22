@@ -135,8 +135,8 @@ class Index(object):
         ::
             >>> import simplejson
             >>> class JSONIndex(index.Index):
-            ...     dumps = lambda self, obj: simplejson.dumps(obj)
-            ...     loads = lambda self, json: simplejson.loads(json)
+            ...     dumps = staticmethod(simplejson.dumps)
+            ...     loads = staticmethod(simplejson.loads)
 
             >>> json_idx = JSONIndex()
             >>> json_idx.insert(1, (0, 1, 0, 1), {"nums": [23, 45], "letters": "abcd"})
