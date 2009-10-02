@@ -18,7 +18,7 @@ try:
 except:
     pass
 
-from rtree import Rtree
+from rtree import Rtree as _Rtree
 
 TEST_TIMES = 20
 
@@ -30,6 +30,9 @@ class Point(object):
 
 # Scatter points randomly in a 1x1 box
 # 
+
+class Rtree(_Rtree):
+    pickle_protocol = -1
 
 bounds = (0, 0, 6000000, 6000000)
 count = 30000

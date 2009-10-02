@@ -64,6 +64,7 @@ class Index(object):
     """An R-Tree, MVR-Tree, or TPR-Tree indexing object"""
     dumps = pickle.dumps
     loads = pickle.loads
+    #pickle_protocol = -1
     
     def __init__(self,  *args, **kwargs):
         """Creates a new index
@@ -261,7 +262,10 @@ class Index(object):
         return (p_mins, p_maxs)
 
     def _serialize(self, obj):
-        serialized = self.dumps(obj)
+        if getattr(self, 'pickle_protocol', None) is not None:
+            serialized = self.dumps(obj, self.pickle_protocol)
+        else:
+            serialized = self.dumps(obj)
         size = len(serialized)
 
         d = ctypes.create_string_buffer(serialized)
@@ -295,7 +299,7 @@ class Index(object):
 
         """
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
-        if obj:
+        if obj is not None:
             size, data = self._serialize(obj)
         else:
             data = ctypes.c_ubyte(0)

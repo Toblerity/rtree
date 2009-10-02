@@ -154,7 +154,8 @@ Page size 3
     >>> len(hits)
     10
     
-    del idx4
+    >>> idx4.close()
+    >>> del idx4
     
 Test invalid name
 
