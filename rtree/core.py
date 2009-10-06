@@ -63,12 +63,6 @@ def free_returned_char_p(result, func, cargs):
     
     
 
-try:
-    from numpy import array, ndarray
-    HAS_NUMPY = True
-except ImportError:
-    HAS_NUMPY = False
-
 if os.name == 'nt':
     lib_name = 'spatialindex1_c.dll'
     try:
