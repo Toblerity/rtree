@@ -64,7 +64,6 @@ class Index(object):
     """An R-Tree, MVR-Tree, or TPR-Tree indexing object"""
     dumps = pickle.dumps
     loads = pickle.loads
-    #pickle_protocol = -1
     
     def __init__(self,  *args, **kwargs):
         """Creates a new index
@@ -242,7 +241,7 @@ class Index(object):
 
         # it's a point make it into a bbox. [x, y] => [x, y, x, y]
         if len(coordinates) == dimension:
-            coordinates = coordinates + coordinates
+            coordinates += coordinates
 
         if len(coordinates) != dimension * 2:
             raise core.RTreeError("Coordinates must be in the form "
@@ -254,18 +253,15 @@ class Index(object):
             if not coordinates[i] <= coordinates[i + dimension]:
                 raise core.RTreeError("Coordinates must not have minimums more than maximums")
 
-            p_mins = mins(*[ctypes.c_double(\
-                                coordinates[i]) for i in range(dimension)])
-            p_maxs = maxs(*[ctypes.c_double(\
-                            coordinates[i + dimension]) for i in range(dimension)])
+        p_mins = mins(*[ctypes.c_double(\
+                            coordinates[i]) for i in range(dimension)])
+        p_maxs = maxs(*[ctypes.c_double(\
+                        coordinates[i + dimension]) for i in range(dimension)])
 
         return (p_mins, p_maxs)
 
     def _serialize(self, obj):
-        if getattr(self, 'pickle_protocol', None) is not None:
-            serialized = self.dumps(obj, self.pickle_protocol)
-        else:
-            serialized = self.dumps(obj)
+        serialized = self.dumps(obj)
         size = len(serialized)
 
         d = ctypes.create_string_buffer(serialized)
