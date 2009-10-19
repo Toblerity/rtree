@@ -138,6 +138,31 @@ See the `tests/benchmarks.py`_ file for a comparison.
 
 .. _tests/benchmarks.py: http://trac.gispython.org/lab/browser/Rtree/trunk/tests/benchmarks.py
 
+There are a few simple things that will improve performance.
+
+ - Use stream loading. This will improve performance over Rtree.insert ::
+
+    >>> def generator_function():
+    ...    for i, obj in enumerate(somedata):
+    ...        yield (i, (obj.xmin, obj.ymin, obj.xmax, obj.ymax), obj)
+    >>> r = Rtree(generator_function())
+
+ - Override Rtree.dumps() to use the highest pickle protocol ::
+
+    >>> import cPickle, rtree
+    >>> class FastRtree(rtree.Rtree):
+    ...     def dumps(self, obj):
+    ...         return cPickle.dumps(obj, -1)
+    >>> r = FastRtree()
+
+
+ - In any query, use objects='raw' keyword argument ::
+
+    >>> objs = r.intersection((xmin, ymin, xmax, ymax), objects="raw")
+
+ - Adjust :class:`rtree.index.Property` appropriate to your index.
+
+
 Support
 ------------------------------------------------------------------------------
 
