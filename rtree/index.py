@@ -106,8 +106,8 @@ class Index(object):
             [xmin, ymin, ..., kmin, xmax, ymax, ..., kmax].
 
         A basic example
-
         ::
+
             >>> from rtree import index
             >>> p = index.Property()
     
@@ -131,8 +131,8 @@ class Index(object):
 
 
         Using custom serializers
-
         ::
+
             >>> import simplejson
             >>> class JSONIndex(index.Index):
             ...     dumps = staticmethod(simplejson.dumps)
