@@ -56,9 +56,11 @@ def _get_data(handle):
     length = ctypes.c_uint64(0)
     d = ctypes.pointer(ctypes.c_uint8(0))
     core.rt.IndexItem_GetData(handle, ctypes.byref(d), ctypes.byref(length))
-    if not length.value:
+    if length.value == 0:
         return None
-    return ctypes.string_at(d, length.value)
+    s = ctypes.string_at(d, length.value)
+    core.rt.Index_Free(ctypes.cast(d, ctypes.POINTER(ctypes.c_void_p)))
+    return s
 
 class Index(object):
     """An R-Tree, MVR-Tree, or TPR-Tree indexing object"""
@@ -382,7 +384,7 @@ class Index(object):
         try:
             if objects != 'raw':
                 for i in xrange(num_results):
-                    yield Item(self.loads, handle=items[i])
+                    yield Item(self.loads, items[i])
             else:
                 for i in xrange(num_results):
                     data = _get_data(items[i])
@@ -508,7 +510,7 @@ class Index(object):
         core.rt.Index_DeleteData(self.handle, id, p_mins, p_maxs, self.properties.dimension)
     
     def valid(self):
-        return core.rt.Index_IsValid(self.handle)
+        return bool(core.rt.Index_IsValid(self.handle))
 
     @classmethod
     def deinterleave(self, interleaved):
@@ -673,7 +675,7 @@ Rtree = Index
 class Item(object):
     """A container for index entries"""
     __slots__ = ('handle', 'owned', 'id', 'object', 'bounds')
-    def __init__(self, loads, handle=None, owned=False):
+    def __init__(self, loads, handle, owned=False):
         """There should be no reason to instantiate these yourself.  Items are 
         created automatically when you do an .insert() given the parameters of the 
         function."""

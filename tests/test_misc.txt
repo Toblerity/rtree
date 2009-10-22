@@ -21,3 +21,13 @@ the default serializer is pickle, can use any by overriding dumps, loads
     ...     # "no import, failed"
     ...     True
     True
+
+
+    >>> r = Rtree()
+    >>> r.add(123, (0, 0, 1, 1))
+    >>> item = r.nearest((0, 0), 1, objects=True)[0]
+    >>> int(item.id)
+    123
+
+    >>> r.valid()
+    True
