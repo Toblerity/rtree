@@ -50,15 +50,12 @@ def check_value_free(result, func, cargs):
         msg = 'Error in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg() )
         rt.Error_Reset()
         raise RTreeError(msg)
-    retval = ctypes.string_at(result)[:]
-   # free(result)
-    return retval
+    return result
 
 def free_returned_char_p(result, func, cargs):
-
     size = ctypes.c_int()
     retvalue = ctypes.string_at(result)
-   # free(result)
+    free(result)
     return retvalue
     
     
@@ -400,24 +397,24 @@ rt.IndexProperty_SetFileName.restype = ctypes.c_int
 rt.IndexProperty_SetFileName.errcheck = check_return
 
 rt.IndexProperty_GetFileName.argtypes = [ctypes.c_void_p]
-rt.IndexProperty_GetFileName.errcheck = check_value_free
-rt.IndexProperty_GetFileName.restype = ctypes.c_char_p
+rt.IndexProperty_GetFileName.errcheck = free_returned_char_p
+rt.IndexProperty_GetFileName.restype = ctypes.POINTER(ctypes.c_char)
 
 rt.IndexProperty_SetFileNameExtensionDat.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
 rt.IndexProperty_SetFileNameExtensionDat.restype = ctypes.c_int
 rt.IndexProperty_SetFileNameExtensionDat.errcheck = check_return
 
 rt.IndexProperty_GetFileNameExtensionDat.argtypes = [ctypes.c_void_p]
-rt.IndexProperty_GetFileNameExtensionDat.errcheck = check_value_free
-rt.IndexProperty_GetFileNameExtensionDat.restype = ctypes.c_char_p
+rt.IndexProperty_GetFileNameExtensionDat.errcheck = free_returned_char_p
+rt.IndexProperty_GetFileNameExtensionDat.restype = ctypes.POINTER(ctypes.c_char)
 
 rt.IndexProperty_SetFileNameExtensionIdx.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
 rt.IndexProperty_SetFileNameExtensionIdx.restype = ctypes.c_int
 rt.IndexProperty_SetFileNameExtensionIdx.errcheck = check_return
 
 rt.IndexProperty_GetFileNameExtensionIdx.argtypes = [ctypes.c_void_p]
-rt.IndexProperty_GetFileNameExtensionIdx.errcheck = check_value_free
-rt.IndexProperty_GetFileNameExtensionIdx.restype = ctypes.c_char_p
+rt.IndexProperty_GetFileNameExtensionIdx.errcheck = free_returned_char_p
+rt.IndexProperty_GetFileNameExtensionIdx.restype = ctypes.POINTER(ctypes.c_char)
 
 rt.IndexProperty_SetIndexID.argtypes = [ctypes.c_void_p, ctypes.c_int64]
 rt.IndexProperty_SetIndexID.restype = ctypes.c_int
