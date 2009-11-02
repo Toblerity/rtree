@@ -59,7 +59,7 @@ def _get_data(handle):
     if length.value == 0:
         return None
     s = ctypes.string_at(d, length.value)
-    core.rt.Index_Free(ctypes.cast(d, ctypes.POINTER(ctypes.c_void_p)))
+#    core.rt.Index_Free(ctypes.cast(d, ctypes.POINTER(ctypes.c_void_p)))
     return s
 
 class Index(object):
