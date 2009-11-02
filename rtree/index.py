@@ -657,7 +657,7 @@ class Index(object):
                         
             bounds = []
             bounds = [p_mins.contents[i] for i in range(dimension.value)]
-            bounds += [p_mins.contents[i] for i in range(dimension.value)]
+            bounds += [p_maxs.contents[i] for i in range(dimension.value)]
             
             # free the bounds
             p_mins = ctypes.cast(p_mins,ctypes.POINTER(ctypes.c_double))
