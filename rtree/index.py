@@ -56,10 +56,12 @@ def _get_data(handle):
     length = ctypes.c_uint64(0)
     d = ctypes.pointer(ctypes.c_uint8(0))
     core.rt.IndexItem_GetData(handle, ctypes.byref(d), ctypes.byref(length))
+    c = ctypes.cast(d, ctypes.POINTER(ctypes.c_void_p))
     if length.value == 0:
+        core.rt.Index_Free(c)
         return None
     s = ctypes.string_at(d, length.value)
-#    core.rt.Index_Free(ctypes.cast(d, ctypes.POINTER(ctypes.c_void_p)))
+    core.rt.Index_Free(c)
     return s
 
 class Index(object):
