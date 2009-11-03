@@ -267,10 +267,11 @@ class Index(object):
         size = len(serialized)
 
         d = ctypes.create_string_buffer(serialized)
-        d.value = serialized
+        #d.value = serialized
         p = ctypes.pointer(d)
 
-        return size, ctypes.cast(p, ctypes.POINTER(ctypes.c_uint8))
+        # return serialized to keep it alive for the pointer.
+        return size, ctypes.cast(p, ctypes.POINTER(ctypes.c_uint8)), serialized
 
     def insert(self, id, coordinates, obj = None):
         """Inserts an item into the index with the given coordinates.  
@@ -298,7 +299,7 @@ class Index(object):
         """
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         if obj is not None:
-            size, data = self._serialize(obj)
+            size, data, pyserialized = self._serialize(obj)
         else:
             data = ctypes.c_ubyte(0)
             size = 0
@@ -597,7 +598,7 @@ class Index(object):
                 p_data[0] = no_data 
                 p_length[0] = 0
             else:
-                p_length[0], data = self._serialize(obj)
+                p_length[0], data, _ = self._serialize(obj)
                 p_data[0] = ctypes.cast(data, ctypes.POINTER(ctypes.c_ubyte))
 
             return 0
