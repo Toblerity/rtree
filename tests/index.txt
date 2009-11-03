@@ -200,8 +200,7 @@ Make a 4D index
     >>> p.dimension = 4
     
 
-with interleaved=False, the order of input and output is: 
-(xmin, xmax, ymin, ymax, zmin, zmax, kmin, kmax)
+with interleaved=False, the order of input and output is: (xmin, xmax, ymin, ymax, zmin, zmax, kmin, kmax)
 
     >>> idx4d = index.Index(properties=p, interleaved=False)
     >>> idx4d
