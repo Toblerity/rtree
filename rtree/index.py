@@ -499,10 +499,14 @@ class Index(object):
             to the user to ensure they are unique if this is a requirement.
 
         :param coordinates: sequence or array
-            This may be an object that satisfies the numpy array 
-            protocol, providing the index's dimension * 2 coordinate 
-            pairs representing the mink and maxk coordinates in 
-            each dimension defining the bounds of the query window.
+            Dimension * 2 coordinate pairs, representing the min
+            and max coordinates in each dimension of the item to be
+            deleted from the index. Their ordering will depend on the
+            index's :attr:`interleaved` data member.
+            These are not the coordinates of a space containing the
+            item, but those of the item itself. Together with the
+            id parameter, they determine which item will be deleted.
+            This may be an object that satisfies the numpy array protocol.
         
         Example::
         
