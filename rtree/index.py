@@ -296,6 +296,8 @@ class Index(object):
         and the object it stores with that id is the number `42`.  The coordinate 
         ordering in this instance is the default (interleaved=True) ordering::
         
+            >>> from rtree import index
+            >>> idx = index.Index()
             >>> idx.insert(4321, (34.3776829412, 26.7375853734, 49.3776829412, 41.7375853734), obj=42)
 
         """
@@ -327,8 +329,10 @@ class Index(object):
             If False, the method will return an iterator of the results.
         
         The following example queries the index for any objects any objects 
-        that were stored in the index intersect the bounds given in the coordinates:
+        that were stored in the index intersect the bounds given in the coordinates::
 
+            >>> from rtree import index
+            >>> idx = index.Index()
             >>> idx.insert(4321, (34.3776829412, 26.7375853734, 49.3776829412, 41.7375853734), obj=42)
 
             >>> hits = idx.intersection((0, 0, 60, 60), objects=True)
@@ -455,6 +459,9 @@ class Index(object):
         
         Example of finding the three items nearest to this one::
 
+            >>> from rtree import index
+            >>> idx = index.Index()
+            >>> idx.insert(4321, (34.37, 26.73, 49.37, 41.73), obj=42)
             >>> hits = idx.nearest((0, 0, 10, 10), 3, objects=True)
         """
         if objects: return self._nearest_obj(coordinates, num_results, objects)
@@ -510,6 +517,8 @@ class Index(object):
         
         Example::
         
+            >>> from rtree import index
+            >>> idx = index.Index()
             >>> idx.delete(4321, (34.3776829412, 26.7375853734, 49.3776829412, 41.7375853734) )
 
         """
