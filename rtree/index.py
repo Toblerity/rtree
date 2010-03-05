@@ -23,6 +23,9 @@ RT_TPRTree = 2
 
 __version__ = core.rt.SIDX_Version()
 
+if (__version__.split('.')[1] < 5):
+    raise Exception("This version of Rtree requires libspatialindex 1.5.0 or greater")
+
 __all__ = ['Rtree', 'Index', 'Property']
 
 def _get_bounds(handle, bounds_fn, interleaved):
@@ -350,7 +353,7 @@ class Index(object):
         
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
-        p_num_results = ctypes.c_uint32(0)
+        p_num_results = ctypes.c_uint64(0)
         
         it = ctypes.pointer(ctypes.c_uint64())
         
@@ -369,7 +372,7 @@ class Index(object):
         
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
-        p_num_results = ctypes.c_uint32(0)
+        p_num_results = ctypes.c_uint64(0)
         
         it = ctypes.pointer(ctypes.c_void_p())
         
@@ -422,7 +425,7 @@ class Index(object):
         
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
-        p_num_results = ctypes.pointer(ctypes.c_uint32(num_results))
+        p_num_results = ctypes.pointer(ctypes.c_uint64(num_results))
                 
         it = ctypes.pointer(ctypes.c_void_p())
         
@@ -467,7 +470,7 @@ class Index(object):
         if objects: return self._nearest_obj(coordinates, num_results, objects)
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
-        p_num_results = ctypes.pointer(ctypes.c_uint32(num_results))
+        p_num_results = ctypes.pointer(ctypes.c_uint64(num_results))
         
         it = ctypes.pointer(ctypes.c_uint64())
         
