@@ -310,7 +310,7 @@ Note the arguments to intersection must be xmin, xmax, ymin, ymax for interleave
     >>> idx = index.Index(data_gen(interleaved=False), properties = p, interleaved=False)
 
     >>> leaves = idx.leaves()
-    >>> leaves[0] == (0L, [2L, 92L, 51L, 55L, 26L], [-132.41727847799999, -96.717721818399994, -132.41727847799999, -96.717721818399994])
+    >>> leaves[0] == (0, [2, 92, 51, 55, 26, 95, 7, 81, 38, 22, 58, 89, 91, 83, 98, 37, 70, 31, 49, 34, 11, 6, 13, 3, 23, 57, 9, 96, 84, 36, 5, 45, 77, 78, 44, 12, 42, 73, 93, 41, 71, 17, 39, 54, 88, 72, 97, 60, 62, 48], [-179.96941504899999, -96.717721818399994, 172.39278495600001, -0.16480386528999999])    
     True
 
     >>> del idx
