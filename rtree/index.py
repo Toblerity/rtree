@@ -313,6 +313,23 @@ class Index(object):
         core.rt.Index_InsertData(self.handle, id, p_mins, p_maxs, self.properties.dimension, data, size)
     add = insert
     
+    def count(self, coordinates):
+        
+        p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
+        
+        p_num_results = ctypes.c_uint64(0)
+        
+        it = ctypes.pointer(ctypes.c_uint64())
+        
+        core.rt.Index_Intersects_count(    self.handle, 
+                                        p_mins, 
+                                        p_maxs, 
+                                        self.properties.dimension, 
+                                        ctypes.byref(p_num_results))
+
+        
+        return p_num_results.value
+        
     def intersection(self, coordinates, objects=False, as_list=True):
         """Return ids or objects in the index that intersect the given coordinates.
         

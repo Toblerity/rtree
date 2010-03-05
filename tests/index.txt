@@ -299,7 +299,12 @@ Note the arguments to intersection must be xmin, xmax, ymin, ymax for interleave
     >>> hits = strm_idx.intersection((0, 60, 0, 60), objects='raw')
     >>> hits[0]
     42
-
+    >>> len(hits)
+    10
+    
+    >>> strm_idx.count((0, 60, 0, 60))
+    10L
+    
     >>> del strm_idx
 
     >>> p = index.Property()
