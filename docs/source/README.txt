@@ -3,20 +3,24 @@
 Rtree: Spatial indexing for Python
 ------------------------------------------------------------------------------
 
-Whether for in-memory feature stores, Plone content, or whatever -- we need an
-index to speed up the search for objects that intersect with a spatial bounding
-box.  `R-trees`_ provide excellent query performance and good incremental 
-insert performance.  
+`R-trees`_ possess excellent query performance, good incremental 
+insert performance, and great flexibility in the spatial indexing algorithms 
+world.  
 
 .. _`R-trees`: http://en.wikipedia.org/wiki/R-tree
 .. _`ctypes`: http://docs.python.org/library/ctypes.html
 
-`Rtree`_ is a Python library that uses `ctypes`_ and an internally built C API
-to wrap `libspatialindex`_ and provide very flexible spatial indexing.
+`Rtree`_ is a Python library that uses `ctypes`_ 
+to wrap `libspatialindex`_.
 `Rtree`_ has gone through a number of iterations, and at 0.5.0, it was
 completely refactored to use a new internal architecture (ctypes + a C API
 over `libspatialindex`_). This refactoring has resulted in a number of new
 features and much more flexibility. See CHANGES.txt_ for more detail.
+
+Rtree 0.6.0+ requires `libspatialindex`_ 1.5.0+ to work.  Rtree 0.5.0 included 
+a C library that is now the C API for libspatialindex and is part of that 
+source tree.  The code bases  are independent from each other and can now 
+evolve separately.  Rtree is now pure Python.
 
 .. _Rtree: http://pypi.python.org/pypi/Rtree/
 .. _CHANGES.txt: http://trac.gispython.org/lab/browser/Rtree/trunk/CHANGES.txt
@@ -140,7 +144,8 @@ See the `tests/benchmarks.py`_ file for a comparison.
 
 There are a few simple things that will improve performance.
 
- - Use stream loading. This will improve performance over Rtree.insert ::
+ - Use stream loading. This will substantially (orders of magnitude in many cases) 
+   improve performance over Rtree.insert by allowing the data to be pre-sorted ::
 
     >>> def generator_function():
     ...    for i, obj in enumerate(somedata):
@@ -162,6 +167,20 @@ There are a few simple things that will improve performance.
 
  - Adjust :class:`rtree.index.Property` appropriate to your index.
 
+   * Set your leaf_capacity to a higher value than the default 100.  1000+ is 
+     fine for the default pagesize of 4096 in many cases.
+
+   * Increase the fill_factor to something near 0.9.  Smaller fill factors 
+     mean more splitting, which means more nodes.  This may be bad or good 
+     depending on your usage.
+   
+ - Don't use more dimensions than you actually need. If you only need 2,
+   only use two. Otherwise, you will waste lots of storage and add that 
+   many more floating point comparisons for each query, search, and insert 
+   operation of the index.
+ 
+ - Use index.count() if you only need a count and index.intersection(objects=False) 
+   if you only need the ids.  Otherwise, lots of data may potentially be copied.
 
 Support
 ------------------------------------------------------------------------------

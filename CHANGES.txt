@@ -1,3 +1,17 @@
+0.6.0: 2010-03-XX
+=================
+
+- 0.6.0 relies on libspatialindex 1.5.0.
+- libsidx C library of 0.5.0 removed and included in libspatialindex
+- objects="raw" (brent?)
+- Improved bulk loading performance
+- Supposedly no memory leaks :)
+- Bulk loader supports interleaved coordinates
+- Leaf queries.  You can return the box and ids of the leaf nodes of the index.  
+  Useful for visualization, etc.
+- Many more docstrings, sphinx docs, etc
+
+
 0.5.0: 2009-08-XX
 =================
 
