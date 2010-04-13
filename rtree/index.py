@@ -147,7 +147,7 @@ class Index(object):
 
             >>> json_idx = JSONIndex()
             >>> json_idx.insert(1, (0, 1, 0, 1), {"nums": [23, 45], "letters": "abcd"})
-            >>> json_idx.nearest((0, 0), 1, objects="raw")
+            >>> list(json_idx.nearest((0, 0), 1, objects="raw"))
             [{'letters': 'abcd', 'nums': [23, 45]}]
 
         """
@@ -329,7 +329,7 @@ class Index(object):
             >>> idx = index.Index()
             >>> idx.insert(4321, (34.3776829412, 26.7375853734, 49.3776829412, 41.7375853734), obj=42)
 
-            >>> hits = idx.count((0, 0, 60, 60))
+            >>> idx.count((0, 0, 60, 60))
             1
 
         """        
@@ -348,7 +348,7 @@ class Index(object):
         
         return p_num_results.value
         
-    def intersection(self, coordinates, objects=False, as_list=True):
+    def intersection(self, coordinates, objects=False):
         """Return ids or objects in the index that intersect the given coordinates.
         
         :param coordinates: sequence or array
@@ -363,9 +363,6 @@ class Index(object):
             as the id and bounds of the index entries. If 'raw', the objects
             will be returned without the :class:`rtree.index.Item` wrapper.
             
-        :param as_list: true or False
-            If False, the method will return an iterator of the results.
-        
         The following example queries the index for any objects any objects 
         that were stored in the index intersect the bounds given in the coordinates::
 
@@ -373,19 +370,19 @@ class Index(object):
             >>> idx = index.Index()
             >>> idx.insert(4321, (34.3776829412, 26.7375853734, 49.3776829412, 41.7375853734), obj=42)
 
-            >>> hits = idx.intersection((0, 0, 60, 60), objects=True)
+            >>> hits = list(idx.intersection((0, 0, 60, 60), objects=True))
             >>> [(item.object, item.bbox) for item in hits if item.id == 4321]
             [(42, [34.3776829412, 26.737585373400002, 49.3776829412, 41.737585373400002])]
 
         If the :class:`rtree.index.Item` wrapper is not used, it is faster to
         request the 'raw' objects:
-            >>> idx.intersection((0, 0, 60, 60), objects="raw")
+            >>> list(idx.intersection((0, 0, 60, 60), objects="raw"))
             [42]
 
 
         """
 
-        if objects: return self._intersection_obj(coordinates, as_list, objects)
+        if objects: return self._intersection_obj(coordinates, objects)
         
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
@@ -399,12 +396,9 @@ class Index(object):
                                         self.properties.dimension, 
                                         ctypes.byref(it), 
                                         ctypes.byref(p_num_results))
-
-        if as_list:
-            return list(self._get_ids(it, p_num_results.value))
         return self._get_ids(it, p_num_results.value)
 
-    def _intersection_obj(self, coordinates, as_list, objects):
+    def _intersection_obj(self, coordinates, objects):
         
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         
@@ -418,8 +412,6 @@ class Index(object):
                                         self.properties.dimension, 
                                         ctypes.byref(it), 
                                         ctypes.byref(p_num_results))
-        if as_list:
-            return list(self._get_objects(it, p_num_results.value, objects))
         return self._get_objects(it, p_num_results.value, objects)
 
     def _get_objects(self, it, num_results, objects):
@@ -472,9 +464,9 @@ class Index(object):
                                             ctypes.byref(it), 
                                             p_num_results)
 
-        return list(self._get_objects(it, p_num_results.contents.value, objects))
+        return self._get_objects(it, p_num_results.contents.value, objects)
         
-    def nearest(self, coordinates, num_results, objects=False):
+    def nearest(self, coordinates, num_results=1, objects=False):
         """Returns the ``k``-nearest objects to the given coordinates.
         
         :param coordinates: sequence or array
@@ -517,7 +509,7 @@ class Index(object):
                                             ctypes.byref(it), 
                                             p_num_results)
 
-        return list(self._get_ids(it, p_num_results.contents.value))
+        return self._get_ids(it, p_num_results.contents.value)
 
     def get_bounds(self, coordinate_interleaved=None):
         """Returns the bounds of the index
