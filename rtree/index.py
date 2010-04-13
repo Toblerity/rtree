@@ -289,7 +289,7 @@ class Index(object):
         :param coordinates: sequence or array
             This may be an object that satisfies the numpy array 
             protocol, providing the index's dimension * 2 coordinate 
-            pairs representing the mink and maxk coordinates in 
+            pairs representing the `mink` and `maxk` coordinates in 
             each dimension defining the bounds of the query window.
         
         :param obj: a pickleable object.  If not None, this object will be 
@@ -319,7 +319,7 @@ class Index(object):
         :param coordinates: sequence or array
             This may be an object that satisfies the numpy array 
             protocol, providing the index's dimension * 2 coordinate 
-            pairs representing the mink and maxk coordinates in 
+            pairs representing the `mink` and `maxk` coordinates in 
             each dimension defining the bounds of the query window.
         
         The following example queries the index for any objects any objects 
@@ -354,14 +354,14 @@ class Index(object):
         :param coordinates: sequence or array
             This may be an object that satisfies the numpy array 
             protocol, providing the index's dimension * 2 coordinate 
-            pairs representing the mink and maxk coordinates in 
+            pairs representing the `mink` and `maxk` coordinates in 
             each dimension defining the bounds of the query window.
         
         :param objects: True or False or 'raw'
-            If True, the intersection method will return index objects that 
-            were pickled when they were stored with each index entry, as 
-            well as the id and bounds of the index entries.
-            If 'raw', the objects will be returned without the Item wrapper.
+            If True, the intersection method will return index objects that
+            were pickled when they were stored with each index entry, as well
+            as the id and bounds of the index entries. If 'raw', the objects
+            will be returned without the :class:`rtree.index.Item` wrapper.
             
         :param as_list: true or False
             If False, the method will return an iterator of the results.
@@ -377,7 +377,8 @@ class Index(object):
             >>> [(item.object, item.bbox) for item in hits if item.id == 4321]
             [(42, [34.3776829412, 26.737585373400002, 49.3776829412, 41.737585373400002])]
 
-        If the Item() wrapper is not used, it is faster to request the 'raw' objects:
+        If the :class:`rtree.index.Item` wrapper is not used, it is faster to
+        request the 'raw' objects:
             >>> idx.intersection((0, 0, 60, 60), objects="raw")
             [42]
 
@@ -479,7 +480,7 @@ class Index(object):
         :param coordinates: sequence or array
             This may be an object that satisfies the numpy array 
             protocol, providing the index's dimension * 2 coordinate 
-            pairs representing the mink and maxk coordinates in 
+            pairs representing the `mink` and `maxk` coordinates in 
             each dimension defining the bounds of the query window.
         
         :param num_results: integer
@@ -493,7 +494,7 @@ class Index(object):
             were pickled when they were stored with each index entry, as 
             well as the id and bounds of the index entries.
             If 'raw', it will return the object as entered into the database
-            without the Item() wrapper.
+            without the :class:`rtree.index.Item` wrapper.
         
         Example of finding the three items nearest to this one::
 
@@ -730,9 +731,10 @@ class Item(object):
     """A container for index entries"""
     __slots__ = ('handle', 'owned', 'id', 'object', 'bounds')
     def __init__(self, loads, handle, owned=False):
-        """There should be no reason to instantiate these yourself.  Items are 
-        created automatically when you do an .insert() given the parameters of the 
-        function."""
+        """There should be no reason to instantiate these yourself. Items are
+        created automatically when you call
+        :meth:`rtree.index.Index.intersection` (or other index querying
+        methods) with objects=True given the parameters of the function."""
         
         if handle:
             self.handle = handle
@@ -747,6 +749,7 @@ class Item(object):
 
     @property
     def bbox(self):
+        """Returns the bounding box of the index entry"""
         return Index.interleave(self.bounds)
 
     def get_object(self, loads):

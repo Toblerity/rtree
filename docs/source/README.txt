@@ -186,7 +186,7 @@ There are a few simple things that will improve performance.
    many more floating point comparisons for each query, search, and insert 
    operation of the index.
  
- - Use :obj:`rtree.index.count()` if you only need a count and :obj:`rtree.index.intersection(objects=False)` 
+ - Use :meth:`rtree.index.Index.count` if you only need a count and :meth:`rtree.index.Index.intersection` 
    if you only need the ids.  Otherwise, lots of data may potentially be copied.
 
 Support
