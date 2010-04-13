@@ -1,12 +1,15 @@
-0.6.0: 2010-03-XX
+0.6.0: 2010-04-13
 =================
 
+- 0.6.0 relies on libspatialindex 1.5.0+.
 - Intersection and nearest methods return iterators over results instead of
   lists.
 - Number of results for nearest() defaults to 1.
 - 0.6.0 relies on libspatialindex 1.5.0.
 - libsidx C library of 0.5.0 removed and included in libspatialindex
 - objects="raw" to return the object sent in (for speed).
+- .count() method to return the intersection count without the overhead 
+  of returning a list.
 - Improved bulk loading performance
 - Supposedly no memory leaks :)
 - Many other performance tweaks (see docs).
