@@ -152,16 +152,15 @@ There are a few simple things that will improve performance.
    improve performance over Rtree.insert by allowing the data to be pre-sorted 
    
 
-   .. code-block:: python
+   :: 
 
        >>> def generator_function():
        ...    for i, obj in enumerate(somedata):
        ...        yield (i, (obj.xmin, obj.ymin, obj.xmax, obj.ymax), obj)
        >>> r = Rtree(generator_function())
 
-   .. note::
-        After bulk loading the index, you can then insert additional records into 
-        the index using :meth:`rtree.index.insert()`
+   After bulk loading the index, you can then insert additional records into 
+   the index using `insert()`
 
  - Override Rtree.dumps() to use the highest pickle protocol ::
 
@@ -176,7 +175,7 @@ There are a few simple things that will improve performance.
 
     >>> objs = r.intersection((xmin, ymin, xmax, ymax), objects="raw")
 
- - Adjust :class:`rtree.index.Property` appropriate to your index.
+ - Adjust `rtree.index.Property` appropriate to your index.
 
    * Set your leaf_capacity to a higher value than the default 100.  1000+ is 
      fine for the default pagesize of 4096 in many cases.
@@ -190,7 +189,7 @@ There are a few simple things that will improve performance.
    many more floating point comparisons for each query, search, and insert 
    operation of the index.
  
- - Use :meth:`rtree.index.Index.count` if you only need a count and :meth:`rtree.index.Index.intersection` 
+ - Use `.count()` if you only need a count and `.intersection()`
    if you only need the ids.  Otherwise, lots of data may potentially be copied.
 
 Support
