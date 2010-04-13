@@ -6,9 +6,10 @@
 - Number of results for nearest() defaults to 1.
 - 0.6.0 relies on libspatialindex 1.5.0.
 - libsidx C library of 0.5.0 removed and included in libspatialindex
-- objects="raw" (brent?)
+- objects="raw" to return the object sent in (for speed).
 - Improved bulk loading performance
 - Supposedly no memory leaks :)
+- Many other performance tweaks (see docs).
 - Bulk loader supports interleaved coordinates
 - Leaf queries.  You can return the box and ids of the leaf nodes of the index.  
   Useful for visualization, etc.
