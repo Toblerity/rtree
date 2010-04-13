@@ -33,15 +33,19 @@ In a nutshell::
 
   >>> from rtree import Rtree
   >>> idx = Rtree()
-  >>> idx.add(id=id, bounds=(left, bottom, right, top))
-  >>> [n for n in idx.intersection((left, bottom, right, top))]
-  [id]
+  >>> minx, miny, maxx, maxy = (0.0, 0.0, 1.0, 1.0)
+  >>> idx.add(0, (minx, miny, maxx, maxy))
+  >>> list(idx.intersection((1.0, 1.0, 2.0, 2.0)))
+  [0L]
+  >>> list(idx.intersection((1.0000001, 1.0000001, 2.0, 2.0)))
+  []
 
 The following finds the 1 nearest item to the given bounds. If multiple items
 are of equal distance to the bounds, both are returned::
   
-  >>> sorted(idx.nearest((left, bottom, right, top), 1))
-  [0L, 1L]  
+  >>> idx.add(1, (minx, miny, maxx, maxy))
+  >>> list(idx.nearest((1.0000001, 1.0000001, 2.0, 2.0), 1))
+  [0L, 1L]
 
 This resembles a subset of the set protocol. *add* indexes a new object by id,
 *intersection* returns an iterator over ids (or objects) where the node
