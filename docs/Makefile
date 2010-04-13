@@ -23,7 +23,7 @@ help:
 	@echo "  qthelp    to make HTML files and a qthelp project"
 	@echo "  devhelp   to make HTML files and a Devhelp project"
 	@echo "  latex     to make LaTeX files, you can set PAPER=a4 or PAPER=letter"
-	@echo "  latexpdf  to make LaTeX files and run them through pdflatex"
+	@echo "  latex_paper_size  to make LaTeX files and run them through pdflatex"
 	@echo "  changes   to make an overview of all changed/added/deprecated items"
 	@echo "  linkcheck to check all external links for integrity"
 	@echo "  doctest   to run all doctests embedded in the documentation (if enabled)"
@@ -103,3 +103,8 @@ doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) build/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in build/doctest/output.txt."
+
+pdf:
+	$(SPHINXBUILD) -b pdf $(ALLSPHINXOPTS) build/pdf
+	@echo
+	@echo "Build finished; now you can process the PDF files."
