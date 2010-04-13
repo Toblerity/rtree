@@ -92,7 +92,7 @@ Installation
 \*nix 
 ..............................................................................
 
-First, download and install version 1.4.0 of the `libspatialindex`_ library from:
+First, download and install version 1.5.0 of the `libspatialindex`_ library from:
 
 http://trac.gispython.org/spatialindex/wiki/Releases
 
@@ -103,7 +103,7 @@ The library is a GNU-style build, so it is a matter of::
 You may need to run the ``ldconfig`` command after installing the library to 
 ensure that applications can find it at startup time.  
 
-At this point you can get Rtree 0.5.0 via easy_install::
+At this point you can get Rtree 0.6.0 via easy_install::
 
   $ easy_install Rtree
 
@@ -145,12 +145,19 @@ See the `tests/benchmarks.py`_ file for a comparison.
 There are a few simple things that will improve performance.
 
  - Use stream loading. This will substantially (orders of magnitude in many cases) 
-   improve performance over Rtree.insert by allowing the data to be pre-sorted ::
+   improve performance over Rtree.insert by allowing the data to be pre-sorted 
+   
 
-    >>> def generator_function():
-    ...    for i, obj in enumerate(somedata):
-    ...        yield (i, (obj.xmin, obj.ymin, obj.xmax, obj.ymax), obj)
-    >>> r = Rtree(generator_function())
+   .. code-block:: python
+
+       >>> def generator_function():
+       ...    for i, obj in enumerate(somedata):
+       ...        yield (i, (obj.xmin, obj.ymin, obj.xmax, obj.ymax), obj)
+       >>> r = Rtree(generator_function())
+
+   .. note::
+        After bulk loading the index, you can then insert additional records into 
+        the index using :meth:`rtree.index.insert()`
 
  - Override Rtree.dumps() to use the highest pickle protocol ::
 
@@ -179,7 +186,7 @@ There are a few simple things that will improve performance.
    many more floating point comparisons for each query, search, and insert 
    operation of the index.
  
- - Use index.count() if you only need a count and index.intersection(objects=False) 
+ - Use :obj:`rtree.index.count()` if you only need a count and :obj:`rtree.index.intersection(objects=False)` 
    if you only need the ids.  Otherwise, lots of data may potentially be copied.
 
 Support
