@@ -1,0 +1,157 @@
+
+Shows how to create custom storage backend.
+
+Derive your custom storage for rtree.index.CustomStorage and override the methods
+shown in this example.
+You can also derive from rtree.index.CustomStorageBase to get at the raw C buffers
+if you need the extra speed and want to avoid translating from/to python strings.
+
+The essential methods are the load/store/deleteByteArray. The rtree library calls
+them whenever it needs to access the data in any way.
+
+Example storage which maps the page (ids) to the page data.
+
+   >>> from rtree.index import Rtree, CustomStorage, Property
+   
+   >>> class DictStorage(CustomStorage):
+   ...     """ A simple storage which saves the pages in a python dictionary """
+   ...     def __init__(self):
+   ...         CustomStorage.__init__( self )
+   ...         self.clear()
+   ... 
+   ...     def create(self, returnError):
+   ...         """ Called when the storage is created on the C side """
+   ... 
+   ...     def destroy(self, returnError):
+   ...         """ Called when the storage is destroyed on the C side """
+   ... 
+   ...     def clear(self):
+   ...         """ Clear all our data """   
+   ...         self.dict = {}
+   ... 
+   ...     def loadByteArray(self, page, returnError):
+   ...         """ Returns the data for page or returns an error """   
+   ...         try:
+   ...             return self.dict[page]
+   ...         except KeyError:
+   ...             returnError.contents.value = self.InvalidPageError
+   ... 
+   ...     def storeByteArray(self, page, data, returnError):
+   ...         """ Stores the data for page """   
+   ...         if page == self.NewPage:
+   ...             newPageId = len(self.dict)
+   ...             self.dict[newPageId] = data
+   ...             return newPageId
+   ...         else:
+   ...             if page not in self.dict:
+   ...                 returnError.value = self.InvalidPageError
+   ...                 return 0
+   ...             self.dict[page] = data
+   ...             return page
+   ... 
+   ...     def deleteByteArray(self, page, returnError):
+   ...         """ Deletes a page """   
+   ...         try:
+   ...             del self.dict[page]
+   ...         except KeyError:
+   ...             returnError.contents.value = self.InvalidPageError
+   ... 
+   ...     hasData = property( lambda self: bool(self.dict) )
+   ...     """ Returns true if we contains some data """   
+
+
+Now let's test drive our custom storage.
+
+First let's define the basic properties we will use for all rtrees:
+
+    >>> settings = Property()
+    >>> settings.writethrough = True
+    >>> settings.buffering_capacity = 1
+
+Notice that there is a small in-memory buffer by default. We effectively disable
+it here so our storage directly receives any load/store/delete calls.
+This is not necessary in general and can hamper performance; we just use it here
+for illustrative and testing purposes.
+
+Let's start with a basic test:
+
+Create the storage and hook it up with a new rtree:
+
+    >>> storage = DictStorage()
+    >>> r = Rtree( storage, properties = settings )
+
+Interestingly enough, if we take a look at the contents of our storage now, we
+can see the Rtree has already written two pages to it. This is for header and
+index.
+
+    >>> state1 = storage.dict.copy()
+    >>> state1.keys()
+    [0, 1]
+    
+Let's add an item:
+
+    >>> r.add(123, (0, 0, 1, 1))
+
+Make sure the data in the storage before and after the addition of the new item
+is different:
+
+    >>> state2 = storage.dict.copy()
+    >>> state1 != state2
+    True
+
+Now perform a few queries and assure the tree is still valid:
+
+    >>> item = list(r.nearest((0, 0), 1, objects=True))[0]
+    >>> int(item.id)
+    123
+    >>> r.valid()
+    True
+    
+Check if the stored data is a byte string
+
+    >>> isinstance(storage.dict.values()[0], str)
+    True
+    
+Delete an item
+
+    >>> r.delete(123, (0, 0, 1, 1))
+    >>> r.valid()
+    True
+    
+Just for reference show how to flush the internal buffers (e.g. when
+properties.buffer_capacity is > 1)
+
+    >>> r.clearBuffer()
+    >>> r.valid()
+    True
+
+Let's get rid of the tree, we're done with it
+    
+    >>> del r
+
+Show how to empty the storage
+    
+    >>> storage.clear()
+    >>> storage.hasData
+    False
+    >>> del storage
+
+    
+Ok, let's create another small test. This time we'll test reopening our custom
+storage. This is useful for persistent storages.
+
+First create a storage and put some data into it:
+
+    >>> storage = DictStorage()
+    >>> r1 = Rtree( storage, properties = settings, overwrite = True )
+    >>> r1.add(555, (2, 2))
+    >>> del r1
+    >>> storage.hasData
+    True
+    
+Then reopen the storage with a new tree and see if the data is still there
+
+    >>> r2 = Rtree( storage, properties = settings, overwrite = False )
+    >>> r2.count( (0,0,10,10) )
+    1L
+    >>> del r2

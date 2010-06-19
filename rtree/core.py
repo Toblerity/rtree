@@ -206,6 +206,10 @@ rt.Index_DestroyObjResults.argtypes = [ctypes.POINTER(ctypes.POINTER(ctypes.c_vo
 rt.Index_DestroyObjResults.restype = None
 rt.Index_DestroyObjResults.errcheck = check_void_done
 
+rt.Index_ClearBuffer.argtypes = [ctypes.c_void_p]
+rt.Index_ClearBuffer.restype = None
+rt.Index_ClearBuffer.errcheck = check_void_done
+
 rt.Index_Free.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
 rt.Index_Free.restype = None
 rt.Index_Free.errcheck = check_void_done
@@ -422,6 +426,22 @@ rt.IndexProperty_GetFileNameExtensionIdx.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetFileNameExtensionIdx.errcheck = free_returned_char_p
 rt.IndexProperty_GetFileNameExtensionIdx.restype = ctypes.POINTER(ctypes.c_char)
 
+rt.IndexProperty_SetCustomStorageCallbacksSize.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+rt.IndexProperty_SetCustomStorageCallbacksSize.restype = ctypes.c_int
+rt.IndexProperty_SetCustomStorageCallbacksSize.errcheck = check_return
+
+rt.IndexProperty_GetCustomStorageCallbacksSize.argtypes = [ctypes.c_void_p]
+rt.IndexProperty_GetCustomStorageCallbacksSize.restype = ctypes.c_uint32
+rt.IndexProperty_GetCustomStorageCallbacksSize.errcheck = check_value
+
+rt.IndexProperty_SetCustomStorageCallbacks.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+rt.IndexProperty_SetCustomStorageCallbacks.restype = ctypes.c_int
+rt.IndexProperty_SetCustomStorageCallbacks.errcheck = check_return
+
+rt.IndexProperty_GetCustomStorageCallbacks.argtypes = [ctypes.c_void_p]
+rt.IndexProperty_GetCustomStorageCallbacks.restype = ctypes.c_void_p
+rt.IndexProperty_GetCustomStorageCallbacks.errcheck = check_value
+
 rt.IndexProperty_SetIndexID.argtypes = [ctypes.c_void_p, ctypes.c_int64]
 rt.IndexProperty_SetIndexID.restype = ctypes.c_int
 rt.IndexProperty_SetIndexID.errcheck = check_return
@@ -429,6 +449,13 @@ rt.IndexProperty_SetIndexID.errcheck = check_return
 rt.IndexProperty_GetIndexID.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetIndexID.restype = ctypes.c_int64
 rt.IndexProperty_GetIndexID.errcheck = check_value
+
+rt.SIDX_NewBuffer.argtypes = [ctypes.c_uint]
+rt.SIDX_NewBuffer.restype = ctypes.c_void_p
+rt.SIDX_NewBuffer.errcheck = check_void
+
+rt.SIDX_DeleteBuffer.argtypes = [ctypes.c_void_p]
+rt.SIDX_DeleteBuffer.restype = None
 
 rt.SIDX_Version.restype = ctypes.POINTER(ctypes.c_char)
 rt.SIDX_Version.errcheck = free_returned_char_p
