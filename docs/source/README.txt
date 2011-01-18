@@ -129,15 +129,28 @@ is as easy as::
   c:\python2x\scripts\easy_install.exe Rtree
 
 
-Usage
+Documentation and Usage
 ------------------------------------------------------------------------------
 
+HTML documentation for Rtree is available at http://gispython.org/rtree/docs/ 
+and they can be generated via `Sphinx`_ from the docs/ directory. 
+
 See `tests/index.txt`_ for more detail on index usage and `tests/properties.txt`_ 
-for index properties that can be set and manipulated.  Refer to `libspatialindex`_ 
-documentation or code for more detail on their meanings and usage.
+for index properties that can be set and manipulated.  `tests/test_customStorage.txt`_ 
+demonstrates how to create a custom storage backend using Rtree for your own 
+database.  
+
+Refer to `libspatialindex`_ documentation or code for more detail on the meanings and usage 
+of index properties.
+
+https://mail.zope.org/pipermail/zodb-dev/2010-June/013491.html contains a custom 
+storage backend for `ZODB`_
 
 .. _tests/index.txt: http://trac.gispython.org/lab/browser/Rtree/trunk/tests/index.txt
 .. _tests/properties.txt: http://trac.gispython.org/lab/browser/Rtree/trunk/tests/properties.txt
+.. _tests/test_customStorage.txt: http://trac.gispython.org/lab/browser/Rtree/trunk/tests/test_customStorage.txt
+.. _Sphinx: http://sphinx.pocoo.org/
+.. _ZODB: http://www.zodb.org/
 
 Performance
 ------------------------------------------------------------------------------
