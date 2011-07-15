@@ -364,7 +364,6 @@ class Index(object):
 
         p_num_results = ctypes.c_uint64(0)
 
-        it = ctypes.pointer(ctypes.c_uint64())
 
         core.rt.Index_Intersects_count(    self.handle,
                                         p_mins,
@@ -415,7 +414,7 @@ class Index(object):
 
         p_num_results = ctypes.c_uint64(0)
 
-        it = ctypes.pointer(ctypes.c_uint64())
+        it = ctypes.pointer(ctypes.c_int64())
 
         core.rt.Index_Intersects_id(    self.handle,
                                         p_mins,
@@ -465,7 +464,7 @@ class Index(object):
 
     def _get_ids(self, it, num_results):
         # take the pointer, yield the results  and free
-        items = ctypes.cast(it, ctypes.POINTER(ctypes.c_uint64 * num_results))
+        items = ctypes.cast(it, ctypes.POINTER(ctypes.c_int64 * num_results))
         its = ctypes.cast(items, ctypes.POINTER(ctypes.c_void_p))
 
         try:
@@ -527,7 +526,7 @@ class Index(object):
 
         p_num_results = ctypes.pointer(ctypes.c_uint64(num_results))
 
-        it = ctypes.pointer(ctypes.c_uint64())
+        it = ctypes.pointer(ctypes.c_int64())
 
         core.rt.Index_NearestNeighbors_id(  self.handle,
                                             p_mins,

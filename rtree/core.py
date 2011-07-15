@@ -101,7 +101,7 @@ rt.Index_Create.restype = ctypes.c_void_p
 rt.Index_Create.errcheck = check_void
 
 NEXTFUNC = ctypes.CFUNCTYPE(ctypes.c_int, 
-                            ctypes.POINTER(ctypes.c_uint64),
+                            ctypes.POINTER(ctypes.c_int64),
                             ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
                             ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
                             ctypes.POINTER(ctypes.c_uint32),
@@ -121,7 +121,7 @@ rt.Index_GetProperties.restype = ctypes.c_void_p
 rt.Index_GetProperties.errcheck = check_void
 
 rt.Index_DeleteData.argtypes = [ctypes.c_void_p, 
-                                ctypes.c_uint64, 
+                                ctypes.c_int64, 
                                 ctypes.POINTER(ctypes.c_double), 
                                 ctypes.POINTER(ctypes.c_double), 
                                 ctypes.c_uint32]
@@ -129,7 +129,7 @@ rt.Index_DeleteData.restype = ctypes.c_int
 rt.Index_DeleteData.errcheck = check_return
 
 rt.Index_InsertData.argtypes = [ctypes.c_void_p, 
-                                ctypes.c_uint64, 
+                                ctypes.c_int64, 
                                 ctypes.POINTER(ctypes.c_double), 
                                 ctypes.POINTER(ctypes.c_double), 
                                 ctypes.c_uint32, 
@@ -162,7 +162,7 @@ rt.Index_Intersects_id.argtypes = [ctypes.c_void_p,
                                     ctypes.POINTER(ctypes.c_double), 
                                     ctypes.POINTER(ctypes.c_double), 
                                     ctypes.c_uint32, 
-                                    ctypes.POINTER(ctypes.POINTER(ctypes.c_uint64)),
+                                    ctypes.POINTER(ctypes.POINTER(ctypes.c_int64)),
                                     ctypes.POINTER(ctypes.c_uint64)]
 rt.Index_Intersects_id.restype = ctypes.c_int
 rt.Index_Intersects_id.errcheck = check_return
@@ -186,7 +186,7 @@ rt.Index_NearestNeighbors_id.argtypes = [  ctypes.c_void_p,
                                             ctypes.POINTER(ctypes.c_double), 
                                             ctypes.POINTER(ctypes.c_double), 
                                             ctypes.c_uint32, 
-                                            ctypes.POINTER(ctypes.POINTER(ctypes.c_uint64)),
+                                            ctypes.POINTER(ctypes.POINTER(ctypes.c_int64)),
                                             ctypes.POINTER(ctypes.c_uint64)]
 rt.Index_NearestNeighbors_id.restype = ctypes.c_int
 rt.Index_NearestNeighbors_id.errcheck = check_return
@@ -232,7 +232,7 @@ rt.IndexItem_GetBounds.restype = ctypes.c_int
 rt.IndexItem_GetBounds.errcheck = check_value
 
 rt.IndexItem_GetID.argtypes = [ctypes.c_void_p]
-rt.IndexItem_GetID.restype = ctypes.c_uint64
+rt.IndexItem_GetID.restype = ctypes.c_int64
 rt.IndexItem_GetID.errcheck = check_value
 
 rt.IndexProperty_Create.restype = ctypes.c_void_p
