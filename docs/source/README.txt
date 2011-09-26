@@ -1,16 +1,9 @@
 Rtree: Spatial indexing for Python
 ------------------------------------------------------------------------------
 
-`R-trees`_ possess excellent query performance, good incremental 
-insert performance, and great flexibility in the spatial indexing algorithms 
-world.  
-
 `Rtree`_ is a `ctypes`_ Python wrapper of `libspatialindex`_ that provides a 
 number of advanced spatial indexing features for the spatially curious Python 
 user.  These features include:
-
-Features
-..............................................................................
 
 * Nearest neighbor search
 * Intersection search

@@ -1,52 +1,7 @@
-.. _design:
+.. _history:
 
-Design and History of Rtree
+History of Rtree
 ------------------------------------------------------------------------------
-
-Design
-..............................................................................
-
-`Rtree`_ is a pure Python library that uses `ctypes`_ to wrap
-`libspatialindex`_. It consists of two major classes -
-:py:class:`rtree.index.Index` and :py:class:`rtree.index.Property` - and users
-manipulate these classes to interact with the index.
-
-Some short code examples should give you a quick overview of the design 
-and behavior of Rtree.
-
-Testing for Intersection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  >>> from rtree import index
-  >>> idx = index.Index()
-  >>> left, bottom, right, top = (0.0, 0.0, 1.0, 1.0)
-  >>> idx.insert(0, (left, bottom, right, top))
-  >>> list(idx.intersection((1.0, 1.0, 2.0, 2.0)))
-  [0]
-  >>> list(idx.intersection((1.0000001, 1.0000001, 2.0, 2.0)))
-  []
-
-This resembles a subset of the set protocol.
-:py:meth:`~rtree.index.Index.insert` indexes a new object by id,
-:py:meth:`~rtree.index.Index.intersection` returns an iterator over ids (or
-objects) where the node containing the id intersects with the specified
-bounding box. The :py:meth:`~rtree.index.Index.intersection` method is exact,
-with no false positives and no missed data.
-
-Finding Nearest Neighbors
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The following finds the 1 nearest item to the given bounds. If multiple items
-are of equal distance to the bounds, both are returned::
-  
-  >>> idx.insert(1, (left, bottom, right, top))
-  >>> list(idx.nearest((1.0000001, 1.0000001, 2.0, 2.0), 1))
-  [0, 1]
-
-
-
-History
-..............................................................................
 
 `Rtree`_ was started by `Sean Gillies`_ as a port of the `libspatialindex`_
 linkages that `QGIS`_ maintained to provide on-the-fly indexing support for

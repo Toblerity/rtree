@@ -1,13 +1,14 @@
 .. _index_test:
 
-Testing Rtree
-================
+Examples
+..............................................................................
 
     >>> from rtree import index
     >>> from rtree.index import Rtree
 
-Ensure libspatialindex version is >= 1.4.0
-    >>> index.__c_api_version__.split('.')[1] >= 4
+Ensure libspatialindex version is >= 1.7.0
+
+    >>> index.__c_api_version__.split('.')[1] >= 7
     True
     
 Make an instance, index stored in memory
@@ -76,9 +77,8 @@ Check that we have deleted stuff
     >>> len(hits)
     0
     
-#    >>> assert(idx.valid())
-
 Check that nearest returns *all* of the items that are nearby
+
     >>> idx2 = Rtree()
     >>> idx2
     <rtree.index.Index object at 0x...>
