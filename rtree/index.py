@@ -22,10 +22,10 @@ RT_RTree = 0
 RT_MVRTree = 1
 RT_TPRTree = 2
 
-__version__ = core.rt.SIDX_Version()
+__c_api_version__ = core.rt.SIDX_Version()
 
-if (__version__.split('.')[1] < 5):
-    raise Exception("This version of Rtree requires libspatialindex 1.5.0 or greater")
+if (__c_api_version__.split('.')[1] < 7):
+    raise Exception("This version of Rtree requires libspatialindex 1.7.0 or greater")
 
 __all__ = ['Rtree', 'Index', 'Property']
 
@@ -401,7 +401,8 @@ class Index(object):
             [(42, [34.3776829412, 26.737585373400002, 49.3776829412, 41.737585373400002])]
 
         If the :class:`rtree.index.Item` wrapper is not used, it is faster to
-        request the 'raw' objects:
+        request the 'raw' objects::
+
             >>> list(idx.intersection((0, 0, 60, 60), objects="raw"))
             [42]
 
