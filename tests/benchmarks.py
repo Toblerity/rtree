@@ -110,7 +110,8 @@ s = s.replace("index.", "disk_index.")
 
 t = timeit.Timer(stmt=s, setup='from __main__ import points, disk_index, bbox, insert_object')
 print "\nDisk-based Rtree Intersection:"
-print len(disk_index.intersection(bbox)), "hits"
+hits = list(disk_index.intersection(bbox))
+print len(hits), "hits"
 print "%.2f usec/pass" % (1000000 * t.timeit(number=TEST_TIMES)/TEST_TIMES)
 
 
@@ -120,7 +121,7 @@ if insert_object:
         """
     t = timeit.Timer(stmt=s, setup='from __main__ import points, disk_index, bbox, insert_object')
     print "\nDisk-based Rtree Intersection without Item() wrapper (objects='raw'):"
-    result = disk_index.intersection(bbox, objects="raw")
+    result = list(disk_index.intersection(bbox, objects="raw"))
     print len(result), "raw hits"
     print "%.2f usec/pass" % (1000000 * t.timeit(number=TEST_TIMES)/TEST_TIMES)
     assert 'a' in result[0], result[0]
