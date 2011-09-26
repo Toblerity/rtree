@@ -1,4 +1,4 @@
 - setuptools
-- libspatialindex C library 1.5.0+: 
-  http://trac.gispython.org/spatialindex/wiki/Releases
+- libspatialindex C library 1.7.0+: 
+  http://libspatialindex.github.com
 
