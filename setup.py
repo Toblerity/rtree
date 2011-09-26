@@ -2,6 +2,7 @@
 from glob import glob
 from setuptools import setup
 
+import rtree
 
 # Get text from README.txt
 readme_text = file('docs/source/README.txt', 'rb').read()
@@ -16,7 +17,7 @@ else:
     data_files = None
     
 setup(name          = 'Rtree',
-      version       = '0.7.0',
+      version       = rtree.__version__,
       description   = 'R-Tree spatial index for Python GIS',
       license       = 'LGPL',
       keywords      = 'gis spatial index',
