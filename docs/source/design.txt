@@ -1,0 +1,93 @@
+.. _design:
+
+Design and History of Rtree
+------------------------------------------------------------------------------
+
+Design
+..............................................................................
+
+`Rtree`_ is a pure Python library that uses `ctypes`_ to wrap
+`libspatialindex`_. It consists of two major classes -
+:py:class:`rtree.index.Index` and :py:class:`rtree.index.Property` - and users
+manipulate these classes to interact with the index.
+
+Some short code examples should give you a quick overview of the design 
+and behavior of Rtree.
+
+Testing for Intersection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  >>> from rtree import index
+  >>> idx = index.Index()
+  >>> left, bottom, right, top = (0.0, 0.0, 1.0, 1.0)
+  >>> idx.insert(0, (left, bottom, right, top))
+  >>> list(idx.intersection((1.0, 1.0, 2.0, 2.0)))
+  [0]
+  >>> list(idx.intersection((1.0000001, 1.0000001, 2.0, 2.0)))
+  []
+
+This resembles a subset of the set protocol.
+:py:meth:`~rtree.index.Index.insert` indexes a new object by id,
+:py:meth:`~rtree.index.Index.intersection` returns an iterator over ids (or
+objects) where the node containing the id intersects with the specified
+bounding box. The :py:meth:`~rtree.index.Index.intersection` method is exact,
+with no false positives and no missed data.
+
+Finding Nearest Neighbors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following finds the 1 nearest item to the given bounds. If multiple items
+are of equal distance to the bounds, both are returned::
+  
+  >>> idx.insert(1, (left, bottom, right, top))
+  >>> list(idx.nearest((1.0000001, 1.0000001, 2.0, 2.0), 1))
+  [0, 1]
+
+
+
+History
+..............................................................................
+
+`Rtree`_ was started by `Sean Gillies`_ as a port of the `libspatialindex`_
+linkages that `QGIS`_ maintained to provide on-the-fly indexing support for
+GUI operations. A notable feature of `R-trees`_ is the ability to insert data
+into the structure without the need for a global partitioning bounds, and this
+drove Sean's adoption of this code. `Howard Butler`_ later picked up `Rtree`_
+and added a number of features that `libspatialindex`_ provided including disk
+serialization and bulk loading by writing a C API for `libspatialindex`_ and
+re-writing `Rtree`_ as a `ctypes`_ wrapper to utilize this C API. `Brent
+Pedersen`_ came along and added features to support alternative coordinate
+ordering, augmentation of the pickle storage, and lots of documentation.
+Mattias (http://dr-code.org) added support for custom storage backends to
+support using `Rtree`_ as an indexing type in `ZODB`_.
+
+`Rtree`_ has gone through a number of iterations, and at
+0.5.0, it was completely refactored to use a new internal architecture (ctypes
++ a C API over `libspatialindex`_). This refactoring has resulted in a number
+of new features and much more flexibility. See :ref:`changes` for more detail.
+
+.. note::
+    A significant bug in the 1.6.1+ `libspatialindex`_ C API was found where
+    it was using unsigned integers for index entry IDs instead of signed
+    integers. Because `Rtree`_ appeared to be the only significant user of the 
+    C API at this time, it was corrected immediately.  You should update 
+    immediately and re-insert data into new indexes if this is an important 
+    consideration for your application.
+    
+Rtree 0.5.0 included 
+a C library that is now the C API for libspatialindex and is part of that 
+source tree.  The code bases are independent from each other and can now 
+evolve separately.  Rtree is pure Python as of 0.6.0+.
+
+
+.. _`Sean Gillies`: http://sgillies.net/blog/
+.. _`Howard Butler`: http://hobu.biz
+.. _`Brent Pedersen`: http://hackmap.blogspot.com/
+.. _`QGIS`: http://qgis.org
+
+
+.. _`ZODB`: http://www.zodb.org/
+.. _`R-trees`: http://en.wikipedia.org/wiki/R-tree
+.. _`ctypes`: http://docs.python.org/library/ctypes.html
+.. _`libspatialindex`: http://libspatialindex.github.com
+.. _`Rtree`: http://rtree.github.com

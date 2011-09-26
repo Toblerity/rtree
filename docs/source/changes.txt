@@ -1,13 +1,19 @@
+.. _changes:
+
+Changes
+..............................................................................
+
+
 0.6.0: 2010-04-13
 =================
 
 - 0.6.0 relies on libspatialindex 1.5.0+.
-- Intersection and nearest methods return iterators over results instead of
+- :py:meth:`~rtree.index.Index.intersection` and :py:meth:`~rtree.index.Index.nearest` methods return iterators over results instead of
   lists.
-- Number of results for nearest() defaults to 1.
+- Number of results for :py:meth:`~rtree.index.Index.nearest` defaults to 1.
 - libsidx C library of 0.5.0 removed and included in libspatialindex
-- objects="raw" to return the object sent in (for speed).
-- .count() method to return the intersection count without the overhead 
+- objects="raw" in :py:meth:`~rtree.index.Index.intersection` to return the object sent in (for speed).
+- :py:meth:`~rtree.index.Index.count` method to return the intersection count without the overhead 
   of returning a list (thanks Leonard Norrgård).
 - Improved bulk loading performance
 - Supposedly no memory leaks :)
@@ -21,19 +27,19 @@
 0.5.0: 2009-08-XX
 =================
 
-- Complete refactoring to use libsidx - a C API for libspatialindex.  The 
-  code is now ctypes over libsidx, and a number of new features are now available 
-  as a result of this refactoring.
-  
-  * ability to store pickles within the index (clustered index)
-  * ability to use custom extension names for disk-based indexes
-  * ability to modify many index parameters at instantiation time
-  * storage of point data reduced by a factor of 4
-  * bulk loading of indexes at instantiation time
-  * ability to quickly return the bounds of the entire index
-  * ability to return the bounds of index entries
-  * much better windows support 
-  * libspatialindex 1.4.0 required.
+0.5.0 was a complete refactoring to use libsidx - a C API for libspatialindex.
+The code is now ctypes over libsidx, and a number of new features are now
+available as a result of this refactoring.
+
+* ability to store pickles within the index (clustered index)
+* ability to use custom extension names for disk-based indexes
+* ability to modify many index parameters at instantiation time
+* storage of point data reduced by a factor of 4
+* bulk loading of indexes at instantiation time
+* ability to quickly return the bounds of the entire index
+* ability to return the bounds of index entries
+* much better windows support 
+* libspatialindex 1.4.0 required.
   
 0.4.3: 2009-06-05
 =================
