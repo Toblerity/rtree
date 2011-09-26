@@ -1,13 +1,31 @@
+# hobu's latest results on his 2006-era machine
+
+# Stream load:
+# 293710.04 usec/pass
+# 
+# One-at-a-time load:
+# 527883.95 usec/pass
+# 
+# 
+# 30000 points
+# Query box:  (1240000, 1010000, 1400000, 1390000)
+# 
+# 
 # Brute Force:
-# 481 hits
-# 29637.96 usec/pass
+# 46 hits
+# 13533.60 usec/pass
 # 
 # Memory-based Rtree Intersection:
-# 481 hits
-# 1216.70 usec/pass
-# \Disk-based Rtree Intersection:
-# 481 hits
-# 2617.95 usec/pass
+# 46 hits
+# 7516.19 usec/pass
+# 
+# Disk-based Rtree Intersection:
+# 46 hits
+# 7543.00 usec/pass
+# 
+# Disk-based Rtree Intersection without Item() wrapper (objects='raw'):
+# 46 raw hits
+# 347.60 usec/pass
 
 import random
 import timeit
