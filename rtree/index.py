@@ -246,6 +246,13 @@ class Index(object):
             return
         if self.owned:
             if self.handle and core:
+                try:
+                    core.rt
+                except AttributeError:
+                    # uh, leak?  We're owned, and have a handle
+                    # but for some reason the dll isn't active
+                    return
+
                 core.rt.Index_Destroy(self.handle)
 
     def close(self):
@@ -795,8 +802,13 @@ class Property(object):
     def __del__(self):
         if self.owned:
             if self.handle and core:
+                try:
+                    core.rt
+                except AttributeError:
+                    # uh, leak?  We're owned, and have a handle
+                    # but for some reason the dll isn't active
+                    return
                 core.rt.IndexProperty_Destroy(self.handle)
-
     def get_index_type(self):
         return core.rt.IndexProperty_GetIndexType(self.handle)
     def set_index_type(self, value):
