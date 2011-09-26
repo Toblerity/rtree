@@ -10,79 +10,12 @@ Documentation
    
    install
    tutorial
+   Mailing List <http://lists.gispython.org/mailman/listinfo/community>
    class
    changes
    performance
    examples
    history
-
-
-
-3D indexes
-..............................................................................
-
-As of Rtree version 0.5.0, you can create 3D (actually kD) `R-trees`_. The
-following is a 3D index that is to be stored on disk. Persisted indexes are
-stored on disk using two files -- an index file (.idx) and a data (.dat) file.
-You can modify the extensions these files use by altering the properties of
-the index at instantiation time. The following creates a 3D index that is
-stored on disk as the files ``3d_index.data`` and ``3d_index.index``::
-
-  >>> from rtree import index
-  >>> p = index.Property()
-  >>> p.dimension = 3
-  >>> p.dat_extension = 'data'
-  >>> p.idx_extension = 'index'  
-  >>> idx3d = index.Index('3d_index',properties=p)
-  >>> idx3d.insert(1, (0, 0, 60, 60, 23.0, 42.0))
-  >>> idx3d.intersection( (-1, -1, 62, 62, 22, 43))
-  [1L]
-
-
-
-
-Documentation and Usage
-------------------------------------------------------------------------------
-
-HTML documentation for Rtree is available at http://gispython.org/rtree/docs/ 
-and they can be generated via `Sphinx`_ from the docs/ directory. 
-
-See `tests/index.txt`_ for more detail on index usage and `tests/properties.txt`_ 
-for index properties that can be set and manipulated.  `tests/test_customStorage.txt`_ 
-demonstrates how to create a custom storage backend using Rtree for your own 
-database.  
-
-Refer to `libspatialindex`_ documentation or code for more detail on the meanings and usage 
-of index properties.
-
-https://mail.zope.org/pipermail/zodb-dev/2010-June/013491.html contains a custom 
-storage backend for `ZODB`_
-
-.. _tests/index.txt: http://trac.gispython.org/lab/browser/Rtree/trunk/tests/index.txt
-.. _tests/properties.txt: http://trac.gispython.org/lab/browser/Rtree/trunk/tests/properties.txt
-.. _tests/test_customStorage.txt: http://trac.gispython.org/lab/browser/Rtree/trunk/tests/test_customStorage.txt
-.. _Sphinx: http://sphinx.pocoo.org/
-.. _ZODB: http://www.zodb.org/
-
-
-
-
-
-Support
-------------------------------------------------------------------------------
-
-For current information about this project, see the wiki_.
-
-.. _wiki: http://trac.gispython.org/lab/wiki/Rtree
-
-If you have questions, please consider joining our community list:
-
-http://lists.gispython.org/mailman/listinfo/community
-
-
-
-
-
 
 * :ref:`genindex`
 * :ref:`modindex`

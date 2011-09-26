@@ -191,8 +191,12 @@ stored on disk as the files ``3d_index.data`` and ``3d_index.index``::
   >>> idx3d.intersection( (-1, -1, 62, 62, 22, 43))
   [1L]
 
+ZODB and Custom Storages
+..............................................................................
 
+https://mail.zope.org/pipermail/zodb-dev/2010-June/013491.html contains a custom 
+storage backend for `ZODB`_
 
-
+.. _ZODB: http://www.zodb.org/
 
 .. _`libspatialindex`: http://libspatialindex.github.com    
