@@ -41,9 +41,9 @@ Fetch our straggler that contains a pickled object
     >>> for i in hits:
     ...     if i.id == 4321:
     ...         i.object
-    ...         i.bbox
+    ...         ['%.10f' % t for t in i.bbox]
     42
-    [34.3776829412, 26.737585373400002, 49.3776829412, 41.737585373400002]
+    ['34.3776829412', '26.7375853734', '49.3776829412', '41.7375853734']
 
 
 Find the three items nearest to this one
@@ -55,12 +55,12 @@ Find the three items nearest to this one
     
 
 Default order is [xmin, ymin, xmax, ymax]
-    >>> idx.bounds
-    [-186.673789279, -96.717721818399994, 184.76138755599999, 96.604369977800005]
+    >>> ['%.10f' % t for t in idx.bounds]
+    ['-186.6737892790', '-96.7177218184', '184.7613875560', '96.6043699778']
 
 To get in order [xmin, xmax, ymin, ymax (... for n-d indexes)] use the kwarg:
-    >>> idx.get_bounds(coordinate_interleaved=False)
-    [-186.673789279, 184.76138755599999, -96.717721818399994, 96.604369977800005]
+    >>> ['%.10f' % t for t in idx.get_bounds(coordinate_interleaved=False)]
+    ['-186.6737892790', '184.7613875560', '-96.7177218184', '96.6043699778']
 
 Delete index members
 

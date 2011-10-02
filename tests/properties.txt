@@ -170,22 +170,22 @@ Make a simple properties object
     >>> p.writethrough
     False    
 
-    >>> p.fill_factor
-    0.69999999999999996
-    
+    >>> '%.2f' % p.fill_factor
+    '0.70'
+
     >>> p.fill_factor = 0.99
-    >>> p.fill_factor
-    0.98999999999999999
-    
-    >>> p.split_distribution_factor
-    0.40000000000000002
-    
+    >>> '%.2f' % p.fill_factor
+    '0.99'
+
+    >>> '%.2f' % p.split_distribution_factor
+    '0.40'
+
     >>> p.tpr_horizon
     20.0
     
-    >>> p.reinsert_factor
-    0.29999999999999999
-    
+    >>> '%.2f' % p.reinsert_factor
+    '0.30'
+
     >>> p.filename
     ''
     
