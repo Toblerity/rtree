@@ -26,6 +26,10 @@ Download
 
 * PyPI http://pypi.python.org/pypi/Rtree/
 
+Development
+..............................................................................
+
+* https://github.com/Toblerity/Rtree
 
 .. _`R-trees`: http://en.wikipedia.org/wiki/R-tree
 .. _`ctypes`: http://docs.python.org/library/ctypes.html
