@@ -88,13 +88,18 @@ else:
 
 rt.Error_GetLastErrorNum.restype = ctypes.c_int
 
+rt.Error_GetLastErrorMsg.argtypes = []
 rt.Error_GetLastErrorMsg.restype = ctypes.POINTER(ctypes.c_char)
 rt.Error_GetLastErrorMsg.errcheck = free_returned_char_p
 
 rt.Error_GetLastErrorMethod.restype = ctypes.POINTER(ctypes.c_char)
 rt.Error_GetLastErrorMethod.errcheck = free_returned_char_p
 
+rt.Error_GetErrorCount.argtypes = []
 rt.Error_GetErrorCount.restype=ctypes.c_int
+
+rt.Error_Reset.argtypes = []
+rt.Error_Reset.restype = None
 
 rt.Index_Create.argtypes = [ctypes.c_void_p]
 rt.Index_Create.restype = ctypes.c_void_p
@@ -235,6 +240,7 @@ rt.IndexItem_GetID.argtypes = [ctypes.c_void_p]
 rt.IndexItem_GetID.restype = ctypes.c_int64
 rt.IndexItem_GetID.errcheck = check_value
 
+rt.IndexProperty_Create.argtypes = []
 rt.IndexProperty_Create.restype = ctypes.c_void_p
 rt.IndexProperty_Create.errcheck = check_void
 
