@@ -457,5 +457,6 @@ rt.SIDX_NewBuffer.errcheck = check_void
 rt.SIDX_DeleteBuffer.argtypes = [ctypes.c_void_p]
 rt.SIDX_DeleteBuffer.restype = None
 
+rt.SIDX_Version.argtypes = []
 rt.SIDX_Version.restype = ctypes.POINTER(ctypes.c_char)
 rt.SIDX_Version.errcheck = free_returned_char_p
