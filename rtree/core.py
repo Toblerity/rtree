@@ -61,7 +61,7 @@ def free_returned_char_p(result, func, cargs):
     
 
 if os.name == 'nt':
-    lib_name = 'spatialindex1_c.dll'
+    lib_name = 'spatialindex_c.dll'
     try:
         local_dlls = os.path.abspath(os.__file__ + "../../../DLLs")
         original_path = os.environ['PATH']
