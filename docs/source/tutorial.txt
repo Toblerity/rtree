@@ -36,6 +36,7 @@ construction::
   >>> idx = index.Index()
 
 .. note::
+
     While the default construction is useful in many cases, if you want to 
     manipulate how the index is constructed you will need pass in a 
     :py:class:`rtree.index.Property` instance when creating the index. 
@@ -49,6 +50,7 @@ insert into the index::
   >>> left, bottom, right, top = (0.0, 0.0, 1.0, 1.0)
 
 .. note::
+
     The coordinate ordering for all functions are sensitive the the index's
     :py:attr:`~rtree.index.Index.interleaved` data member. If
     :py:attr:`~rtree.index.Index.interleaved` is False, the coordinates must
@@ -64,12 +66,14 @@ Insert an entry into the index::
   >>> idx.insert(0, (left, bottom, right, top))
 
 .. note::
+
     Entries that are inserted into the index are not unique in either the 
     sense of the `id` or of the bounding box that is inserted with index 
     entries. If you need to maintain uniqueness, you need to manage that before 
     inserting entries into the Rtree.
 
 .. note::
+
     Inserting a point, i.e. where left == right && top == bottom, will
     essentially insert a single point entry into the index instead of copying
     extra coordinates and inserting them. There is no shortcut to explicitly 
@@ -145,6 +149,7 @@ described :ref:`here <clustered>`::
   [1, 2]
 
 .. note::
+
     By default, if an index file with the given name `rtree` in the example
     above already exists on the file system, it will be opened in append mode
     and not be re-created. You can control this behavior with the
@@ -152,6 +157,7 @@ described :ref:`here <clustered>`::
     that can be given to the :py:class:`rtree.index.Index` constructor.
 
 .. seealso::
+
     :ref:`performance` describes some parameters you can tune to make
     file-based indexes run a bit faster. The choices you make for the
     parameters is entirely dependent on your usage.
