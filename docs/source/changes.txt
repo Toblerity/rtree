@@ -3,6 +3,16 @@
 Changes
 ..............................................................................
 
+0.7.0: 2011-12-29
+=================
+
+- 0.7.0 relies on libspatialindex 1.7.1+.
+- int64_t's should be used for IDs instead of uint64_t (requires libspatialindex 1.7.1 C API changes)
+- Fix __version__
+- More documentation at http://toblerity.github.com/rtree/
+- Class documentation at http://toblerity.github.com/rtree/class.html
+- Tweaks for PyPy compatibility. Still not compatible yet, however.
+- Custom storage support by Mattias (requires libspatialindex 1.7.1)
 
 0.6.0: 2010-04-13
 =================
