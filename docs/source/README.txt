@@ -12,9 +12,12 @@ user.  These features include:
 * Bulk loading
 * Deletion
 * Disk serialization
-* Custom backend implementation
+* Custom storage implementation (to implement spatial indexing in ZODB, for example)
 
+Documentation and Website
+..............................................................................
 
+http://toblerity.github.com/rtree/
 
 Requirements
 ..............................................................................
@@ -34,4 +37,4 @@ Development
 .. _`R-trees`: http://en.wikipedia.org/wiki/R-tree
 .. _`ctypes`: http://docs.python.org/library/ctypes.html
 .. _`libspatialindex`: http://libspatialindex.github.com
-.. _`Rtree`: http://rtree.github.com
+.. _`Rtree`: http://toblerity.github.com/rtree/
