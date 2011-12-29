@@ -1,9 +1,28 @@
 
-Sean Gillies <sgillies@frii.com>
+Sean Gillies <sean.gillies@gmail.com>
+
+* Initial effort and basic API design based on QGIS' usage of libspatialindex C++ APIs
+
 Howard Butler <hobu.inc@gmail.com>
+
+* libspatialindex C API
+* rewrite to use ctypes and libspatialindex C API
+* Streaming/bulk loading support
+* Disk serialization of indexes
+* Pickle serialization and clustered index support
+* .count() and .intersection() methods
+* Windows support
+* Node fetching
+* Index property access 
+
 Brent Pedersen <bpederse@gmail.com>
 
-Spatial indexing is based on code by Marios Hadjieleftheriou, who has developed
-spatial index library and published it under GNU LGPL. This code is based on
-version 1.4.0 of the library: http://research.att.com/~marioh/spatialindex/index.html.
+* Pickle protocol support
+* Documentation, doctests
+* Variable coordinate ordering
+* Testing
+
+Matthias <nitro@dr-code.org>
+
+* Custom storage API (both Rtree and libspatialindex)
 
