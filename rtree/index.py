@@ -87,7 +87,7 @@ class Index(object):
 
         :param stream:
             If the first argument in the constructor is not of type basestring,
-            it is assumed to be an interable stream of data that will raise a
+            it is assumed to be an iterable stream of data that will raise a
             StopIteration.  It must be in the form defined by the :attr:`interleaved`
             attribute of the index.  The following example would assume
             :attr:`interleaved` is False::
