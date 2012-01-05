@@ -1,6 +1,6 @@
 include README.txt
 include MANIFEST.in
-include CHANGES.txt
 include DEPENDENCIES.txt
 include FAQ.txt
-
+recursive-include tests *
+recursive-include docs *
