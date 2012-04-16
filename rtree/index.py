@@ -1051,6 +1051,10 @@ class CustomStorageCallbacks(ctypes.Structure):
     destroyCallbackType = ctypes.CFUNCTYPE(
                             None, ctypes.c_void_p, ctypes.POINTER(ctypes.c_int)
                           )
+    flushCallbackType = ctypes.CFUNCTYPE(
+                          None, ctypes.c_void_p, ctypes.POINTER(ctypes.c_int)
+                        )
+
     loadCallbackType    = ctypes.CFUNCTYPE(
                             None, ctypes.c_void_p, id_type, ctypes.POINTER(ctypes.c_uint32),
                             ctypes.POINTER(ctypes.POINTER(ctypes.c_uint8)), ctypes.POINTER(ctypes.c_int)
@@ -1066,16 +1070,18 @@ class CustomStorageCallbacks(ctypes.Structure):
     _fields_ = [ ('context', ctypes.c_void_p),
                  ('createCallback', createCallbackType),
                  ('destroyCallback', destroyCallbackType),
+                 ('flushCallback', flushCallbackType),
                  ('loadCallback', loadCallbackType),
                  ('storeCallback', storeCallbackType),
                  ('deleteCallback', deleteCallbackType),
                ]
 
-    def __init__(self, context, createCallback, destroyCallback, loadCallback, storeCallback, deleteCallback):
+    def __init__(self, context, createCallback, destroyCallback, flushCallback, loadCallback, storeCallback, deleteCallback):
         ctypes.Structure.__init__( self,
                                    ctypes.c_void_p( context ),
                                    self.createCallbackType( createCallback ),
-                                   self.createCallbackType( destroyCallback ),
+                                   self.destroyCallbackType( destroyCallback ),
+                                   self.flushCallbackType ( flushCallback ),
                                    self.loadCallbackType  ( loadCallback ),
                                    self.storeCallbackType ( storeCallback ),
                                    self.deleteCallbackType( deleteCallback ),
@@ -1110,8 +1116,10 @@ class CustomStorageBase(ICustomStorage):
     """
 
     def registerCallbacks(self, properties):
-        callbacks = CustomStorageCallbacks( 0, self.create, self.destroy, self.loadByteArray,
-                                               self.storeByteArray, self.deleteByteArray )
+        callbacks = CustomStorageCallbacks( ctypes.c_void_p(), self.create, 
+                                            self.destroy, self.flush,
+                                            self.loadByteArray, self.storeByteArray, 
+                                            self.deleteByteArray )
         properties.custom_storage_callbacks_size = ctypes.sizeof( callbacks )
         self.callbacks = callbacks
         properties.custom_storage_callbacks      = ctypes.cast( ctypes.pointer(callbacks), ctypes.c_void_p )
@@ -1141,6 +1149,10 @@ class CustomStorageBase(ICustomStorage):
         returnError.contents.value = self.IllegalStateError
         raise NotImplementedError( "You must override this method." )
 
+    def flush(self, context, returnError):
+        """ please override """
+        returnError.contents.value = self.IllegalStateError
+        raise NotImplementedError( "You must override this method." )
 
 
 class CustomStorage(ICustomStorage):
@@ -1151,7 +1163,7 @@ class CustomStorage(ICustomStorage):
     """
 
     def registerCallbacks(self, properties):
-        callbacks = CustomStorageCallbacks( 0, self._create, self._destroy, self._loadByteArray,
+        callbacks = CustomStorageCallbacks( 0, self._create, self._destroy, self._flush, self._loadByteArray,
                                                self._storeByteArray, self._deleteByteArray )
         properties.custom_storage_callbacks_size = ctypes.sizeof( callbacks )
         self.callbacks = callbacks
@@ -1164,6 +1176,9 @@ class CustomStorage(ICustomStorage):
 
     def _destroy(self, context, returnError):
         self.destroy( returnError )
+
+    def _flush(self, context, returnError):
+        self.flush( returnError )
 
     def _loadByteArray(self, context, page, resultLen, resultData, returnError):
         resultString = self.loadByteArray( page, returnError )
@@ -1197,6 +1212,11 @@ class CustomStorage(ICustomStorage):
         raise NotImplementedError( "You must override this method." )
 
     def destroy(self, returnError):
+        """ Must be overriden. No return value. """
+        returnError.contents.value = self.IllegalStateError
+        raise NotImplementedError( "You must override this method." )
+
+    def flush(self, returnError):
         """ Must be overriden. No return value. """
         returnError.contents.value = self.IllegalStateError
         raise NotImplementedError( "You must override this method." )
