@@ -27,7 +27,7 @@ Test pretty printed string
      'dat_extension': 'dat',
      'dimension': 2,
      'filename': '',
-     'fill_factor': 0.69999999999999996,
+     'fill_factor': 0...,
      'idx_extension': 'idx',
      'index_capacity': 100,
      'index_id': None,
@@ -37,8 +37,8 @@ Test pretty printed string
      'pagesize': 4096,
      'point_pool_capacity': 500,
      'region_pool_capacity': 1000,
-     'reinsert_factor': 0.29999999999999999,
-     'split_distribution_factor': 0.40000000000000002,
+     'reinsert_factor': 0...,
+     'split_distribution_factor': 0...,
      'storage': 1,
      'tight_mbr': True,
      'tpr_horizon': 20.0,
@@ -46,6 +46,9 @@ Test pretty printed string
      'variant': 2,
      'writethrough': False}
 
+Test property setting
+
+    >>> p = index.Property()
     >>> p.type = 0
     >>> p.type
     0
