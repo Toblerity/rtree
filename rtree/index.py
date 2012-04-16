@@ -1,14 +1,14 @@
 
+import os
+import os.path
+import pprint
+
 import core
 import ctypes
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
-
-import os
-import os.path
-
 
 RT_Memory = 0
 RT_Disk = 1
@@ -793,12 +793,27 @@ class Property(object):
     settable index properties.  Many of these properties must be set at
     index creation times, while others can be used to adjust performance
     or behavior."""
-    def __init__(self, handle = None, owned=True):
+    
+    pkeys = (
+        'buffering_capacity', 'custom_storage_callbacks', 
+        'custom_storage_callbacks_size', 'dat_extension', 'dimension', 
+        'filename', 'fill_factor', 'idx_extension', 'index_capacity', 
+        'index_id', 'leaf_capacity', 'near_minimum_overlap_factor', 
+        'overwrite', 'pagesize', 'point_pool_capacity', 
+        'region_pool_capacity', 'reinsert_factor', 
+        'split_distribution_factor', 'storage', 'tight_mbr', 'tpr_horizon',
+        'type', 'variant', 'writethrough' )
+
+    def __init__(self, handle=None, owned=True, **kwargs):
         if handle:
             self.handle = handle
         else:
             self.handle = core.rt.IndexProperty_Create()
         self.owned = owned
+        for k, v in kwargs.items():
+            if v is not None:
+                setattr(self, k, v)
+
     def __del__(self):
         if self.owned:
             if self.handle and core:
@@ -809,6 +824,23 @@ class Property(object):
                     # but for some reason the dll isn't active
                     return
                 core.rt.IndexProperty_Destroy(self.handle)
+
+    def as_dict(self):
+        d = {}
+        for k in self.pkeys:
+            try:
+                v = getattr(self, k)
+            except core.RTreeError:
+                v = None
+            d[k] = v
+        return d
+
+    def __repr__(self):
+        return repr(self.as_dict())
+
+    def __str__(self):
+        return pprint.pformat(self.as_dict())
+        
     def get_index_type(self):
         return core.rt.IndexProperty_GetIndexType(self.handle)
     def set_index_type(self, value):

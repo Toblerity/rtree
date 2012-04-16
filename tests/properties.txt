@@ -2,11 +2,50 @@ Testing rtree properties
 ==========================
 
 Make a simple properties object
+
     >>> from rtree import index
     >>> p = index.Property()
-    >>> p
-    <rtree.index.Property object at 0x...>
-    
+
+Test as_dict()
+
+    >>> d = p.as_dict()
+    >>> d['index_id'] is None
+    True
+
+Test creation from kwargs and eval() of its repr()
+
+    >>> q = index.Property(**d)
+    >>> eval(repr(q))['index_id'] is None
+    True
+
+Test pretty printed string
+
+    >>> print q
+    {'buffering_capacity': 10,
+     'custom_storage_callbacks': None,
+     'custom_storage_callbacks_size': 0L,
+     'dat_extension': 'dat',
+     'dimension': 2,
+     'filename': '',
+     'fill_factor': 0.69999999999999996,
+     'idx_extension': 'idx',
+     'index_capacity': 100,
+     'index_id': None,
+     'leaf_capacity': 100,
+     'near_minimum_overlap_factor': 32,
+     'overwrite': True,
+     'pagesize': 4096,
+     'point_pool_capacity': 500,
+     'region_pool_capacity': 1000,
+     'reinsert_factor': 0.29999999999999999,
+     'split_distribution_factor': 0.40000000000000002,
+     'storage': 1,
+     'tight_mbr': True,
+     'tpr_horizon': 20.0,
+     'type': 0,
+     'variant': 2,
+     'writethrough': False}
+
     >>> p.type = 0
     >>> p.type
     0
