@@ -254,6 +254,8 @@ class Index(object):
                     return
 
                 core.rt.Index_Destroy(self.handle)
+                self.owned = False
+                self.handle = None
 
     def close(self):
         """Force a flush of the index to storage. Renders index
@@ -345,6 +347,7 @@ class Index(object):
             data = ctypes.c_ubyte(0)
             size = 0
         core.rt.Index_InsertData(self.handle, id, p_mins, p_maxs, self.properties.dimension, data, size)
+
     add = insert
 
     def count(self, coordinates):
