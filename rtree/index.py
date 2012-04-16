@@ -341,13 +341,12 @@ class Index(object):
 
         """
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
+        data = ctypes.c_ubyte(0)
+        size = 0
+        pyserialized = None
         if obj is not None:
             size, data, pyserialized = self._serialize(obj)
-        else:
-            data = ctypes.c_ubyte(0)
-            size = 0
         core.rt.Index_InsertData(self.handle, id, p_mins, p_maxs, self.properties.dimension, data, size)
-
     add = insert
 
     def count(self, coordinates):
