@@ -2,5 +2,6 @@ include README.txt
 include MANIFEST.in
 include DEPENDENCIES.txt
 include FAQ.txt
+include LICENSE.txt
 recursive-include tests *
 recursive-include docs *
