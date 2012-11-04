@@ -1,4 +1,3 @@
-
 from glob import glob
 from setuptools import setup
 
@@ -10,8 +9,9 @@ readme_text = file('docs/source/README.txt', 'rb').read()
 import os
 
 if os.name == 'nt':
-    data_files=[('DLLs',[r'D:\libspatialindex\bin\spatialindex.dll',
-                         r'D:\libspatialindex\bin\spatialindex_c.dll',]),]
+    data_files=[('Lib/site-packages/rtree',
+                 [r'D:\libspatialindex\bin\spatialindex.dll',
+                  r'D:\libspatialindex\bin\spatialindex_c.dll',]),]
 else:
     data_files = None
     
