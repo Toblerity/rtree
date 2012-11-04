@@ -1,4 +1,3 @@
-
 import atexit, os, re, sys
 import ctypes
 from ctypes.util import find_library
@@ -61,19 +60,47 @@ def free_returned_char_p(result, func, cargs):
     
 
 if os.name == 'nt':
-    lib_name = 'spatialindex_c.dll'
-    try:
-        local_dlls = os.path.abspath(os.__file__ + "../../../DLLs")
-        original_path = os.environ['PATH']
-        os.environ['PATH'] = "%s;%s" % (local_dlls, original_path)
-        rt = ctypes.PyDLL(lib_name)
-        def free(m):
+
+    def _load_library(dllname, loadfunction, dllpaths=('', )):
+        """Load a DLL via ctypes load function. Return None on failure.
+
+        Try loading the DLL from the current package directory first,
+        then from the Windows DLL search path.
+
+        """
+        try:
+            dllpaths = (os.path.abspath(os.path.dirname(__file__)),
+                        ) + dllpaths
+        except NameError:
+            pass # no __file__ attribute on PyPy and some frozen distributions
+        for path in dllpaths:
+            if path:
+                # temporarily add the path to the PATH environment variable
+                # so Windows can find additional DLL dependencies.
+                try:
+                    oldenv = os.environ['PATH']
+                    os.environ['PATH'] = path + ';' + oldenv
+                except KeyError:
+                    oldenv = None
             try:
-                free = ctypes.cdll.msvcrt.free(m)
-            except WindowsError:
+                return loadfunction(os.path.join(path, dllname))
+            except (WindowsError, OSError):
                 pass
-    except (ImportError, WindowsError):
-        raise
+            finally:
+                if path and oldenv is not None:
+                    os.environ['PATH'] = oldenv
+        return None
+
+    rt = _load_library('spatialindex_c.dll', ctypes.cdll.LoadLibrary)
+    if not rt:
+        raise OSError("could not find or load spatialindex_c.dll")
+
+    def free(m):
+        try:
+            free = ctypes.cdll[ctypes.util.find_msvcrt()].free(m)
+        except WindowsError:
+            pass
+
 elif os.name == 'posix':
     platform = os.uname()[0]
     lib_name = 'libspatialindex_c.so'
