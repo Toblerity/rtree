@@ -28,6 +28,7 @@ Download
 ..............................................................................
 
 * PyPI http://pypi.python.org/pypi/Rtree/
+* Windows binaries http://www.lfd.uci.edu/~gohlke/pythonlibs/#rtree
 
 Development
 ..............................................................................
