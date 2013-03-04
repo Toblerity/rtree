@@ -212,6 +212,7 @@ Check that we can make an index with custom filename extensions
     >>> hits = list(idx_cust.intersection((0, 0, 60, 60)))
     >>> len(hits)
     10
+    >>> idx_cust.close()
     
     >>> del idx_cust
     
