@@ -2,9 +2,12 @@
 import os
 import os.path
 import pprint
+import sys
+import platform
 
 import core
 import ctypes
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -70,8 +73,14 @@ def _get_data(handle):
 
 class Index(object):
     """An R-Tree, MVR-Tree, or TPR-Tree indexing object"""
-    dumps = pickle.dumps
-    loads = pickle.loads
+
+    if (hasattr(sys.platform, 'python_implementation')
+        and sys.platform.python_implementation() == 'PyPy'):
+        dumps = pickle.dumps.__func__
+        loads = pickle.loads.__func__
+    else:
+        dumps = pickle.dumps
+        loads = pickle.loads
 
     def __init__(self,  *args, **kwargs):
         """Creates a new index
@@ -766,7 +775,7 @@ class Item(object):
         created automatically when you call
         :meth:`rtree.index.Index.intersection` (or other index querying
         methods) with objects=True given the parameters of the function."""
-
+        
         if handle:
             self.handle = handle
 
@@ -788,7 +797,13 @@ class Item(object):
         if self.object is not None: return self.object
         data = _get_data(self.handle)
         if data is None: return None
-        return loads(data)
+
+        if (hasattr(platform, 'python_implementation')
+            and platform.python_implementation() == 'PyPy'):
+            return loads.__func__(data)
+        else:
+            return loads(data)
+            return loads.__func__(data)
 
 class Property(object):
     """An index property object is a container that contains a number of
