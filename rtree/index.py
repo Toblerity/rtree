@@ -658,6 +658,7 @@ class Index(object):
         darray = ctypes.c_double * dimension
         mins = darray()
         maxs = darray()
+                
         no_data = ctypes.cast(ctypes.pointer(ctypes.c_ubyte(0)),
                               ctypes.POINTER(ctypes.c_ubyte))
 
@@ -667,7 +668,7 @@ class Index(object):
             to fill out the pointers.  If this function returns anything other
             than 0, it is assumed that the stream of data is done."""
 
-            try:
+            try:  
                 p_id[0], coordinates, obj = stream_iter.next()
             except StopIteration:
                # we're done
@@ -678,12 +679,19 @@ class Index(object):
                 coordinates = Index.deinterleave(coordinates)
 
             # this code assumes the coords ar not interleaved.
-            # xmin, xmax, ymin, ymax, zmin, zmax
+            # # xmin, xmax, ymin, ymax, zmin, zmax
             for i in range(dimension):
                 mins[i] = coordinates[i*2]
                 maxs[i] = coordinates[(i*2)+1]
+            
+            import pdb;pdb.set_trace()
 
             p_mins[0] = ctypes.cast(mins, ctypes.POINTER(ctypes.c_double))
+            
+            # p_mins[0] = ctypes.cast(mins, ctypes.POINTER(ctypes.c_double))
+            # p_mins[0] = ctypes.cast(mins, ctypes.POINTER(ctypes.c_double))
+            # p_maxs = ctypes.byref(ctypes.cast(maxs, ctypes.POINTER(ctypes.c_double)))
+            # p_mins[0] = ctypes.cast(mins, ctypes.POINTER(ctypes.c_double))
             p_maxs[0] = ctypes.cast(maxs, ctypes.POINTER(ctypes.c_double))
 
             # set the dimension

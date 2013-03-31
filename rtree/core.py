@@ -138,7 +138,7 @@ NEXTFUNC = ctypes.CFUNCTYPE(ctypes.c_int,
                             ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
                             ctypes.POINTER(ctypes.c_uint32),
                             ctypes.POINTER(ctypes.POINTER(ctypes.c_ubyte)),
-                            ctypes.POINTER(ctypes.c_uint32))
+                            ctypes.POINTER(ctypes.c_size_t))
 
 rt.Index_CreateWithStream.argtypes = [ctypes.c_void_p, NEXTFUNC] 
 rt.Index_CreateWithStream.restype = ctypes.c_void_p
