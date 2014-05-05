@@ -2,9 +2,12 @@
 import os
 import os.path
 import pprint
+import sys
+import platform
 
 import core
 import ctypes
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -70,8 +73,14 @@ def _get_data(handle):
 
 class Index(object):
     """An R-Tree, MVR-Tree, or TPR-Tree indexing object"""
-    dumps = pickle.dumps
-    loads = pickle.loads
+
+    if (hasattr(sys.platform, 'python_implementation')
+        and sys.platform.python_implementation() == 'PyPy'):
+        dumps = pickle.dumps.__func__
+        loads = pickle.loads.__func__
+    else:
+        dumps = pickle.dumps
+        loads = pickle.loads
 
     def __init__(self,  *args, **kwargs):
         """Creates a new index
@@ -649,6 +658,7 @@ class Index(object):
         darray = ctypes.c_double * dimension
         mins = darray()
         maxs = darray()
+                
         no_data = ctypes.cast(ctypes.pointer(ctypes.c_ubyte(0)),
                               ctypes.POINTER(ctypes.c_ubyte))
 
@@ -658,7 +668,7 @@ class Index(object):
             to fill out the pointers.  If this function returns anything other
             than 0, it is assumed that the stream of data is done."""
 
-            try:
+            try:  
                 p_id[0], coordinates, obj = stream_iter.next()
             except StopIteration:
                # we're done
@@ -669,12 +679,19 @@ class Index(object):
                 coordinates = Index.deinterleave(coordinates)
 
             # this code assumes the coords ar not interleaved.
-            # xmin, xmax, ymin, ymax, zmin, zmax
+            # # xmin, xmax, ymin, ymax, zmin, zmax
             for i in range(dimension):
                 mins[i] = coordinates[i*2]
                 maxs[i] = coordinates[(i*2)+1]
+            
+            import pdb;pdb.set_trace()
 
             p_mins[0] = ctypes.cast(mins, ctypes.POINTER(ctypes.c_double))
+            
+            # p_mins[0] = ctypes.cast(mins, ctypes.POINTER(ctypes.c_double))
+            # p_mins[0] = ctypes.cast(mins, ctypes.POINTER(ctypes.c_double))
+            # p_maxs = ctypes.byref(ctypes.cast(maxs, ctypes.POINTER(ctypes.c_double)))
+            # p_mins[0] = ctypes.cast(mins, ctypes.POINTER(ctypes.c_double))
             p_maxs[0] = ctypes.cast(maxs, ctypes.POINTER(ctypes.c_double))
 
             # set the dimension
@@ -766,7 +783,7 @@ class Item(object):
         created automatically when you call
         :meth:`rtree.index.Index.intersection` (or other index querying
         methods) with objects=True given the parameters of the function."""
-
+        
         if handle:
             self.handle = handle
 
@@ -788,7 +805,13 @@ class Item(object):
         if self.object is not None: return self.object
         data = _get_data(self.handle)
         if data is None: return None
-        return loads(data)
+
+        if (hasattr(platform, 'python_implementation')
+            and platform.python_implementation() == 'PyPy'):
+            return loads.__func__(data)
+        else:
+            return loads(data)
+            return loads.__func__(data)
 
 class Property(object):
     """An index property object is a container that contains a number of
