@@ -3,3 +3,5 @@ Rtree.egg-info/
 docs/build
 build/
 dist/
+*.idx
+*.dat
