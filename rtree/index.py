@@ -9,7 +9,9 @@ try:
     import pickle as pickle
 except ImportError:
     import pickle
-
+import sys
+if 2==(sys.version_info[0]):
+  range=xrange
 RT_Memory = 0
 RT_Disk = 1
 RT_Custom = 2
