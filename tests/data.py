@@ -1,7 +1,7 @@
 import os.path
 
 boxes15 = []
-f = file(os.path.join(os.path.dirname(__file__), 'boxes_15x15.data'), 'r')
+f = open(os.path.join(os.path.dirname(__file__), 'boxes_15x15.data'), 'r')
 for line in f.readlines():
     if not line:
         break
@@ -9,7 +9,7 @@ for line in f.readlines():
     boxes15.append((left, bottom, right, top))
 
 boxes3 = []
-f = file(os.path.join(os.path.dirname(__file__), 'boxes_3x3.data'), 'r')
+f = open(os.path.join(os.path.dirname(__file__), 'boxes_3x3.data'), 'r')
 for line in f.readlines():
     if not line:
         break
@@ -17,7 +17,7 @@ for line in f.readlines():
     boxes3.append((left, bottom, right, top))
                 
 points = []
-f = file(os.path.join(os.path.dirname(__file__), 'point_clusters.data'), 'r')
+f = open(os.path.join(os.path.dirname(__file__), 'point_clusters.data'), 'r')
 for line in f.readlines():
     if not line:
         break

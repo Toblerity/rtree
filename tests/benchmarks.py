@@ -57,13 +57,13 @@ count = 30000
 points = []
 
 insert_object = None
-insert_object = {'a': range(100), 'b': 10, 'c': object(), 'd': dict(x=1), 'e': Point(2, 3)}
+insert_object = {'a': list(range(100)), 'b': 10, 'c': object(), 'd': dict(x=1), 'e': Point(2, 3)}
 
 index = Rtree()
 disk_index = Rtree('test', overwrite=1)
 
 coordinates = []
-for i in xrange(count):
+for i in range(count):
     x = random.randrange(bounds[0], bounds[2]) + random.random()
     y = random.randrange(bounds[1], bounds[3]) + random.random()
     point = Point(x, y)
@@ -77,8 +77,8 @@ s ="""
 bulk = Rtree(coordinates[:2000])
 """
 t = timeit.Timer(stmt=s, setup='from __main__ import coordinates, Rtree, insert_object')
-print "\nStream load:"
-print "%.2f usec/pass" % (1000000 * t.timeit(number=TEST_TIMES)/TEST_TIMES)
+print("\nStream load:")
+print("%.2f usec/pass" % (1000000 * t.timeit(number=TEST_TIMES)/TEST_TIMES))
 
 s ="""
 idx = Rtree()
@@ -88,23 +88,23 @@ for point in points[:2000]:
     i+=1
 """
 t = timeit.Timer(stmt=s, setup='from __main__ import points, Rtree, insert_object')
-print "\nOne-at-a-time load:"
-print "%.2f usec/pass\n\n" % (1000000 * t.timeit(number=TEST_TIMES)/TEST_TIMES)
+print("\nOne-at-a-time load:")
+print("%.2f usec/pass\n\n" % (1000000 * t.timeit(number=TEST_TIMES)/TEST_TIMES))
 
 
 bbox = (1240000, 1010000, 1400000, 1390000)
-print count, "points"
-print "Query box: ", bbox
-print ""
+print(count, "points")
+print("Query box: ", bbox)
+print("")
 
 # Brute force all points within a 0.1x0.1 box
 s = """
 hits = [p for p in points if p.x >= bbox[0] and p.x <= bbox[2] and p.y >= bbox[1] and p.y <= bbox[3]]
 """
 t = timeit.Timer(stmt=s, setup='from __main__ import points, bbox')
-print "\nBrute Force:"
-print len([p for p in points if p.x >= bbox[0] and p.x <= bbox[2] and p.y >= bbox[1] and p.y <= bbox[3]]), "hits"
-print "%.2f usec/pass" % (1000000 * t.timeit(number=TEST_TIMES)/TEST_TIMES)
+print("\nBrute Force:")
+print(len([p for p in points if p.x >= bbox[0] and p.x <= bbox[2] and p.y >= bbox[1] and p.y <= bbox[3]]), "hits")
+print("%.2f usec/pass" % (1000000 * t.timeit(number=TEST_TIMES)/TEST_TIMES))
 
 # 0.1x0.1 box using intersection
 
@@ -118,19 +118,19 @@ else:
     """
 
 t = timeit.Timer(stmt=s, setup='from __main__ import points, index, bbox, insert_object')
-print "\nMemory-based Rtree Intersection:"
-print len([points[id] for id in index.intersection(bbox)]), "hits"
-print "%.2f usec/pass" % (1000000 * t.timeit(number=100)/100)
+print("\nMemory-based Rtree Intersection:")
+print(len([points[id] for id in index.intersection(bbox)]), "hits")
+print("%.2f usec/pass" % (1000000 * t.timeit(number=100)/100))
 
 
 # run same test on disk_index.
 s = s.replace("index.", "disk_index.")
 
 t = timeit.Timer(stmt=s, setup='from __main__ import points, disk_index, bbox, insert_object')
-print "\nDisk-based Rtree Intersection:"
+print("\nDisk-based Rtree Intersection:")
 hits = list(disk_index.intersection(bbox))
-print len(hits), "hits"
-print "%.2f usec/pass" % (1000000 * t.timeit(number=TEST_TIMES)/TEST_TIMES)
+print(len(hits), "hits")
+print("%.2f usec/pass" % (1000000 * t.timeit(number=TEST_TIMES)/TEST_TIMES))
 
 
 if insert_object:
@@ -138,10 +138,10 @@ if insert_object:
         hits = disk_index.intersection(bbox, objects="raw")
         """
     t = timeit.Timer(stmt=s, setup='from __main__ import points, disk_index, bbox, insert_object')
-    print "\nDisk-based Rtree Intersection without Item() wrapper (objects='raw'):"
+    print("\nDisk-based Rtree Intersection without Item() wrapper (objects='raw'):")
     result = list(disk_index.intersection(bbox, objects="raw"))
-    print len(result), "raw hits"
-    print "%.2f usec/pass" % (1000000 * t.timeit(number=TEST_TIMES)/TEST_TIMES)
+    print(len(result), "raw hits")
+    print("%.2f usec/pass" % (1000000 * t.timeit(number=TEST_TIMES)/TEST_TIMES))
     assert 'a' in result[0], result[0]
 
 import os

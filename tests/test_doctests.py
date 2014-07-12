@@ -4,7 +4,7 @@ import glob
 import os
 
 #from zope.testing import doctest
-from data import boxes15, boxes3, points
+from .data import boxes15, boxes3, points
 
 optionflags = (doctest.REPORT_ONLY_FIRST_FAILURE |
                doctest.NORMALIZE_WHITESPACE |

@@ -85,7 +85,7 @@ can see the Rtree has already written two pages to it. This is for header and
 index.
 
     >>> state1 = storage.dict.copy()
-    >>> state1.keys()
+    >>> list(state1.keys())
     [0, 1]
     
 Let's add an item:
@@ -109,7 +109,7 @@ Now perform a few queries and assure the tree is still valid:
     
 Check if the stored data is a byte string
 
-    >>> isinstance(storage.dict.values()[0], str)
+    >>> isinstance(list(storage.dict.values())[0], bytes)
     True
     
 Delete an item
@@ -153,5 +153,5 @@ Then reopen the storage with a new tree and see if the data is still there
 
     >>> r2 = Rtree( storage, properties = settings, overwrite = False )
     >>> r2.count( (0,0,10,10) )
-    1L
+    1
     >>> del r2

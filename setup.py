@@ -4,7 +4,7 @@ from setuptools import setup
 import rtree
 
 # Get text from README.txt
-readme_text = file('docs/source/README.txt', 'rb').read()
+readme_text = open('docs/source/README.txt', 'r').read()
 
 import os
 

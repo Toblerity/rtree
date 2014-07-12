@@ -3,13 +3,15 @@ import os
 import os.path
 import pprint
 
-import core
+from . import core
 import ctypes
 try:
-    import cPickle as pickle
+    import pickle as pickle
 except ImportError:
     import pickle
-
+import sys
+if 2==(sys.version_info[0]):
+  range=xrange
 RT_Memory = 0
 RT_Disk = 1
 RT_Custom = 2
@@ -24,7 +26,7 @@ RT_TPRTree = 2
 
 __c_api_version__ = core.rt.SIDX_Version()
 
-if (__c_api_version__.split('.')[1] < 7):
+if (int(str(__c_api_version__).split('.')[1]) < 7):
     raise Exception("This version of Rtree requires libspatialindex 1.7.0 or greater")
 
 __all__ = ['Rtree', 'Index', 'Property']
@@ -168,7 +170,7 @@ class Index(object):
         basename = None
         storage = None
         if args:
-            if isinstance(args[0], basestring):
+            if isinstance(args[0], str) or isinstance(args[0], bytes):
                 # they sent in a filename
                 basename = args[0]
                 # they sent in a filename, stream
@@ -185,10 +187,10 @@ class Index(object):
 
         if basename:
             self.properties.storage = RT_Disk
-            self.properties.filename = basename
+            self.properties.filename = str.encode(str(basename))
 
             # check we can read the file
-            f = basename + "." + self.properties.idx_extension
+            f = str.encode(str(basename) + "." + str(self.properties.idx_extension))
             p = os.path.abspath(f)
 
 
@@ -266,7 +268,7 @@ class Index(object):
             self.handle = None
             self.owned = False
         else:
-            raise IOError, "Unclosable index"
+            raise IOError("Unclosable index")
 
     def get_coordinate_pointers(self, coordinates):
 
@@ -457,10 +459,10 @@ class Index(object):
 
         try:
             if objects != 'raw':
-                for i in xrange(num_results):
+                for i in range(num_results):
                     yield Item(self.loads, items[i])
             else:
-                for i in xrange(num_results):
+                for i in range(num_results):
                     data = _get_data(items[i])
                     if data is None:
                         yield data
@@ -478,7 +480,7 @@ class Index(object):
         its = ctypes.cast(items, ctypes.POINTER(ctypes.c_void_p))
 
         try:
-            for i in xrange(num_results):
+            for i in range(num_results):
                 yield items.contents[i]
             core.rt.Index_Free(its)
         except:
@@ -611,7 +613,7 @@ class Index(object):
 
         """
         assert len(interleaved) % 2 == 0, ("must be a pairwise list")
-        dimension = len(interleaved) / 2
+        dimension = len(interleaved) // 2
         di = []
         for i in range(dimension):
             di.extend([interleaved[i], interleaved[i + dimension]])
@@ -659,7 +661,7 @@ class Index(object):
             than 0, it is assumed that the stream of data is done."""
 
             try:
-                p_id[0], coordinates, obj = stream_iter.next()
+                p_id[0], coordinates, obj = next(stream_iter)
             except StopIteration:
                # we're done
                return -1
@@ -812,7 +814,7 @@ class Property(object):
         else:
             self.handle = core.rt.IndexProperty_Create()
         self.owned = owned
-        for k, v in kwargs.items():
+        for k, v in list(kwargs.items()):
             if v is not None:
                 setattr(self, k, v)
 
