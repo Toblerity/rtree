@@ -26,7 +26,7 @@ the default serializer is pickle, can use any by overriding dumps, loads
     >>> r = Rtree()
     >>> r.add(123, (0, 0, 1, 1))
     >>> item = list(r.nearest((0, 0), 1, objects=True))[0]
-    >>> int(item.id)
+    >>> item.id
     123
 
     >>> r.valid()
