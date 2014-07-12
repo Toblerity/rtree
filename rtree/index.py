@@ -691,8 +691,8 @@ class Index(object):
             return 0
 
 
-        next = core.NEXTFUNC(py_next_item)
-        return core.rt.Index_CreateWithStream(self.properties.handle, next)
+        stream = core.NEXTFUNC(py_next_item)
+        return core.rt.Index_CreateWithStream(self.properties.handle, stream)
 
     def leaves(self):
         leaf_node_count = ctypes.c_uint32()
