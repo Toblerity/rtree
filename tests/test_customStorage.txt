@@ -152,6 +152,6 @@ First create a storage and put some data into it:
 Then reopen the storage with a new tree and see if the data is still there
 
     >>> r2 = Rtree( storage, properties = settings, overwrite = False )
-    >>> r2.count( (0,0,10,10) )
-    1
+    >>> r2.count( (0,0,10,10) ) == 1
+    True
     >>> del r2
