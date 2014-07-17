@@ -4,15 +4,13 @@ import glob
 import os
 
 #from zope.testing import doctest
-from rtree.index import __c_api_version__
+from rtree.index import major_version, minor_version
+
 from .data import boxes15, boxes3, points
 
 optionflags = (doctest.REPORT_ONLY_FIRST_FAILURE |
                doctest.NORMALIZE_WHITESPACE |
                doctest.ELLIPSIS)
-
-sindex_version = tuple(map(int, 
-    __c_api_version__.decode('utf-8').split('.')))
 
 def list_doctests():
     # Skip the custom storage test unless we have libspatialindex 1.8+.
@@ -21,7 +19,7 @@ def list_doctests():
             in glob.glob(os.path.join(os.path.dirname(__file__), '*.txt'))
             if not (
                 filename.endswith('customStorage.txt') 
-                and sindex_version < (1,8,0))]
+                and major_version < 2 and minor_version < 8)]
 
 def open_file(filename, mode='r'):
     """Helper function to open files from within the tests package."""
