@@ -41,10 +41,6 @@ def test_suite():
          for filename
          in sorted(list_doctests())])
 
-version = 'libspatialindex version {0}.{1}.{2}'.format(major_version, minor_version, patch_version)
-print(version)
-print(list_doctests())
-
 if __name__ == "__main__":
     runner = unittest.TextTestRunner()
     runner.run(test_suite())
