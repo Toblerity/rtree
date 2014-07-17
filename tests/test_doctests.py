@@ -4,7 +4,7 @@ import glob
 import os
 
 #from zope.testing import doctest
-from rtree.index import major_version, minor_version
+from rtree.index import major_version, minor_version, patch_version
 
 from .data import boxes15, boxes3, points
 
@@ -41,6 +41,8 @@ def test_suite():
          for filename
          in sorted(list_doctests())])
 
+version = 'libspatialindex version {0}.{1}.{2}'.format(major_version, minor_version, patch_version)
+print(version)
 print(list_doctests())
 
 if __name__ == "__main__":
