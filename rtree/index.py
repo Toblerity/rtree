@@ -6,9 +6,10 @@ import pprint
 from . import core
 import ctypes
 try:
-    import pickle as pickle
+    import cPickle as pickle
 except ImportError:
     import pickle
+
 import sys
 if 2==(sys.version_info[0]):
   range=xrange
