@@ -76,8 +76,6 @@ def _get_data(handle):
 
 class Index(object):
     """An R-Tree, MVR-Tree, or TPR-Tree indexing object"""
-    dumps = pickle.dumps
-    loads = pickle.loads
 
     def __init__(self,  *args, **kwargs):
         """Creates a new index
@@ -265,6 +263,12 @@ class Index(object):
                 core.rt.Index_Destroy(self.handle)
                 self.owned = False
                 self.handle = None
+
+    def dumps(self, obj):
+        return pickle.dumps(obj)
+
+    def loads(self, string):
+        return pickle.loads(string)
 
     def close(self):
         """Force a flush of the index to storage. Renders index
