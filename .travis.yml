@@ -15,4 +15,4 @@ install:
   - pip install -e .
 
 script:
-  - py.test tests
+  - py.test tests/test_doctests.py

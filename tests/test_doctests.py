@@ -41,8 +41,6 @@ def test_suite():
          for filename
          in sorted(list_doctests())])
 
-print(list_doctests())
-
 if __name__ == "__main__":
     runner = unittest.TextTestRunner()
     runner.run(test_suite())
