@@ -52,11 +52,16 @@ def check_value_free(result, func, cargs):
     return result
 
 def free_returned_char_p(result, func, cargs):
-    size = ctypes.c_int()
     retvalue = ctypes.string_at(result)
-    #free(result)
+    p = ctypes.cast(result, ctypes.POINTER(ctypes.c_void_p))
+    rt.Index_Free(p)
     return retvalue
     
+def free_error_msg_ptr(result, func, cargs):
+    retvalue = ctypes.string_at(result)
+    p = ctypes.cast(result, ctypes.POINTER(ctypes.c_void_p))
+    rt.Index_Free(p)
+    return retvalue
     
 
 if os.name == 'nt':
@@ -95,19 +100,12 @@ if os.name == 'nt':
     if not rt:
         raise OSError("could not find or load spatialindex_c.dll")
 
-    def free(m):
-        try:
-            free = ctypes.cdll[ctypes.util.find_msvcrt()].free(m)
-        except WindowsError:
-            pass
-
 elif os.name == 'posix':
     platform = os.uname()[0]
     lib_name = 'libspatialindex_c.so'
     if platform == 'Darwin':
         lib_name = 'libspatialindex_c.dylib'
     rt = ctypes.CDLL(lib_name)
-    free = ctypes.CDLL(None).free # None -> libc
 else:
     raise RTreeError('Unsupported OS "%s"' % os.name)
 
@@ -115,7 +113,7 @@ rt.Error_GetLastErrorNum.restype = ctypes.c_int
 
 rt.Error_GetLastErrorMsg.argtypes = []
 rt.Error_GetLastErrorMsg.restype = ctypes.POINTER(ctypes.c_char)
-rt.Error_GetLastErrorMsg.errcheck = free_returned_char_p
+rt.Error_GetLastErrorMsg.errcheck = free_error_msg_ptr
 
 rt.Error_GetLastErrorMethod.restype = ctypes.POINTER(ctypes.c_char)
 rt.Error_GetLastErrorMethod.errcheck = free_returned_char_p
@@ -136,7 +134,7 @@ NEXTFUNC = ctypes.CFUNCTYPE(ctypes.c_int,
                             ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
                             ctypes.POINTER(ctypes.c_uint32),
                             ctypes.POINTER(ctypes.POINTER(ctypes.c_ubyte)),
-                            ctypes.POINTER(ctypes.c_uint32))
+                            ctypes.POINTER(ctypes.c_size_t))
 
 rt.Index_CreateWithStream.argtypes = [ctypes.c_void_p, NEXTFUNC] 
 rt.Index_CreateWithStream.restype = ctypes.c_void_p
@@ -242,7 +240,6 @@ rt.Index_ClearBuffer.errcheck = check_void_done
 
 rt.Index_Free.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
 rt.Index_Free.restype = None
-rt.Index_Free.errcheck = check_void_done
 
 rt.IndexItem_Destroy.argtypes = [ctypes.c_void_p]
 rt.IndexItem_Destroy.restype = None
