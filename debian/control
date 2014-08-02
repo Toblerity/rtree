@@ -1,0 +1,20 @@
+Source: rtree
+Maintainer: Angelos Tzotsos <gcpp.kalxas@gmail.com> 
+Section: python
+Priority: optional
+Build-Depends: debhelper (>= 9), python-setuptools (>= 0.6), python-all-dev (>= 2.7), python-all (>= 2.7), libspatialindex-dev (>=1.5.0)
+Standards-Version: 3.9.3
+X-Python-Version: >= 2.7
+Homepage: https://github.com/Toblerity/rtree
+
+Package: python-rtree
+Architecture: any
+Depends: ${python:Depends}, ${shlibs:Depends}, libspatialindex3 (>=1.5.0)
+Recommends: 
+Suggests: 
+XB-Python-Version: ${python:Versions}
+Provides: ${python:Provides}
+Description: Spatial indexing for Python
+ R-trees possess excellent query performance, good incremental insert performance, and great flexibility in the spatial indexing algorithms world.
+ Rtree is a Python library that uses ctypes to wrap libspatialindex. Rtree has gone through a number of iterations, and at 0.5.0, it was completely refactored to use a new internal architecture (ctypes + a C API over libspatialindex). This refactoring has resulted in a number of new features and much more flexibility. See CHANGES.txt for more detail.
+ Rtree 0.6.0+ requires libspatialindex 1.5.0+ to work. Rtree 0.5.0 included a C library that is now the C API for libspatialindex and is part of that source tree. The code bases are independent from each other and can now evolve separately. Rtree is now pure Python.
