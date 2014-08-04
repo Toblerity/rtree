@@ -102,9 +102,7 @@ if os.name == 'nt':
 
 elif os.name == 'posix':
     platform = os.uname()[0]
-    lib_name = 'libspatialindex_c.so'
-    if platform == 'Darwin':
-        lib_name = 'libspatialindex_c.dylib'
+    lib_name = find_library('spatialindex_c')
     rt = ctypes.CDLL(lib_name)
 else:
     raise RTreeError('Unsupported OS "%s"' % os.name)
