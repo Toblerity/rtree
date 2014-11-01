@@ -3,7 +3,7 @@ make sure a file-based index is overwriteable.
 
     >>> from rtree.index import Rtree
     >>> r = Rtree('overwriteme')
-    >>> del r    
+    >>> del r
     >>> r = Rtree('overwriteme', overwrite=True)
 
 
@@ -11,13 +11,13 @@ the default serializer is pickle, can use any by overriding dumps, loads
 
     >>> r = Rtree()
     >>> some_data = {"a": 22, "b": [1, "ccc"]}
-    >>> try: 
+    >>> try:
     ...     import simplejson
     ...     r.dumps = simplejson.dumps
     ...     r.loads = simplejson.loads
     ...     r.add(0, (0, 0, 1, 1), some_data)
     ...     list(r.nearest((0, 0), 1, objects="raw"))[0] == some_data
-    ... except ImportError: 
+    ... except ImportError:
     ...     # "no import, failed"
     ...     True
     True
@@ -31,3 +31,12 @@ the default serializer is pickle, can use any by overriding dumps, loads
 
     >>> r.valid()
     True
+
+test UTF-8 filenames
+
+    >>> f = u'gilename\u4500abc'
+
+    >>> r = Rtree(f)
+    >>> r.insert(4321, (34.3776829412, 26.7375853734, 49.3776829412, 41.7375853734), obj=42)
+
+    >>> del r

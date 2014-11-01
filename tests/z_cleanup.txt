@@ -5,6 +5,7 @@
     ...          'testing.dat','testing.idx',
     ...          'custom.data','custom.index',
     ...          'streamed.idx','streamed.dat',
+    ...          'gilename䔀abc.dat','gilename䔀abc.idx',
     ...          'overwriteme.idx', 'overwriteme.dat']
     >>> import os
     >>> import time
