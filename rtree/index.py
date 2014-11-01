@@ -172,7 +172,7 @@ class Index(object):
         basename = None
         storage = None
         if args:
-            if isinstance(args[0], str) or isinstance(args[0], bytes):
+            if isinstance(args[0], str) or isinstance(args[0], bytes) or isinstance(args[0], unicode):
                 # they sent in a filename
                 basename = args[0]
                 # they sent in a filename, stream
@@ -189,10 +189,10 @@ class Index(object):
 
         if basename:
             self.properties.storage = RT_Disk
-            self.properties.filename = str.encode(str(basename))
+            self.properties.filename = basename
 
             # check we can read the file
-            f = str.encode(str(basename) + "." + str(self.properties.idx_extension))
+            f = basename + "." + self.properties.idx_extension
             p = os.path.abspath(f)
 
 
@@ -808,14 +808,14 @@ class Property(object):
     settable index properties.  Many of these properties must be set at
     index creation times, while others can be used to adjust performance
     or behavior."""
-    
+
     pkeys = (
-        'buffering_capacity', 'custom_storage_callbacks', 
-        'custom_storage_callbacks_size', 'dat_extension', 'dimension', 
-        'filename', 'fill_factor', 'idx_extension', 'index_capacity', 
-        'index_id', 'leaf_capacity', 'near_minimum_overlap_factor', 
-        'overwrite', 'pagesize', 'point_pool_capacity', 
-        'region_pool_capacity', 'reinsert_factor', 
+        'buffering_capacity', 'custom_storage_callbacks',
+        'custom_storage_callbacks_size', 'dat_extension', 'dimension',
+        'filename', 'fill_factor', 'idx_extension', 'index_capacity',
+        'index_id', 'leaf_capacity', 'near_minimum_overlap_factor',
+        'overwrite', 'pagesize', 'point_pool_capacity',
+        'region_pool_capacity', 'reinsert_factor',
         'split_distribution_factor', 'storage', 'tight_mbr', 'tpr_horizon',
         'type', 'variant', 'writethrough' )
 
@@ -855,7 +855,7 @@ class Property(object):
 
     def __str__(self):
         return pprint.pformat(self.as_dict())
-        
+
     def get_index_type(self):
         return core.rt.IndexProperty_GetIndexType(self.handle)
     def set_index_type(self, value):
@@ -1040,7 +1040,8 @@ class Property(object):
     def get_filename(self):
         return core.rt.IndexProperty_GetFileName(self.handle)
     def set_filename(self, value):
-        return core.rt.IndexProperty_SetFileName(self.handle, value)
+        v = value.encode('utf-8')
+        return core.rt.IndexProperty_SetFileName(self.handle, v)
 
     filename = property(get_filename, set_filename)
     """Index filename for disk storage"""
@@ -1048,6 +1049,7 @@ class Property(object):
     def get_dat_extension(self):
         return core.rt.IndexProperty_GetFileNameExtensionDat(self.handle)
     def set_dat_extension(self, value):
+        v = value.encode('utf-8')
         return core.rt.IndexProperty_SetFileNameExtensionDat(self.handle, value)
 
     dat_extension = property(get_dat_extension, set_dat_extension)
@@ -1056,6 +1058,7 @@ class Property(object):
     def get_idx_extension(self):
         return core.rt.IndexProperty_GetFileNameExtensionIdx(self.handle)
     def set_idx_extension(self, value):
+        v = value.encode('utf-8')
         return core.rt.IndexProperty_SetFileNameExtensionIdx(self.handle, value)
 
     idx_extension = property(get_idx_extension, set_idx_extension)
@@ -1163,9 +1166,9 @@ class CustomStorageBase(ICustomStorage):
     """
 
     def registerCallbacks(self, properties):
-        callbacks = CustomStorageCallbacks( ctypes.c_void_p(), self.create, 
+        callbacks = CustomStorageCallbacks( ctypes.c_void_p(), self.create,
                                             self.destroy, self.flush,
-                                            self.loadByteArray, self.storeByteArray, 
+                                            self.loadByteArray, self.storeByteArray,
                                             self.deleteByteArray )
         properties.custom_storage_callbacks_size = ctypes.sizeof( callbacks )
         self.callbacks = callbacks
