@@ -11,8 +11,12 @@ except ImportError:
     import pickle
 
 import sys
-if 2==(sys.version_info[0]):
-  range=xrange
+if sys.version_info[0] == 2:
+    range = xrange
+    string_types = basestring
+elif sys.version_info[0] == 3:
+    string_types = str
+
 RT_Memory = 0
 RT_Disk = 1
 RT_Custom = 2
@@ -172,7 +176,7 @@ class Index(object):
         basename = None
         storage = None
         if args:
-            if isinstance(args[0], str) or isinstance(args[0], bytes) or isinstance(args[0], unicode):
+            if isinstance(args[0], string_types) or isinstance(args[0], bytes):
                 # they sent in a filename
                 basename = args[0]
                 # they sent in a filename, stream
