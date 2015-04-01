@@ -245,28 +245,16 @@ class Index(object):
         if stream:
             self.handle = self._create_idx_from_stream(stream)
         else:
-            self.handle = core.rt.Index_Create(self.properties.handle)
-        self.owned = True
+            self.handle = IndexHandle(self.properties.handle)
 
-    def __del__(self):
-        try:
-            self.owned
-        except AttributeError:
-            # we were partially constructed.  We're going to let it leak
-            # in that case
-            return
-        if self.owned:
-            if self.handle and core:
-                try:
-                    core.rt
-                except AttributeError:
-                    # uh, leak?  We're owned, and have a handle
-                    # but for some reason the dll isn't active
-                    return
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state["handle"]
+        return state
 
-                core.rt.Index_Destroy(self.handle)
-                self.owned = False
-                self.handle = None
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.handle = IndexHandle(self.properties.handle)
 
     def dumps(self, obj):
         return pickle.dumps(obj)
@@ -278,10 +266,9 @@ class Index(object):
         """Force a flush of the index to storage. Renders index
         inaccessible.
         """
-        if self.handle and core:
-            core.rt.Index_Destroy(self.handle)
+        if self.handle:
+            self.handle.destroy()
             self.handle = None
-            self.owned = False
         else:
             raise IOError("Unclosable index")
 
@@ -707,7 +694,7 @@ class Index(object):
 
 
         stream = core.NEXTFUNC(py_next_item)
-        return core.rt.Index_CreateWithStream(self.properties.handle, stream)
+        return IndexStreamHandle(self.properties.handle, stream)
 
     def leaves(self):
         leaf_node_count = ctypes.c_uint32()
@@ -777,7 +764,9 @@ Rtree = Index
 
 class Item(object):
     """A container for index entries"""
+
     __slots__ = ('handle', 'owned', 'id', 'object', 'bounds')
+
     def __init__(self, loads, handle, owned=False):
         """There should be no reason to instantiate these yourself. Items are
         created automatically when you call
@@ -807,6 +796,53 @@ class Item(object):
         if data is None: return None
         return loads(data)
 
+
+class InvalidHandleException(Exception):
+    """Handle has been destroyed and can no longer be used"""
+
+class Handle(object):
+
+    def __init__(self, *args, **kwargs):
+        self._ptr = self._create(*args, **kwargs)
+
+    def _create(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def _destroy(self, ptr):
+        raise NotImplementedError
+
+    def destroy(self):
+        if self._ptr is not None:
+            self._destroy(self._ptr)
+            self._ptr = None
+
+    @property
+    def _as_parameter_(self):
+        if self._ptr is None:
+            raise InvalidHandleException
+        return self._ptr
+
+    def __del__(self):
+        self.destroy()
+
+
+class IndexHandle(Handle):
+
+    _create = core.rt.Index_Create
+    _destroy = core.rt.Index_Destroy
+
+
+class IndexStreamHandle(IndexHandle):
+
+    _create = core.rt.Index_CreateWithStream
+
+
+class PropertyHandle(Handle):
+
+    _create = core.rt.IndexProperty_Create
+    _destroy = core.rt.IndexProperty_Destroy
+
+
 class Property(object):
     """An index property object is a container that contains a number of
     settable index properties.  Many of these properties must be set at
@@ -824,25 +860,22 @@ class Property(object):
         'type', 'variant', 'writethrough' )
 
     def __init__(self, handle=None, owned=True, **kwargs):
-        if handle:
-            self.handle = handle
-        else:
-            self.handle = core.rt.IndexProperty_Create()
-        self.owned = owned
-        for k, v in list(kwargs.items()):
+        if handle is None:
+            handle = PropertyHandle()
+        self.handle = handle
+        self.initialize_from_dict(kwargs)
+
+    def initialize_from_dict(self, state):
+        for k, v in state.items():
             if v is not None:
                 setattr(self, k, v)
 
-    def __del__(self):
-        if self.owned:
-            if self.handle and core:
-                try:
-                    core.rt
-                except AttributeError:
-                    # uh, leak?  We're owned, and have a handle
-                    # but for some reason the dll isn't active
-                    return
-                core.rt.IndexProperty_Destroy(self.handle)
+    def __getstate__(self):
+        return self.as_dict()
+
+    def __setstate__(self, state):
+        self.handle = PropertyHandle()
+        self.initialize_from_dict(state)
 
     def as_dict(self):
         d = {}
@@ -1044,8 +1077,9 @@ class Property(object):
     def get_filename(self):
         return core.rt.IndexProperty_GetFileName(self.handle)
     def set_filename(self, value):
-        v = value.encode('utf-8')
-        return core.rt.IndexProperty_SetFileName(self.handle, v)
+        if isinstance(value, string_types):
+            value = value.encode('utf-8')
+        return core.rt.IndexProperty_SetFileName(self.handle, value)
 
     filename = property(get_filename, set_filename)
     """Index filename for disk storage"""
@@ -1053,7 +1087,8 @@ class Property(object):
     def get_dat_extension(self):
         return core.rt.IndexProperty_GetFileNameExtensionDat(self.handle)
     def set_dat_extension(self, value):
-        v = value.encode('utf-8')
+        if isinstance(value, string_types):
+            value = value.encode('utf-8')
         return core.rt.IndexProperty_SetFileNameExtensionDat(self.handle, value)
 
     dat_extension = property(get_dat_extension, set_dat_extension)
@@ -1062,7 +1097,8 @@ class Property(object):
     def get_idx_extension(self):
         return core.rt.IndexProperty_GetFileNameExtensionIdx(self.handle)
     def set_idx_extension(self, value):
-        v = value.encode('utf-8')
+        if isinstance(value, string_types):
+            value = value.encode('utf-8')
         return core.rt.IndexProperty_SetFileNameExtensionIdx(self.handle, value)
 
     idx_extension = property(get_idx_extension, set_idx_extension)
