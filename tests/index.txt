@@ -10,20 +10,20 @@ Ensure libspatialindex version is >= 1.7.0
 
     >>> index.__c_api_version__.split('.')[1] >= 7
     True
-    
+
 Make an instance, index stored in memory
-    
+
     >>> p = index.Property()
-    
+
     >>> idx = index.Index(properties=p)
     >>> idx
     <rtree.index.Index object at 0x...>
-    
+
 Add 100 largish boxes randomly distributed over the domain
-    
+
     >>> for i, coords in enumerate(boxes15):
     ...     idx.add(i, coords)
-    
+
     >>> 0 in idx.intersection((0, 0, 60, 60))
     True
     >>> hits = list(idx.intersection((0, 0, 60, 60)))
@@ -32,11 +32,11 @@ Add 100 largish boxes randomly distributed over the domain
     >>> hits
     [0, 4, 16, 27, 35, 40, 47, 50, 76, 80]
 
-Insert an object into the index that can be pickled 
+Insert an object into the index that can be pickled
 
     >>> idx.insert(4321, (34.3776829412, 26.7375853734, 49.3776829412, 41.7375853734), obj=42)
 
-Fetch our straggler that contains a pickled object    
+Fetch our straggler that contains a pickled object
     >>> hits = idx.intersection((0, 0, 60, 60), objects=True)
     >>> for i in hits:
     ...     if i.id == 4321:
@@ -52,7 +52,7 @@ Find the three items nearest to this one
     [76, 48, 19]
     >>> len(hits)
     3
-    
+
 
 Default order is [xmin, ymin, xmax, ymax]
     >>> ['%.10f' % t for t in idx.bounds]
@@ -76,16 +76,16 @@ Check that we have deleted stuff
     >>> hits = list(idx.intersection((0, 0, 60, 60)))
     >>> len(hits)
     0
-    
+
 Check that nearest returns *all* of the items that are nearby
 
     >>> idx2 = Rtree()
     >>> idx2
     <rtree.index.Index object at 0x...>
 
-    >>> locs = [(14, 10, 14, 10), 
+    >>> locs = [(14, 10, 14, 10),
     ...         (16, 10, 16, 10)]
-    
+
     >>> for i, (minx, miny, maxx, maxy) in enumerate(locs):
     ...        idx2.add(i, (minx, miny, maxx, maxy))
 
@@ -98,9 +98,9 @@ Check that nearest returns *all* of the items that are nearby (with objects)
     >>> idx2
     <rtree.index.Index object at 0x...>
 
-    >>> locs = [(14, 10, 14, 10), 
+    >>> locs = [(14, 10, 14, 10),
     ...         (16, 10, 16, 10)]
-    
+
     >>> for i, (minx, miny, maxx, maxy) in enumerate(locs):
     ...        idx2.add(i, (minx, miny, maxx, maxy), obj={'a': 42})
 
@@ -111,12 +111,12 @@ Check that nearest returns *all* of the items that are nearby (with objects)
     >>> idx2 = Rtree()
     >>> idx2
     <rtree.index.Index object at 0x...>
-            
+
     >>> locs = [(2, 4), (6, 8), (10, 12), (11, 13), (15, 17), (13, 20)]
-    
+
     >>> for i, (start, stop) in enumerate(locs):
     ...        idx2.add(i, (start, 1, stop, 1))
-    
+
     >>> sorted(idx2.nearest((13, 0, 20, 2), 1))
     [3, 4, 5]
 
@@ -129,7 +129,7 @@ Default page size 4096
     >>> len(hits)
     10
 
-Make sure to delete the index or the file is not flushed and it 
+Make sure to delete the index or the file is not flushed and it
 will be invalid
 
     >>> del idx3
@@ -142,10 +142,10 @@ Page size 3
     >>> hits = list(idx4.intersection((0, 0, 60, 60)))
     >>> len(hits)
     10
-    
+
     >>> idx4.close()
     >>> del idx4
-    
+
 Test invalid name
 
     >>> inv = Rtree("bogus/foo")
@@ -169,17 +169,17 @@ Load a persisted index
 Make a 3D index
     >>> p = index.Property()
     >>> p.dimension = 3
-    
 
-with interleaved=False, the order of input and output is: 
+
+with interleaved=False, the order of input and output is:
 (xmin, xmax, ymin, ymax, zmin, zmax)
 
     >>> idx3d = index.Index(properties=p, interleaved=False)
     >>> idx3d
     <rtree.index.Index object at 0x...>
-    
+
     >>> idx3d.insert(1, (0, 0, 60, 60, 22, 22.0))
-    
+
     >>> 1 in idx3d.intersection((-1, 1, 58, 62, 22, 24))
     True
 
@@ -187,16 +187,16 @@ with interleaved=False, the order of input and output is:
 Make a 4D index
     >>> p = index.Property()
     >>> p.dimension = 4
-    
+
 
 with interleaved=False, the order of input and output is: (xmin, xmax, ymin, ymax, zmin, zmax, kmin, kmax)
 
     >>> idx4d = index.Index(properties=p, interleaved=False)
     >>> idx4d
     <rtree.index.Index object at 0x...>
-    
+
     >>> idx4d.insert(1, (0, 0, 60, 60, 22, 22.0, 128, 142))
-    
+
     >>> 1 in idx4d.intersection((-1, 1, 58, 62, 22, 24, 120, 150))
     True
 
@@ -205,26 +205,26 @@ Check that we can make an index with custom filename extensions
     >>> p = index.Property()
     >>> p.dat_extension = 'data'
     >>> p.idx_extension = 'index'
-    
+
     >>> idx_cust = Rtree('custom', properties=p)
     >>> for i, coords in enumerate(boxes15):
     ...     idx_cust.add(i, coords)
     >>> hits = list(idx_cust.intersection((0, 0, 60, 60)))
     >>> len(hits)
     10
-    
+
     >>> del idx_cust
-    
+
 Reopen the index
     >>> p2 = index.Property()
     >>> p2.dat_extension = 'data'
     >>> p2.idx_extension = 'index'
-    
-    >>> idx_cust2 = Rtree('custom', properties=p2)    
+
+    >>> idx_cust2 = Rtree('custom', properties=p2)
     >>> hits = list(idx_cust2.intersection((0, 0, 60, 60)))
     >>> len(hits)
     10
-    
+
     >>> del idx_cust2
 
 Adding the same id twice does not overwrite existing data
@@ -235,8 +235,8 @@ Adding the same id twice does not overwrite existing data
     >>> list(r.intersection((0, 0, 5, 5)))
     [1, 1]
 
-A stream of data need that needs to be an iterator that will raise a 
-StopIteration. The order depends on the interleaved kwarg sent to the 
+A stream of data need that needs to be an iterator that will raise a
+StopIteration. The order depends on the interleaved kwarg sent to the
 constructor.
 
 The object can be None, but you must put a place holder of 'None' there.
@@ -255,15 +255,15 @@ The object can be None, but you must put a place holder of 'None' there.
 
     >>> len(hits)
     10
-    
-    
+
+
     >>> sorted(hits)
     [0, 4, 16, 27, 35, 40, 47, 50, 76, 80]
 
     >>> hits = list(strm_idx.intersection((0, 0, 60, 60), objects=True))
     >>> len(hits)
     10
-    
+
     >>> hits[0].object
     42
 
@@ -274,14 +274,14 @@ Note the arguments to intersection must be xmin, xmax, ymin, ymax for interleave
     >>> hits = list(strm_idx.intersection((0, 60, 0, 60)))
     >>> len(hits)
     10
-    
+
     >>> sorted(hits)
     [0, 4, 16, 27, 35, 40, 47, 50, 76, 80]
 
     >>> hits = list(strm_idx.intersection((0, 60, 0, 60), objects=True))
     >>> len(hits)
     10
-    
+
     >>> hits[0].object
     42
 
@@ -290,10 +290,10 @@ Note the arguments to intersection must be xmin, xmax, ymin, ymax for interleave
     42
     >>> len(hits)
     10
-    
+
     >>> strm_idx.count((0, 60, 0, 60))
     10L
-    
+
     >>> del strm_idx
 
     >>> p = index.Property()
@@ -306,3 +306,25 @@ Note the arguments to intersection must be xmin, xmax, ymin, ymax for interleave
     >>> leaves = idx.leaves()
 
     >>> del idx
+
+    >>> import numpy as np
+    >>> import rtree
+
+    >>> properties = rtree.index.Property()
+    >>> properties.dimension = 3
+
+    >>> points_count = 100
+    >>> points_random = np.random.random((points_count, 3,3))
+    >>> points_bounds = np.column_stack((points_random.min(axis=1), points_random.max(axis=1)))
+
+    >>> stacked = zip(np.arange(points_count), points_bounds, [None] * points_count)
+
+    >>> tree = rtree.index.Index(stacked, properties = properties)
+
+    >>> tid = list(tree.intersection([-1,-1,-1,2,2,2]))
+
+    >>> len(tid)
+    100
+
+    >>> (np.array(tid) == 0).all()
+    False
