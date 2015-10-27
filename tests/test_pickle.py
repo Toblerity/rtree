@@ -2,6 +2,7 @@ import pickle
 import unittest
 import rtree.index
 
+
 class TestPickling(unittest.TestCase):
 
     def test_index(self):
@@ -9,7 +10,7 @@ class TestPickling(unittest.TestCase):
         unpickled = pickle.loads(pickle.dumps(idx))
         self.assertNotEquals(idx.handle, unpickled.handle)
         self.assertEquals(idx.properties.as_dict(),
-            unpickled.properties.as_dict())
+                          unpickled.properties.as_dict())
         self.assertEquals(idx.interleaved, unpickled.interleaved)
 
     def test_property(self):

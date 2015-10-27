@@ -1,68 +1,74 @@
-import atexit, os, re, sys
+import os
 import ctypes
 from ctypes.util import find_library
 
-import ctypes
 
 class RTreeError(Exception):
     "RTree exception, indicates a RTree-related error."
     pass
 
+
 def check_return(result, func, cargs):
     "Error checking for Error calls"
     if result != 0:
-        msg = 'LASError in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg() )
+        msg = 'LASError in "%s": %s' % \
+            (func.__name__, rt.Error_GetLastErrorMsg())
         rt.Error_Reset()
         raise RTreeError(msg)
     return True
 
+
 def check_void(result, func, cargs):
     "Error checking for void* returns"
     if not bool(result):
-        msg = 'Error in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg() )
+        msg = 'Error in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg())
         rt.Error_Reset()
         raise RTreeError(msg)
     return result
 
+
 def check_void_done(result, func, cargs):
     "Error checking for void* returns that might be empty with no error"
     if rt.Error_GetErrorCount():
-        msg = 'Error in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg() )
+        msg = 'Error in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg())
         rt.Error_Reset()
         raise RTreeError(msg)
-        
     return result
+
 
 def check_value(result, func, cargs):
     "Error checking proper value returns"
     count = rt.Error_GetErrorCount()
     if count != 0:
-        msg = 'Error in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg() )
+        msg = 'Error in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg())
         rt.Error_Reset()
         raise RTreeError(msg)
     return result
+
 
 def check_value_free(result, func, cargs):
     "Error checking proper value returns"
     count = rt.Error_GetErrorCount()
     if count != 0:
-        msg = 'Error in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg() )
+        msg = 'Error in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg())
         rt.Error_Reset()
         raise RTreeError(msg)
     return result
+
 
 def free_returned_char_p(result, func, cargs):
     retvalue = ctypes.string_at(result)
     p = ctypes.cast(result, ctypes.POINTER(ctypes.c_void_p))
     rt.Index_Free(p)
     return retvalue
-    
+
+
 def free_error_msg_ptr(result, func, cargs):
     retvalue = ctypes.string_at(result)
     p = ctypes.cast(result, ctypes.POINTER(ctypes.c_void_p))
     rt.Index_Free(p)
     return retvalue
-    
+
 
 if os.name == 'nt':
 
@@ -77,7 +83,7 @@ if os.name == 'nt':
             dllpaths = (os.path.abspath(os.path.dirname(__file__)),
                         ) + dllpaths
         except NameError:
-            pass # no __file__ attribute on PyPy and some frozen distributions
+            pass  # no __file__ attribute on PyPy and some frozen distributions
         for path in dllpaths:
             if path:
                 # temporarily add the path to the PATH environment variable
@@ -120,7 +126,7 @@ rt.Error_GetLastErrorMethod.restype = ctypes.POINTER(ctypes.c_char)
 rt.Error_GetLastErrorMethod.errcheck = free_returned_char_p
 
 rt.Error_GetErrorCount.argtypes = []
-rt.Error_GetErrorCount.restype=ctypes.c_int
+rt.Error_GetErrorCount.restype = ctypes.c_int
 
 rt.Error_Reset.argtypes = []
 rt.Error_Reset.restype = None
@@ -129,7 +135,7 @@ rt.Index_Create.argtypes = [ctypes.c_void_p]
 rt.Index_Create.restype = ctypes.c_void_p
 rt.Index_Create.errcheck = check_void
 
-NEXTFUNC = ctypes.CFUNCTYPE(ctypes.c_int, 
+NEXTFUNC = ctypes.CFUNCTYPE(ctypes.c_int,
                             ctypes.POINTER(ctypes.c_int64),
                             ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
                             ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
@@ -137,7 +143,7 @@ NEXTFUNC = ctypes.CFUNCTYPE(ctypes.c_int,
                             ctypes.POINTER(ctypes.POINTER(ctypes.c_ubyte)),
                             ctypes.POINTER(ctypes.c_size_t))
 
-rt.Index_CreateWithStream.argtypes = [ctypes.c_void_p, NEXTFUNC] 
+rt.Index_CreateWithStream.argtypes = [ctypes.c_void_p, NEXTFUNC]
 rt.Index_CreateWithStream.restype = ctypes.c_void_p
 rt.Index_CreateWithStream.errcheck = check_void
 
@@ -149,28 +155,28 @@ rt.Index_GetProperties.argtypes = [ctypes.c_void_p]
 rt.Index_GetProperties.restype = ctypes.c_void_p
 rt.Index_GetProperties.errcheck = check_void
 
-rt.Index_DeleteData.argtypes = [ctypes.c_void_p, 
-                                ctypes.c_int64, 
-                                ctypes.POINTER(ctypes.c_double), 
-                                ctypes.POINTER(ctypes.c_double), 
+rt.Index_DeleteData.argtypes = [ctypes.c_void_p,
+                                ctypes.c_int64,
+                                ctypes.POINTER(ctypes.c_double),
+                                ctypes.POINTER(ctypes.c_double),
                                 ctypes.c_uint32]
 rt.Index_DeleteData.restype = ctypes.c_int
 rt.Index_DeleteData.errcheck = check_return
 
-rt.Index_InsertData.argtypes = [ctypes.c_void_p, 
-                                ctypes.c_int64, 
-                                ctypes.POINTER(ctypes.c_double), 
-                                ctypes.POINTER(ctypes.c_double), 
-                                ctypes.c_uint32, 
-                                ctypes.POINTER(ctypes.c_ubyte), 
+rt.Index_InsertData.argtypes = [ctypes.c_void_p,
+                                ctypes.c_int64,
+                                ctypes.POINTER(ctypes.c_double),
+                                ctypes.POINTER(ctypes.c_double),
+                                ctypes.c_uint32,
+                                ctypes.POINTER(ctypes.c_ubyte),
                                 ctypes.c_uint32]
 rt.Index_InsertData.restype = ctypes.c_int
 rt.Index_InsertData.errcheck = check_return
 
-rt.Index_GetBounds.argtypes = [ ctypes.c_void_p,
-                                ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
-                                ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
-                                ctypes.POINTER(ctypes.c_uint32)]
+rt.Index_GetBounds.argtypes = [ctypes.c_void_p,
+                               ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+                               ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
+                               ctypes.POINTER(ctypes.c_uint32)]
 rt.Index_GetBounds.restype = ctypes.c_int
 rt.Index_GetBounds.errcheck = check_value
 
@@ -179,59 +185,67 @@ rt.Index_IsValid.restype = ctypes.c_int
 rt.Index_IsValid.errcheck = check_value
 
 rt.Index_Intersects_obj.argtypes = [ctypes.c_void_p,
-                                    ctypes.POINTER(ctypes.c_double), 
-                                    ctypes.POINTER(ctypes.c_double), 
-                                    ctypes.c_uint32, 
-                                    ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)),
+                                    ctypes.POINTER(ctypes.c_double),
+                                    ctypes.POINTER(ctypes.c_double),
+                                    ctypes.c_uint32,
+                                    ctypes.POINTER(
+                                        ctypes.POINTER(ctypes.c_void_p)),
                                     ctypes.POINTER(ctypes.c_uint64)]
 rt.Index_Intersects_obj.restype = ctypes.c_int
 rt.Index_Intersects_obj.errcheck = check_return
 
 rt.Index_Intersects_id.argtypes = [ctypes.c_void_p,
-                                    ctypes.POINTER(ctypes.c_double), 
-                                    ctypes.POINTER(ctypes.c_double), 
-                                    ctypes.c_uint32, 
-                                    ctypes.POINTER(ctypes.POINTER(ctypes.c_int64)),
-                                    ctypes.POINTER(ctypes.c_uint64)]
+                                   ctypes.POINTER(ctypes.c_double),
+                                   ctypes.POINTER(ctypes.c_double),
+                                   ctypes.c_uint32,
+                                   ctypes.POINTER(
+                                       ctypes.POINTER(ctypes.c_int64)),
+                                   ctypes.POINTER(ctypes.c_uint64)]
 rt.Index_Intersects_id.restype = ctypes.c_int
 rt.Index_Intersects_id.errcheck = check_return
 
-rt.Index_Intersects_count.argtypes = [  ctypes.c_void_p,
-                                        ctypes.POINTER(ctypes.c_double),
-                                        ctypes.POINTER(ctypes.c_double),
-                                        ctypes.c_uint32,
-                                        ctypes.POINTER(ctypes.c_uint64)]
+rt.Index_Intersects_count.argtypes = [ctypes.c_void_p,
+                                      ctypes.POINTER(ctypes.c_double),
+                                      ctypes.POINTER(ctypes.c_double),
+                                      ctypes.c_uint32,
+                                      ctypes.POINTER(ctypes.c_uint64)]
 
-rt.Index_NearestNeighbors_obj.argtypes = [  ctypes.c_void_p,
-                                            ctypes.POINTER(ctypes.c_double), 
-                                            ctypes.POINTER(ctypes.c_double), 
-                                            ctypes.c_uint32, 
-                                            ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)),
-                                            ctypes.POINTER(ctypes.c_uint64)]
+rt.Index_NearestNeighbors_obj.argtypes = [ctypes.c_void_p,
+                                          ctypes.POINTER(ctypes.c_double),
+                                          ctypes.POINTER(ctypes.c_double),
+                                          ctypes.c_uint32,
+                                          ctypes.POINTER(
+                                              ctypes.POINTER(ctypes.c_void_p)),
+                                          ctypes.POINTER(ctypes.c_uint64)]
 rt.Index_NearestNeighbors_obj.restype = ctypes.c_int
 rt.Index_NearestNeighbors_obj.errcheck = check_return
 
-rt.Index_NearestNeighbors_id.argtypes = [  ctypes.c_void_p,
-                                            ctypes.POINTER(ctypes.c_double), 
-                                            ctypes.POINTER(ctypes.c_double), 
-                                            ctypes.c_uint32, 
-                                            ctypes.POINTER(ctypes.POINTER(ctypes.c_int64)),
-                                            ctypes.POINTER(ctypes.c_uint64)]
+rt.Index_NearestNeighbors_id.argtypes = [ctypes.c_void_p,
+                                         ctypes.POINTER(ctypes.c_double),
+                                         ctypes.POINTER(ctypes.c_double),
+                                         ctypes.c_uint32,
+                                         ctypes.POINTER(
+                                             ctypes.POINTER(ctypes.c_int64)),
+                                         ctypes.POINTER(ctypes.c_uint64)]
 rt.Index_NearestNeighbors_id.restype = ctypes.c_int
 rt.Index_NearestNeighbors_id.errcheck = check_return
 
-rt.Index_GetLeaves.argtypes = [ ctypes.c_void_p,
-                                ctypes.POINTER(ctypes.c_uint32), 
-                                ctypes.POINTER(ctypes.POINTER(ctypes.c_uint32)), 
-                                ctypes.POINTER(ctypes.POINTER(ctypes.c_int64)), 
-                                ctypes.POINTER(ctypes.POINTER(ctypes.POINTER(ctypes.c_int64))),
-                                ctypes.POINTER(ctypes.POINTER(ctypes.POINTER(ctypes.c_double))),
-                                ctypes.POINTER(ctypes.POINTER(ctypes.POINTER(ctypes.c_double))),
-                                ctypes.POINTER(ctypes.c_uint32)]
+rt.Index_GetLeaves.argtypes = [ctypes.c_void_p,
+                               ctypes.POINTER(ctypes.c_uint32),
+                               ctypes.POINTER(ctypes.POINTER(ctypes.c_uint32)),
+                               ctypes.POINTER(ctypes.POINTER(ctypes.c_int64)),
+                               ctypes.POINTER(ctypes.POINTER(
+                                   ctypes.POINTER(ctypes.c_int64))),
+                               ctypes.POINTER(ctypes.POINTER(
+                                   ctypes.POINTER(ctypes.c_double))),
+                               ctypes.POINTER(ctypes.POINTER(
+                                   ctypes.POINTER(ctypes.c_double))),
+                               ctypes.POINTER(ctypes.c_uint32)]
 rt.Index_GetLeaves.restype = ctypes.c_int
 rt.Index_GetLeaves.errcheck = check_return
 
-rt.Index_DestroyObjResults.argtypes = [ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)), ctypes.c_uint32]
+rt.Index_DestroyObjResults.argtypes = \
+    [ctypes.POINTER(ctypes.POINTER(ctypes.c_void_p)), ctypes.c_uint32]
 rt.Index_DestroyObjResults.restype = None
 rt.Index_DestroyObjResults.errcheck = check_void_done
 
@@ -246,16 +260,19 @@ rt.IndexItem_Destroy.argtypes = [ctypes.c_void_p]
 rt.IndexItem_Destroy.restype = None
 rt.IndexItem_Destroy.errcheck = check_void_done
 
-rt.IndexItem_GetData.argtypes = [   ctypes.c_void_p, 
-                                    ctypes.POINTER(ctypes.POINTER(ctypes.c_ubyte)), 
-                                    ctypes.POINTER(ctypes.c_uint64)]
+rt.IndexItem_GetData.argtypes = [ctypes.c_void_p,
+                                 ctypes.POINTER(
+                                     ctypes.POINTER(ctypes.c_ubyte)),
+                                 ctypes.POINTER(ctypes.c_uint64)]
 rt.IndexItem_GetData.restype = ctypes.c_int
 rt.IndexItem_GetData.errcheck = check_value
 
-rt.IndexItem_GetBounds.argtypes = [ ctypes.c_void_p,
-                                    ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
-                                    ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
-                                    ctypes.POINTER(ctypes.c_uint32)]
+rt.IndexItem_GetBounds.argtypes = [ctypes.c_void_p,
+                                   ctypes.POINTER(
+                                       ctypes.POINTER(ctypes.c_double)),
+                                   ctypes.POINTER(
+                                       ctypes.POINTER(ctypes.c_double)),
+                                   ctypes.POINTER(ctypes.c_uint32)]
 rt.IndexItem_GetBounds.restype = ctypes.c_int
 rt.IndexItem_GetBounds.errcheck = check_value
 
@@ -327,7 +344,8 @@ rt.IndexProperty_GetPagesize.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetPagesize.restype = ctypes.c_int
 rt.IndexProperty_GetPagesize.errcheck = check_value
 
-rt.IndexProperty_SetLeafPoolCapacity.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+rt.IndexProperty_SetLeafPoolCapacity.argtypes = \
+    [ctypes.c_void_p, ctypes.c_uint32]
 rt.IndexProperty_SetLeafPoolCapacity.restype = ctypes.c_int
 rt.IndexProperty_SetLeafPoolCapacity.errcheck = check_return
 
@@ -335,7 +353,8 @@ rt.IndexProperty_GetLeafPoolCapacity.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetLeafPoolCapacity.restype = ctypes.c_int
 rt.IndexProperty_GetLeafPoolCapacity.errcheck = check_value
 
-rt.IndexProperty_SetIndexPoolCapacity.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+rt.IndexProperty_SetIndexPoolCapacity.argtypes = \
+    [ctypes.c_void_p, ctypes.c_uint32]
 rt.IndexProperty_SetIndexPoolCapacity.restype = ctypes.c_int
 rt.IndexProperty_SetIndexPoolCapacity.errcheck = check_return
 
@@ -343,7 +362,8 @@ rt.IndexProperty_GetIndexPoolCapacity.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetIndexPoolCapacity.restype = ctypes.c_int
 rt.IndexProperty_GetIndexPoolCapacity.errcheck = check_value
 
-rt.IndexProperty_SetRegionPoolCapacity.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+rt.IndexProperty_SetRegionPoolCapacity.argtypes = \
+    [ctypes.c_void_p, ctypes.c_uint32]
 rt.IndexProperty_SetRegionPoolCapacity.restype = ctypes.c_int
 rt.IndexProperty_SetRegionPoolCapacity.errcheck = check_return
 
@@ -351,7 +371,8 @@ rt.IndexProperty_GetRegionPoolCapacity.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetRegionPoolCapacity.restype = ctypes.c_int
 rt.IndexProperty_GetRegionPoolCapacity.errcheck = check_value
 
-rt.IndexProperty_SetPointPoolCapacity.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+rt.IndexProperty_SetPointPoolCapacity.argtypes = \
+    [ctypes.c_void_p, ctypes.c_uint32]
 rt.IndexProperty_SetPointPoolCapacity.restype = ctypes.c_int
 rt.IndexProperty_SetPointPoolCapacity.errcheck = check_return
 
@@ -359,7 +380,8 @@ rt.IndexProperty_GetPointPoolCapacity.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetPointPoolCapacity.restype = ctypes.c_int
 rt.IndexProperty_GetPointPoolCapacity.errcheck = check_value
 
-rt.IndexProperty_SetBufferingCapacity.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+rt.IndexProperty_SetBufferingCapacity.argtypes = \
+    [ctypes.c_void_p, ctypes.c_uint32]
 rt.IndexProperty_SetBufferingCapacity.restype = ctypes.c_int
 rt.IndexProperty_SetBufferingCapacity.errcheck = check_return
 
@@ -367,7 +389,8 @@ rt.IndexProperty_GetBufferingCapacity.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetBufferingCapacity.restype = ctypes.c_int
 rt.IndexProperty_GetBufferingCapacity.errcheck = check_value
 
-rt.IndexProperty_SetEnsureTightMBRs.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+rt.IndexProperty_SetEnsureTightMBRs.argtypes = \
+    [ctypes.c_void_p, ctypes.c_uint32]
 rt.IndexProperty_SetEnsureTightMBRs.restype = ctypes.c_int
 rt.IndexProperty_SetEnsureTightMBRs.errcheck = check_return
 
@@ -383,7 +406,8 @@ rt.IndexProperty_GetOverwrite.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetOverwrite.restype = ctypes.c_int
 rt.IndexProperty_GetOverwrite.errcheck = check_value
 
-rt.IndexProperty_SetNearMinimumOverlapFactor.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+rt.IndexProperty_SetNearMinimumOverlapFactor.argtypes = \
+    [ctypes.c_void_p, ctypes.c_uint32]
 rt.IndexProperty_SetNearMinimumOverlapFactor.restype = ctypes.c_int
 rt.IndexProperty_SetNearMinimumOverlapFactor.errcheck = check_return
 
@@ -407,7 +431,8 @@ rt.IndexProperty_GetFillFactor.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetFillFactor.restype = ctypes.c_double
 rt.IndexProperty_GetFillFactor.errcheck = check_value
 
-rt.IndexProperty_SetSplitDistributionFactor.argtypes = [ctypes.c_void_p, ctypes.c_double]
+rt.IndexProperty_SetSplitDistributionFactor.argtypes = \
+    [ctypes.c_void_p, ctypes.c_double]
 rt.IndexProperty_SetSplitDistributionFactor.restype = ctypes.c_int
 rt.IndexProperty_SetSplitDistributionFactor.errcheck = check_return
 
@@ -423,7 +448,8 @@ rt.IndexProperty_GetTPRHorizon.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetTPRHorizon.restype = ctypes.c_double
 rt.IndexProperty_GetTPRHorizon.errcheck = check_value
 
-rt.IndexProperty_SetReinsertFactor.argtypes = [ctypes.c_void_p, ctypes.c_double]
+rt.IndexProperty_SetReinsertFactor.argtypes = \
+    [ctypes.c_void_p, ctypes.c_double]
 rt.IndexProperty_SetReinsertFactor.restype = ctypes.c_int
 rt.IndexProperty_SetReinsertFactor.errcheck = check_return
 
@@ -439,23 +465,28 @@ rt.IndexProperty_GetFileName.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetFileName.errcheck = free_returned_char_p
 rt.IndexProperty_GetFileName.restype = ctypes.POINTER(ctypes.c_char)
 
-rt.IndexProperty_SetFileNameExtensionDat.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+rt.IndexProperty_SetFileNameExtensionDat.argtypes = \
+    [ctypes.c_void_p, ctypes.c_char_p]
 rt.IndexProperty_SetFileNameExtensionDat.restype = ctypes.c_int
 rt.IndexProperty_SetFileNameExtensionDat.errcheck = check_return
 
 rt.IndexProperty_GetFileNameExtensionDat.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetFileNameExtensionDat.errcheck = free_returned_char_p
-rt.IndexProperty_GetFileNameExtensionDat.restype = ctypes.POINTER(ctypes.c_char)
+rt.IndexProperty_GetFileNameExtensionDat.restype = \
+    ctypes.POINTER(ctypes.c_char)
 
-rt.IndexProperty_SetFileNameExtensionIdx.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+rt.IndexProperty_SetFileNameExtensionIdx.argtypes = \
+    [ctypes.c_void_p, ctypes.c_char_p]
 rt.IndexProperty_SetFileNameExtensionIdx.restype = ctypes.c_int
 rt.IndexProperty_SetFileNameExtensionIdx.errcheck = check_return
 
 rt.IndexProperty_GetFileNameExtensionIdx.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetFileNameExtensionIdx.errcheck = free_returned_char_p
-rt.IndexProperty_GetFileNameExtensionIdx.restype = ctypes.POINTER(ctypes.c_char)
+rt.IndexProperty_GetFileNameExtensionIdx.restype = \
+    ctypes.POINTER(ctypes.c_char)
 
-rt.IndexProperty_SetCustomStorageCallbacksSize.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+rt.IndexProperty_SetCustomStorageCallbacksSize.argtypes = \
+    [ctypes.c_void_p, ctypes.c_uint32]
 rt.IndexProperty_SetCustomStorageCallbacksSize.restype = ctypes.c_int
 rt.IndexProperty_SetCustomStorageCallbacksSize.errcheck = check_return
 
@@ -463,7 +494,8 @@ rt.IndexProperty_GetCustomStorageCallbacksSize.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetCustomStorageCallbacksSize.restype = ctypes.c_uint32
 rt.IndexProperty_GetCustomStorageCallbacksSize.errcheck = check_value
 
-rt.IndexProperty_SetCustomStorageCallbacks.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+rt.IndexProperty_SetCustomStorageCallbacks.argtypes = \
+    [ctypes.c_void_p, ctypes.c_void_p]
 rt.IndexProperty_SetCustomStorageCallbacks.restype = ctypes.c_int
 rt.IndexProperty_SetCustomStorageCallbacks.errcheck = check_return
 

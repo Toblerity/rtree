@@ -1,4 +1,4 @@
-include README.txt
+include README.md
 include MANIFEST.in
 include DEPENDENCIES.txt
 include FAQ.txt
