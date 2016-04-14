@@ -1413,3 +1413,234 @@ class CustomStorage(ICustomStorage):
         """please override"""
         returnError.contents.value = self.IllegalStateError
         raise NotImplementedError("You must override this method.")
+
+
+class RtreeContainer(Rtree):
+    """An R-Tree, MVR-Tree, or TPR-Tree indexed container for python objects"""
+
+    def __init__(self, *args, **kwargs):
+        """Creates a new index
+
+        :param stream:
+            If the first argument in the constructor is not of type basestring,
+            it is assumed to be an iterable stream of data that will raise a
+            StopIteration.  It must be in the form defined by the
+            :attr:`interleaved` attribute of the index. The following example
+            would assume :attr:`interleaved` is False::
+
+            (obj, (minx, maxx, miny, maxy, minz, maxz, ..., ..., mink, maxk))
+
+        :param interleaved: True or False, defaults to True.
+            This parameter determines the coordinate order for all methods that
+            take in coordinates.
+
+        :param properties: An :class:`index.Property` object
+            This object sets both the creation and instantiation properties
+            for the object and they are passed down into libspatialindex.
+            A few properties are curried from instantiation parameters
+            for you like ``pagesize`` to ensure compatibility with previous 
+            versions of the library.  All other properties must be set on the 
+            object.
+
+        .. warning::
+            The coordinate ordering for all functions are sensitive the
+            index's :attr:`interleaved` data member.  If :attr:`interleaved`
+            is False, the coordinates must be in the form
+            [xmin, xmax, ymin, ymax, ..., ..., kmin, kmax]. If
+            :attr:`interleaved` is True, the coordinates must be in the form
+            [xmin, ymin, ..., kmin, xmax, ymax, ..., kmax].
+
+        A basic example
+        ::
+
+            >>> from rtree import index
+            >>> p = index.Property()
+
+            >>> idx = index.RtreeContainer(properties=p)
+            >>> idx  # doctest: +ELLIPSIS
+            <rtree.index.Rtree object at 0x...>
+
+        Insert an item into the index::
+
+            >>> idx.insert(object(), (34.3776829412, 26.7375853734, 
+            49.3776829412, 41.7375853734))
+
+        Query::
+
+            >>> hits = idx.intersection((0, 0, 60, 60))
+            >>> for obj in hits:
+            ...     i.object
+            ...     i.bbox  # doctest: +ELLIPSIS
+            <object object at 0x...>
+            [34.3776829412, 26.737585373400002, 49.3776829412,
+            41.737585373400002]
+        """
+        if args:
+            if isinstance(args[0], rtree.index.string_types) \
+                    or isinstance(args[0], bytes) \
+                    or isinstance(args[0], rtree.index.ICustomStorage):
+                raise ValueError('%s supports only in-memory indexes' 
+                                 % self.__class__)
+        self._objects = {}
+        return super(RtreeContainer, self).__init__(*args, **kwargs)
+
+    def insert(self, obj, coordinates):
+        """Inserts an item into the index with the given coordinates.
+
+        :param obj: object
+            Any object.
+
+        :param coordinates: sequence or array
+            This may be an object that satisfies the numpy array
+            protocol, providing the index's dimension * 2 coordinate
+            pairs representing the `mink` and `maxk` coordinates in
+            each dimension defining the bounds of the query window.
+
+        The following example inserts a simple object into the container.
+        The coordinate ordering in this instance is the default 
+        (interleaved=True) ordering::
+
+            >>> from rtree import index
+            >>> idx = index.RTreeContainer()
+            >>> idx.insert(object(), (34.3776829412, 26.7375853734, 
+            49.3776829412, 41.7375853734))
+
+        """
+        try:
+            count = self._objects[id(obj)] + 1
+        except KeyError:
+            count = 1
+        self._objects[id(obj)] = (count, obj)
+        return super(RtreeContainer, self).insert(id(obj), coordinates, None)
+
+    add = insert
+
+    def intersection(self, coordinates, bbox=False):
+        """Return ids or objects in the index that intersect the given
+        coordinates.
+
+        :param coordinates: sequence or array
+            This may be an object that satisfies the numpy array
+            protocol, providing the index's dimension * 2 coordinate
+            pairs representing the `mink` and `maxk` coordinates in
+            each dimension defining the bounds of the query window.
+
+        :param bbox: True or False
+            If True, the intersection method will return the stored objects, 
+            as well as the bounds of the entry.
+
+        The following example queries the container for any stored objects that
+        intersect the bounds given in the coordinates::
+
+            >>> from rtree import index
+            >>> idx = index.RtreeContainer()
+            >>> idx.insert(object(), (34.3776829412, 26.7375853734, 
+            49.3776829412, 41.7375853734))
+
+            >>> hits = list(idx.intersection((0, 0, 60, 60), bbox=True))
+            >>> [(item.object, item.bbox) 
+            ...  for item in hits]   # doctest: +ELLIPSIS
+            [(<object object at 0x...>, [34.3776829412, 26.7375853734, 
+            49.3776829412, 41.7375853734])]
+
+        If the :class:`rtree.index.Item` wrapper is not used, it is faster to
+        request only the stored objects::
+
+            >>> list(idx.intersection((0, 0, 60, 60)))   # doctest: +ELLIPSIS
+            [<object object at 0x...>]
+
+        """
+        if bbox == False:
+            for id in super(RtreeContainer, 
+                            self).intersection(coordinates, bbox):
+                yield self._objects[id][1]
+        elif bbox == True:
+            for value in super(RtreeContainer, 
+                               self).intersection(coordinates, bbox):
+                value.object = self._objects[value.id][1]
+                value.id = None
+                yield value
+        else:
+            raise ValueError(
+                "valid values for the bbox argument are True and False")
+
+    def nearest(self, coordinates, num_results = 1, bbox=False):
+        """Returns the ``k``-nearest objects to the given coordinates.
+
+        :param coordinates: sequence or array
+            This may be an object that satisfies the numpy array
+            protocol, providing the index's dimension * 2 coordinate
+            pairs representing the `mink` and `maxk` coordinates in
+            each dimension defining the bounds of the query window.
+
+        :param num_results: integer
+            The number of results to return nearest to the given coordinates.
+            If two entries are equidistant, *both* are returned.
+            This property means that :attr:`num_results` may return more
+            items than specified.
+
+        :param bbox: True or False
+            If True, the nearest method will return the stored objects, as
+            well as the bounds of the entry.
+
+        Example of finding the three items nearest to this one::
+
+            >>> from rtree import index
+            >>> idx = index.RtreeContainer()
+            >>> idx.insert(object(), (34.37, 26.73, 49.37, 41.73))
+            >>> hits = idx.nearest((0, 0, 10, 10), 3, bbox=True)
+        """
+        if bbox == False:
+            for id in super(RtreeContainer, 
+                            self).nearest(coordinates, num_results, bbox):
+                yield self._objects[id][1]
+        elif bbox == True:
+            for value in super(RtreeContainer, 
+                               self).nearest(coordinates, num_results, bbox):
+                value.object = self._objects[value.id][1]
+                value.id = None
+                yield value
+        else:
+            raise ValueError(
+                "valid values for the bbox argument are True and False")
+
+    def delete(self, obj, coordinates):
+        """Deletes the item from the container within the specified 
+        coordinates.
+
+        :param obj: object
+            Any object.
+
+        :param coordinates: sequence or array
+            Dimension * 2 coordinate pairs, representing the min
+            and max coordinates in each dimension of the item to be
+            deleted from the index. Their ordering will depend on the
+            index's :attr:`interleaved` data member.
+            These are not the coordinates of a space containing the
+            item, but those of the item itself. Together with the
+            id parameter, they determine which item will be deleted.
+            This may be an object that satisfies the numpy array protocol.
+
+        Example::
+
+            >>> from rtree import index
+            >>> idx = index.RtreeContainer()
+            >>> idx.delete(object(), (34.3776829412, 26.7375853734, 
+            49.3776829412, 41.7375853734))
+
+        """
+        try:
+            count = self._objects[id(obj)] - 1
+        except KeyError:
+            raise IndexError('object is not in the index')
+        if count == 0:
+            del self._objects[obj]
+        else:
+            self._objects[id(obj)] = (count, obj)
+        return super(RtreeContainer, self).delete(id, coordinates)
+
+    def leaves(self):
+        return [(self._objects[id][1], [self._objects[child_id][1] 
+                                        for child_id in child_ids], bounds)
+                for id, child_ids, bounds
+                in super(RtreeContainer, self).leaves()]
