@@ -11,8 +11,12 @@ import os
 
 if os.name == 'nt':
     data_files = [('Lib/site-packages/rtree',
-                  [r'D:\libspatialindex\bin\spatialindex.dll',
-                   r'D:\libspatialindex\bin\spatialindex_c.dll'])]
+                  [os.environ['SPATIALINDEX_LIBRARY']
+                      if 'SPATIALINDEX_LIBRARY' in os.environ else
+                      r'D:\libspatialindex\bin\spatialindex.dll',
+                   os.environ['SPATIALINDEX_C_LIBRARY']
+                      if 'SPATIALINDEX_C_LIBRARY' in os.environ else
+                      r'D:\libspatialindex\bin\spatialindex_c.dll'])]
 else:
     data_files = None
 

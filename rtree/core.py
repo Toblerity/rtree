@@ -102,13 +102,21 @@ if os.name == 'nt':
                     os.environ['PATH'] = oldenv
         return None
 
-    rt = _load_library('spatialindex_c.dll', ctypes.cdll.LoadLibrary)
+    if 'SPATIALINDEX_C_LIBRARY' in os.environ:
+        lib_path, lib_name = os.path.split(os.environ['SPATIALINDEX_C_LIBRARY'])
+        rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
+    else:
+        rt = _load_library('spatialindex_c.dll', ctypes.cdll.LoadLibrary)
     if not rt:
         raise OSError("could not find or load spatialindex_c.dll")
 
 elif os.name == 'posix':
     platform = os.uname()[0]
-    lib_name = find_library('spatialindex_c')
+    if 'SPATIALINDEX_C_LIBRARY' in os.environ:
+        lib_name = os.environ['SPATIALINDEX_C_LIBRARY']
+    else:
+        lib_name = find_library('spatialindex_c')
+
     if lib_name is None:
         raise OSError("Could not find libspatialindex_c library file")
 
