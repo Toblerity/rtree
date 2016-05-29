@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from setuptools import setup
 from setuptools.command.build_py import build_py
 
@@ -13,7 +12,7 @@ class rtree_build_py(build_py):
             target_dir = self.build_lib
 
             # mkpath is a distutils helper to create directories
-            self.mkpath(target_dir)
+            self.mkpath(os.path.join(target_dir, 'rtree'))
 
             with open(os.path.join(target_dir, 'rtree/ENVIRON.txt'), 'w') as fobj:
                 if 'SPATIALINDEX_LIBRARY' in os.environ:
