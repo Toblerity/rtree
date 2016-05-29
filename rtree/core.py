@@ -1,5 +1,6 @@
 import os
 import ctypes
+import pkgutil
 from ctypes.util import find_library
 
 
@@ -68,6 +69,16 @@ def free_error_msg_ptr(result, func, cargs):
     p = ctypes.cast(result, ctypes.POINTER(ctypes.c_void_p))
     rt.Index_Free(p)
     return retvalue
+
+# Read back env vars that were set up during package installation.
+try:
+    for line in pkgutil.get_data('rtree', 'ENVIRON.txt').decode().split():
+        kv = line.split('=')
+        if len(kv) == 2:
+            os.environ[kv[0]] = kv[1]
+except IOError:
+    # The data file doesn't exist; that is OK
+    pass
 
 
 if os.name == 'nt':

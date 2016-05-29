@@ -1,7 +1,29 @@
 #!/usr/bin/env python
 from setuptools import setup
+from setuptools.command.build_py import build_py
 
 import rtree
+
+# Transfer key env vars to a Python data file.
+# http://www.digip.org/blog/2011/01/generating-data-files-in-setup.py.html
+class rtree_build_py(build_py):
+    def run(self):
+        # honor the --dry-run flag
+        if not self.dry_run:
+            target_dir = self.build_lib
+
+            # mkpath is a distutils helper to create directories
+            self.mkpath(target_dir)
+
+            with open(os.path.join(target_dir, 'rtree/ENVIRON.txt'), 'w') as fobj:
+                if 'SPATIALINDEX_LIBRARY' in os.environ:
+                    fobj.write('SPATIALINDEX_LIBRARY=%s\n' % os.environ['SPATIALINDEX_LIBRARY'])
+                if 'SPATIALINDEX_C_LIBRARY' in os.environ:
+                    fobj.write('SPATIALINDEX_C_LIBRARY=%s\n' % os.environ['SPATIALINDEX_C_LIBRARY'])
+
+        # distutils uses old-style classes, so no super()
+        build_py.run(self)
+
 
 # Get text from README.txt
 with open('docs/source/README.txt', 'r') as fp:
@@ -21,6 +43,7 @@ else:
     data_files = None
 
 setup(
+    cmdclass      = {'build_py' : rtree_build_py},
     name          = 'Rtree',
     version       = rtree.__version__,
     description   = 'R-Tree spatial index for Python GIS',
