@@ -73,11 +73,25 @@ def free_error_msg_ptr(result, func, cargs):
 # Read back env vars that were set up during package installation.
 try:
     for line in pkgutil.get_data('rtree', 'ENVIRON.txt').decode().split():
+        # Ignore lines with wrong number of '=' signs
         kv = line.split('=')
-        if len(kv) == 2:
-            os.environ[kv[0]] = kv[1]
+        if len(kv) != 2:
+            continue
+        key, val = kv
+
+        # Only allow certain vars to be set
+        legal_envs = ('SPATIALINDEX_LIBRARY', 'SPATIALINDEX_C_LIBRARY')
+        if key not in legal_envs:
+            raise ValueError(
+                'Illegal variable in ENVIRON.txt: %s.  Must be one of %s' %
+                (key, str(legal_envs)))
+
+        # Only set from config file if not already set in env
+        if key not in os.environ:
+            os.environ[key] = val
+
 except IOError:
-    # The data file doesn't exist; that is OK
+    # The data file ENVIRON.txt doesn't exist; that is OK
     pass
 
 
