@@ -52,7 +52,7 @@ Test property setting
     >>> p.type = 0
     >>> p.type
     0
-    
+
     >>> p.type = 2
     >>> p.type
     2
@@ -65,57 +65,57 @@ Test property setting
     >>> p.dimension = 3
     >>> p.dimension
     3
-    
+
     >>> p.dimension = 2
     >>> p.dimension
     2
-    
+
     >>> p.dimension = -2
     Traceback (most recent call last):
     ...
     RTreeError: Negative or 0 dimensional indexes are not allowed
-    
+
     >>> p.variant = 0
     >>> p.variant
     0
-    
+
     >>> p.variant = 6
     Traceback (most recent call last):
     ...
     RTreeError: LASError in "IndexProperty_SetIndexVariant": Inputted value is not a valid index variant
-    
+
     >>> p.storage = 0
-    >>> p.storage 
+    >>> p.storage
     0
-    
+
     >>> p.storage = 1
     >>> p.storage
     1
-    
+
     >>> p.storage = 3
     Traceback (most recent call last):
     ...
     RTreeError: LASError in "IndexProperty_SetIndexStorage": Inputted value is not a valid index storage type
-    
+
     >>> p.index_capacity
     100
-    
+
     >>> p.index_capacity = 300
     >>> p.index_capacity
     300
-    
+
     >>> p.index_capacity = -4321
     Traceback (most recent call last):
     ...
     RTreeError: index_capacity must be > 0
-    
+
     >>> p.pagesize
     4096
-    
+
     >>> p.pagesize = 8192
     >>> p.pagesize
     8192
-    
+
     >>> p.pagesize = -4321
     Traceback (most recent call last):
     ...
@@ -123,7 +123,7 @@ Test property setting
 
     >>> p.leaf_capacity
     100
-    
+
     >>> p.leaf_capacity = 1000
     >>> p.leaf_capacity
     1000
@@ -131,10 +131,10 @@ Test property setting
     Traceback (most recent call last):
     ...
     RTreeError: leaf_capacity must be > 0
-    
+
     >>> p.index_pool_capacity
     100
-    
+
     >>> p.index_pool_capacity = 1500
     >>> p.index_pool_capacity = -4321
     Traceback (most recent call last):
@@ -143,7 +143,7 @@ Test property setting
 
     >>> p.point_pool_capacity
     500
-    
+
     >>> p.point_pool_capacity = 1500
     >>> p.point_pool_capacity = -4321
     Traceback (most recent call last):
@@ -152,7 +152,7 @@ Test property setting
 
     >>> p.region_pool_capacity
     1000
-    
+
     >>> p.region_pool_capacity = 1500
     >>> p.region_pool_capacity
     1500
@@ -163,54 +163,54 @@ Test property setting
 
     >>> p.buffering_capacity
     10
-    
+
     >>> p.buffering_capacity = 100
     >>> p.buffering_capacity = -4321
     Traceback (most recent call last):
     ...
-    RTreeError: buffering_capacity must be > 0    
+    RTreeError: buffering_capacity must be > 0
 
     >>> p.tight_mbr
     True
-    
+
     >>> p.tight_mbr = 100
     >>> p.tight_mbr
     True
-    
+
     >>> p.tight_mbr = False
     >>> p.tight_mbr
     False
 
     >>> p.overwrite
     True
-    
+
     >>> p.overwrite = 100
     >>> p.overwrite
     True
-    
+
     >>> p.overwrite = False
     >>> p.overwrite
     False
 
     >>> p.near_minimum_overlap_factor
     32
-    
+
     >>> p.near_minimum_overlap_factor = 100
     >>> p.near_minimum_overlap_factor = -4321
     Traceback (most recent call last):
     ...
-    RTreeError: near_minimum_overlap_factor must be > 0  
+    RTreeError: near_minimum_overlap_factor must be > 0
 
     >>> p.writethrough
     False
-    
+
     >>> p.writethrough = 100
     >>> p.writethrough
     True
-    
+
     >>> p.writethrough = False
     >>> p.writethrough
-    False    
+    False
 
     >>> '%.2f' % p.fill_factor
     '0.70'
@@ -224,30 +224,30 @@ Test property setting
 
     >>> p.tpr_horizon
     20.0
-    
+
     >>> '%.2f' % p.reinsert_factor
     '0.30'
 
     >>> p.filename
     ''
-    
+
     >>> p.filename = 'testing123testing'
     >>> p.filename
     'testing123testing'
-    
+
     >>> p.dat_extension
     'dat'
 
-    >>> p.dat_extension = 'data'
+    >>> p.dat_extension = r'data'
     >>> p.dat_extension
     'data'
-    
+
     >>> p.idx_extension
     'idx'
     >>> p.idx_extension = 'index'
     >>> p.idx_extension
     'index'
-    
+
     >>> p.index_id
     Traceback (most recent call last):
     ...
