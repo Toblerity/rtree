@@ -111,7 +111,6 @@ if os.name == 'nt':
         raise OSError("could not find or load spatialindex_c.dll")
 
 elif os.name == 'posix':
-    platform = os.uname()[0]
     if 'SPATIALINDEX_C_LIBRARY' in os.environ:
         lib_name = os.environ['SPATIALINDEX_C_LIBRARY']
     else:
@@ -149,7 +148,7 @@ NEXTFUNC = ctypes.CFUNCTYPE(ctypes.c_int,
                             ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
                             ctypes.POINTER(ctypes.c_uint32),
                             ctypes.POINTER(ctypes.POINTER(ctypes.c_ubyte)),
-                            ctypes.POINTER(ctypes.c_size_t))
+                            ctypes.POINTER(ctypes.c_uint32))
 
 rt.Index_CreateWithStream.argtypes = [ctypes.c_void_p, NEXTFUNC]
 rt.Index_CreateWithStream.restype = ctypes.c_void_p

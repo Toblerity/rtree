@@ -694,7 +694,6 @@ class Index(object):
                 # we're done
                 return -1
 
-            # set the id
             if self.interleaved:
                 coordinates = Index.deinterleave(coordinates)
 
@@ -865,7 +864,14 @@ class Handle(object):
         return self._ptr
 
     def __del__(self):
-        self.destroy()
+        try:
+            self.destroy()
+        except NameError:
+            # The core.py model doesn't have
+            # core.rt available anymore and it was tore
+            # down. We don't want to try to do anything
+            # in that instance
+            return
 
 
 class IndexHandle(Handle):
