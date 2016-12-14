@@ -11,8 +11,9 @@ class RTreeError(Exception):
 def check_return(result, func, cargs):
     "Error checking for Error calls"
     if result != 0:
+        s = rt.Error_GetLastErrorMsg().decode()
         msg = 'LASError in "%s": %s' % \
-            (func.__name__, rt.Error_GetLastErrorMsg())
+            (func.__name__, s)
         rt.Error_Reset()
         raise RTreeError(msg)
     return True
@@ -21,7 +22,8 @@ def check_return(result, func, cargs):
 def check_void(result, func, cargs):
     "Error checking for void* returns"
     if not bool(result):
-        msg = 'Error in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg())
+        s = rt.Error_GetLastErrorMsg().decode()
+        msg = 'Error in "%s": %s' % (func.__name__, s)
         rt.Error_Reset()
         raise RTreeError(msg)
     return result
@@ -30,7 +32,8 @@ def check_void(result, func, cargs):
 def check_void_done(result, func, cargs):
     "Error checking for void* returns that might be empty with no error"
     if rt.Error_GetErrorCount():
-        msg = 'Error in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg())
+        s = rt.Error_GetLastErrorMsg().decode()
+        msg = 'Error in "%s": %s' % (func.__name__, s)
         rt.Error_Reset()
         raise RTreeError(msg)
     return result
@@ -40,7 +43,8 @@ def check_value(result, func, cargs):
     "Error checking proper value returns"
     count = rt.Error_GetErrorCount()
     if count != 0:
-        msg = 'Error in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg())
+        s = rt.Error_GetLastErrorMsg().decode()
+        msg = 'Error in "%s": %s' % (func.__name__, s)
         rt.Error_Reset()
         raise RTreeError(msg)
     return result
@@ -50,7 +54,8 @@ def check_value_free(result, func, cargs):
     "Error checking proper value returns"
     count = rt.Error_GetErrorCount()
     if count != 0:
-        msg = 'Error in "%s": %s' % (func.__name__, rt.Error_GetLastErrorMsg())
+        s = rt.Error_GetLastErrorMsg().decode()
+        msg = 'Error in "%s": %s' % (func.__name__, s)
         rt.Error_Reset()
         raise RTreeError(msg)
     return result
