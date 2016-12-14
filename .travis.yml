@@ -1,19 +1,20 @@
+dist: trusty
+sudo: true
+
 language: python
 
 python:
-  - 2.6
   - 2.7
   - 3.3
   - 3.4
   - 3.5
 
 before_install:
-  - sudo add-apt-repository -y ppa:ubuntugis/ppa
   - sudo apt-get update
-  - sudo apt-get install libspatialindex-dev libspatialindex1
+  - sudo apt-get install libspatialindex-dev
 
 install:
   - pip install -e .
 
 script:
-  - py.test tests/test_doctests.py tests/test_index.py tests/test_pickle.py
+  - py.test

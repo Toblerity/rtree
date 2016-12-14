@@ -5,6 +5,10 @@ Examples
 
     >>> from rtree import index
     >>> from rtree.index import Rtree
+    >>> import sys;
+    >>> sys.path.insert(0, './tests')
+    >>> from data import boxes15, boxes3, points
+    >>>
 
 Ensure libspatialindex version is >= 1.7.0
 
