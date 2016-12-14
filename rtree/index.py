@@ -248,10 +248,10 @@ class Index(object):
         else:
             self.properties.storage = RT_Memory
 
-        try:
-            self.properties.pagesize = int(kwargs['pagesize'])
-        except KeyError:
-            pass
+
+        ps = kwargs.get('pagesize', None)
+        if ps:
+            self.properties.pagesize = int(ps)
 
         if stream:
             self.handle = self._create_idx_from_stream(stream)
@@ -1444,8 +1444,8 @@ class RtreeContainer(Rtree):
             This object sets both the creation and instantiation properties
             for the object and they are passed down into libspatialindex.
             A few properties are curried from instantiation parameters
-            for you like ``pagesize`` to ensure compatibility with previous 
-            versions of the library.  All other properties must be set on the 
+            for you like ``pagesize`` to ensure compatibility with previous
+            versions of the library.  All other properties must be set on the
             object.
 
         .. warning::
@@ -1468,7 +1468,7 @@ class RtreeContainer(Rtree):
 
         Insert an item into the index::
 
-            >>> idx.insert(object(), (34.3776829412, 26.7375853734, 
+            >>> idx.insert(object(), (34.3776829412, 26.7375853734,
             49.3776829412, 41.7375853734))
 
         Query::
@@ -1485,7 +1485,7 @@ class RtreeContainer(Rtree):
             if isinstance(args[0], rtree.index.string_types) \
                     or isinstance(args[0], bytes) \
                     or isinstance(args[0], rtree.index.ICustomStorage):
-                raise ValueError('%s supports only in-memory indexes' 
+                raise ValueError('%s supports only in-memory indexes'
                                  % self.__class__)
         self._objects = {}
         return super(RtreeContainer, self).__init__(*args, **kwargs)
@@ -1503,12 +1503,12 @@ class RtreeContainer(Rtree):
             each dimension defining the bounds of the query window.
 
         The following example inserts a simple object into the container.
-        The coordinate ordering in this instance is the default 
+        The coordinate ordering in this instance is the default
         (interleaved=True) ordering::
 
             >>> from rtree import index
             >>> idx = index.RTreeContainer()
-            >>> idx.insert(object(), (34.3776829412, 26.7375853734, 
+            >>> idx.insert(object(), (34.3776829412, 26.7375853734,
             49.3776829412, 41.7375853734))
 
         """
@@ -1532,7 +1532,7 @@ class RtreeContainer(Rtree):
             each dimension defining the bounds of the query window.
 
         :param bbox: True or False
-            If True, the intersection method will return the stored objects, 
+            If True, the intersection method will return the stored objects,
             as well as the bounds of the entry.
 
         The following example queries the container for any stored objects that
@@ -1540,13 +1540,13 @@ class RtreeContainer(Rtree):
 
             >>> from rtree import index
             >>> idx = index.RtreeContainer()
-            >>> idx.insert(object(), (34.3776829412, 26.7375853734, 
+            >>> idx.insert(object(), (34.3776829412, 26.7375853734,
             49.3776829412, 41.7375853734))
 
             >>> hits = list(idx.intersection((0, 0, 60, 60), bbox=True))
-            >>> [(item.object, item.bbox) 
+            >>> [(item.object, item.bbox)
             ...  for item in hits]   # doctest: +ELLIPSIS
-            [(<object object at 0x...>, [34.3776829412, 26.7375853734, 
+            [(<object object at 0x...>, [34.3776829412, 26.7375853734,
             49.3776829412, 41.7375853734])]
 
         If the :class:`rtree.index.Item` wrapper is not used, it is faster to
@@ -1557,11 +1557,11 @@ class RtreeContainer(Rtree):
 
         """
         if bbox == False:
-            for id in super(RtreeContainer, 
+            for id in super(RtreeContainer,
                             self).intersection(coordinates, bbox):
                 yield self._objects[id][1]
         elif bbox == True:
-            for value in super(RtreeContainer, 
+            for value in super(RtreeContainer,
                                self).intersection(coordinates, bbox):
                 value.object = self._objects[value.id][1]
                 value.id = None
@@ -1597,11 +1597,11 @@ class RtreeContainer(Rtree):
             >>> hits = idx.nearest((0, 0, 10, 10), 3, bbox=True)
         """
         if bbox == False:
-            for id in super(RtreeContainer, 
+            for id in super(RtreeContainer,
                             self).nearest(coordinates, num_results, bbox):
                 yield self._objects[id][1]
         elif bbox == True:
-            for value in super(RtreeContainer, 
+            for value in super(RtreeContainer,
                                self).nearest(coordinates, num_results, bbox):
                 value.object = self._objects[value.id][1]
                 value.id = None
@@ -1611,7 +1611,7 @@ class RtreeContainer(Rtree):
                 "valid values for the bbox argument are True and False")
 
     def delete(self, obj, coordinates):
-        """Deletes the item from the container within the specified 
+        """Deletes the item from the container within the specified
         coordinates.
 
         :param obj: object
@@ -1631,7 +1631,7 @@ class RtreeContainer(Rtree):
 
             >>> from rtree import index
             >>> idx = index.RtreeContainer()
-            >>> idx.delete(object(), (34.3776829412, 26.7375853734, 
+            >>> idx.delete(object(), (34.3776829412, 26.7375853734,
             49.3776829412, 41.7375853734))
 
         """
@@ -1646,7 +1646,7 @@ class RtreeContainer(Rtree):
         return super(RtreeContainer, self).delete(id, coordinates)
 
     def leaves(self):
-        return [(self._objects[id][1], [self._objects[child_id][1] 
+        return [(self._objects[id][1], [self._objects[child_id][1]
                                         for child_id in child_ids], bounds)
                 for id, child_ids, bounds
                 in super(RtreeContainer, self).leaves()]
