@@ -8,7 +8,7 @@ Examples
 
 Ensure libspatialindex version is >= 1.7.0
 
-    >>> index.__c_api_version__.split('.')[1] >= 7
+    >>> int(index.__c_api_version__.decode('UTF-8').split('.')[1]) >= 7
     True
 
 Make an instance, index stored in memory
@@ -148,10 +148,10 @@ Page size 3
 
 Test invalid name
 
-    >>> inv = Rtree("bogus/foo")
+    >>> inv = Rtree("bogus/foo")  #doctest: +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
     ...
-    IOError: Unable to open file 'bogus/foo.idx' for index storage
+    OSError: Unable to open file 'bogus/foo.idx' for index storage
 
 Load a persisted index
 
@@ -294,8 +294,8 @@ Note the arguments to intersection must be xmin, xmax, ymin, ymax for interleave
     >>> len(hits)
     10
 
-    >>> strm_idx.count((0, 60, 0, 60))
-    10L
+    >>> int(strm_idx.count((0, 60, 0, 60)))
+    10
 
     >>> del strm_idx
 

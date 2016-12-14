@@ -3,6 +3,8 @@ import unittest
 import glob
 import os
 
+doctest.IGNORE_EXCEPTION_DETAIL
+
 # from zope.testing import doctest
 from rtree.index import major_version, minor_version  # , patch_version
 

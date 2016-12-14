@@ -8,19 +8,19 @@ Adding with bogus bounds
 
   >>> import rtree
   >>> index = rtree.Rtree()
-  >>> index.add(1, (0.0, 0.0, -1.0, 1.0))
+  >>> index.add(1, (0.0, 0.0, -1.0, 1.0))  #doctest: +IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   RTreeError: Coordinates must not have minimums more than maximums
-  
-  >>> index.intersection((0.0, 0.0, -1.0, 1.0))
+
+  >>> index.intersection((0.0, 0.0, -1.0, 1.0))  #doctest: +IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   RTreeError: Coordinates must not have minimums more than maximums
-  
+
 Adding with invalid bounds argument should raise an exception
 
-  >>> index.add(1, 1)
+  >>> index.add(1, 1)  #doctest: +IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   TypeError: Bounds must be a sequence
