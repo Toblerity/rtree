@@ -12,7 +12,7 @@ python:
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get install libspatialindex-dev libspatialindex1
+  - sudo apt-get install libspatialindex-dev
 
 install:
   - pip install -e .
