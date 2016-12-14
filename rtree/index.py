@@ -16,6 +16,13 @@ if sys.version_info[0] == 2:
 elif sys.version_info[0] == 3:
     string_types = str
 
+
+def string_output(s):
+    if sys.version_info[0] == 2:
+        return s
+    elif sys.version_info[0] == 3:
+        return s.decode('UTF-8')
+
 RT_Memory = 0
 RT_Disk = 1
 RT_Custom = 2
@@ -204,7 +211,7 @@ class Index(object):
             self.properties.filename = basename
 
             # check we can read the file
-            f = basename + "." + self.properties.idx_extension.decode("utf-8")
+            f = basename + "." + self.properties.idx_extension
             p = os.path.abspath(f)
 
             # assume if the file exists, we're not going to overwrite it
@@ -225,7 +232,7 @@ class Index(object):
             d = os.path.dirname(p)
             if not os.access(d, os.W_OK):
                 message = "Unable to open file '%s' for index storage" % f
-                raise IOError(message)
+                raise OSError(message)
         elif storage:
             if (major_version < 2 and minor_version < 8):
                 raise core.RTreeError(
@@ -1156,7 +1163,8 @@ class Property(object):
     """Reinsert factor"""
 
     def get_filename(self):
-        return core.rt.IndexProperty_GetFileName(self.handle)
+        s = core.rt.IndexProperty_GetFileName(self.handle)
+        return string_output(s)
 
     def set_filename(self, value):
         if isinstance(value, string_types):
@@ -1167,7 +1175,8 @@ class Property(object):
     """Index filename for disk storage"""
 
     def get_dat_extension(self):
-        return core.rt.IndexProperty_GetFileNameExtensionDat(self.handle)
+        s = core.rt.IndexProperty_GetFileNameExtensionDat(self.handle)
+        return string_output(s)
 
     def set_dat_extension(self, value):
         if isinstance(value, string_types):
@@ -1179,7 +1188,8 @@ class Property(object):
     """Extension for .dat file"""
 
     def get_idx_extension(self):
-        return core.rt.IndexProperty_GetFileNameExtensionIdx(self.handle)
+        s = core.rt.IndexProperty_GetFileNameExtensionIdx(self.handle)
+        return string_output(s)
 
     def set_idx_extension(self, value):
         if isinstance(value, string_types):
