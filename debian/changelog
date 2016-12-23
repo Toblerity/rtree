@@ -1,0 +1,35 @@
+rtree (0.8.0-0~trusty1) trusty; urgency=low
+
+  * Ported to Trusty.
+
+ -- Angelos Tzotsos <gcpp.kalxas@gmail.com>  Sat, 02 Aug 2014 19:56:00 +0200
+
+rtree (0.6.0-4) lucid; urgency=medium
+
+  * Fixed rules file for python 2.6+ installs (remove hard-coded site-packages dir)
+
+ -- Craig de Stigter <craig.ds@gmail.com>  Mon, 07 Mar 2011 16:40:56 +1300
+
+rtree (0.6.0-3) lucid; urgency=medium
+
+  * Switch to dpkg-source 3.0 (quilt) format
+
+ -- Craig de Stigter <craig.ds@gmail.com>  Mon, 07 Mar 2011 16:10:50 +1300
+
+rtree (0.6.0-2) lucid; urgency=medium
+
+  * Fixed spatialindex library name
+
+ -- Craig de Stigter <craig.ds@gmail.com>  Mon, 07 Mar 2011 16:10:25 +1300
+
+rtree (0.6.0-1) lucid; urgency=medium
+
+  * Upgraded to new upstream
+
+ -- Craig de Stigter <craig.ds@gmail.com>  Mon, 07 Mar 2011 13:02:14 +1300
+
+rtree (0.4.1-2~otm4) unstable; urgency=low
+
+  * source package automatically created by stdeb 0.2.3
+
+ -- Sean Gillies <sgillies@frii.com>  Wed, 11 Mar 2009 15:34:17 +1300
