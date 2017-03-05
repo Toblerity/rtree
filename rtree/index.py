@@ -154,8 +154,10 @@ class Index(object):
 
         Insert an item into the index::
 
-            >>> idx.insert(4321, (34.3776829412, 26.7375853734, 49.3776829412,
-            41.7375853734), obj=42)
+            >>> idx.insert(4321,
+            ...            (34.3776829412, 26.7375853734, 49.3776829412,
+            ...             41.7375853734),
+            ...            obj=42)
 
         Query::
 
@@ -164,9 +166,9 @@ class Index(object):
             ...     if i.id == 4321:
             ...         i.object
             ...         i.bbox
+            ... # doctest: +ELLIPSIS
             42
-            [34.3776829412, 26.737585373400002, 49.3776829412,
-            41.737585373400002]
+            [34.37768294..., 26.73758537..., 49.37768294..., 41.73758537...]
 
 
         Using custom serializers::
@@ -180,10 +182,13 @@ class Index(object):
             ...     )
 
             >>> json_idx = JSONIndex()
-            >>> json_idx.insert(1, (0, 1, 0, 1), {"nums": [23, 45],
-            "letters": "abcd"})
-            >>> list(json_idx.nearest((0, 0), 1, objects="raw"))
-            [{'letters': 'abcd', 'nums': [23, 45]}]
+            >>> json_idx.insert(1, (0, 1, 0, 1),
+            ...                 {"nums": [23, 45], "letters": "abcd"})
+            >>> for obj in json_idx.nearest((0, 0), 1, objects="raw"):
+            ...     for k in sorted(obj):
+            ...         print(k, obj[k])
+            letters abcd
+            nums [23, 45]
 
         """
         self.properties = kwargs.get('properties', Property())
@@ -365,8 +370,10 @@ class Index(object):
 
             >>> from rtree import index
             >>> idx = index.Index()
-            >>> idx.insert(4321, (34.3776829412, 26.7375853734, 49.3776829412,
-            41.7375853734), obj=42)
+            >>> idx.insert(4321,
+            ...            (34.3776829412, 26.7375853734, 49.3776829412,
+            ...             41.7375853734),
+            ...            obj=42)
 
         """
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
@@ -394,8 +401,10 @@ class Index(object):
 
             >>> from rtree import index
             >>> idx = index.Index()
-            >>> idx.insert(4321, (34.3776829412, 26.7375853734, 49.3776829412,
-            41.7375853734), obj=42)
+            >>> idx.insert(4321,
+            ...            (34.3776829412, 26.7375853734, 49.3776829412,
+            ...             41.7375853734),
+            ...            obj=42)
 
             >>> idx.count((0, 0, 60, 60))
             1
@@ -435,13 +444,16 @@ class Index(object):
 
             >>> from rtree import index
             >>> idx = index.Index()
-            >>> idx.insert(4321, (34.3776829412, 26.7375853734, 49.3776829412,
-            41.7375853734), obj=42)
+            >>> idx.insert(4321,
+            ...            (34.3776829412, 26.7375853734, 49.3776829412,
+            ...             41.7375853734),
+            ...            obj=42)
 
             >>> hits = list(idx.intersection((0, 0, 60, 60), objects=True))
             >>> [(item.object, item.bbox) for item in hits if item.id == 4321]
-            [(42, [34.3776829412, 26.737585373400002, 49.3776829412,
-            41.737585373400002])]
+            ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+            [(42, [34.37768294..., 26.73758537..., 49.37768294...,
+                   41.73758537...])]
 
         If the :class:`rtree.index.Item` wrapper is not used, it is faster to
         request the 'raw' objects::
@@ -623,8 +635,9 @@ class Index(object):
 
             >>> from rtree import index
             >>> idx = index.Index()
-            >>> idx.delete(4321, (34.3776829412, 26.7375853734, 49.3776829412,
-            41.7375853734))
+            >>> idx.delete(4321,
+            ...            (34.3776829412, 26.7375853734, 49.3776829412,
+            ...             41.7375853734))
 
         """
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
@@ -1477,22 +1490,22 @@ class RtreeContainer(Rtree):
 
             >>> idx = index.RtreeContainer(properties=p)
             >>> idx  # doctest: +ELLIPSIS
-            <rtree.index.Rtree object at 0x...>
+            <rtree.index.RtreeContainer object at 0x...>
 
         Insert an item into the index::
 
-            >>> idx.insert(object(), (34.3776829412, 26.7375853734,
-            49.3776829412, 41.7375853734))
+            >>> idx.insert(object(),
+            ...            (34.3776829412, 26.7375853734, 49.3776829412,
+            ...             41.7375853734))
 
         Query::
 
-            >>> hits = idx.intersection((0, 0, 60, 60))
+            >>> hits = idx.intersection((0, 0, 60, 60), bbox=True)
             >>> for obj in hits:
-            ...     i.object
-            ...     i.bbox  # doctest: +ELLIPSIS
+            ...     obj.object
+            ...     obj.bbox  # doctest: +ELLIPSIS
             <object object at 0x...>
-            [34.3776829412, 26.737585373400002, 49.3776829412,
-            41.737585373400002]
+            [34.37768294..., 26.73758537..., 49.37768294..., 41.73758537...]
         """
         if args:
             if isinstance(args[0], rtree.index.string_types) \
@@ -1520,9 +1533,10 @@ class RtreeContainer(Rtree):
         (interleaved=True) ordering::
 
             >>> from rtree import index
-            >>> idx = index.RTreeContainer()
-            >>> idx.insert(object(), (34.3776829412, 26.7375853734,
-            49.3776829412, 41.7375853734))
+            >>> idx = index.RtreeContainer()
+            >>> idx.insert(object(),
+            ...            (34.3776829412, 26.7375853734, 49.3776829412,
+            ...             41.7375853734))
 
         """
         try:
@@ -1553,12 +1567,13 @@ class RtreeContainer(Rtree):
 
             >>> from rtree import index
             >>> idx = index.RtreeContainer()
-            >>> idx.insert(object(), (34.3776829412, 26.7375853734,
-            49.3776829412, 41.7375853734))
+            >>> idx.insert(object(),
+            ...            (34.3776829412, 26.7375853734, 49.3776829412,
+            ...             41.7375853734))
 
             >>> hits = list(idx.intersection((0, 0, 60, 60), bbox=True))
-            >>> [(item.object, item.bbox)
-            ...  for item in hits]   # doctest: +ELLIPSIS
+            >>> [(item.object, item.bbox) for item in hits]
+            ... # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
             [(<object object at 0x...>, [34.3776829412, 26.7375853734,
             49.3776829412, 41.7375853734])]
 
@@ -1644,8 +1659,12 @@ class RtreeContainer(Rtree):
 
             >>> from rtree import index
             >>> idx = index.RtreeContainer()
-            >>> idx.delete(object(), (34.3776829412, 26.7375853734,
-            49.3776829412, 41.7375853734))
+            >>> idx.delete(object(),
+            ...            (34.3776829412, 26.7375853734, 49.3776829412,
+            ...             41.7375853734))
+            Traceback (most recent call last):
+             ...
+            IndexError: object is not in the index
 
         """
         try:
