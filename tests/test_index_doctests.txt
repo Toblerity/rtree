@@ -3,11 +3,11 @@
 Examples
 ..............................................................................
 
+    >>> import numpy as np
     >>> from rtree import index
     >>> from rtree.index import Rtree
-    >>> import sys;
-    >>> sys.path.insert(0, './tests')
-    >>> from data import boxes15
+    >>>
+    >>> boxes15 = np.genfromtxt('boxes_15x15.data')
     >>>
 
 Ensure libspatialindex version is >= 1.7.0
