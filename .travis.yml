@@ -18,3 +18,4 @@ install:
 
 script:
   - py.test
+  - py.test --doctest-modules rtree
