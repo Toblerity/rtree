@@ -173,22 +173,26 @@ class Index(object):
 
         Using custom serializers::
 
-            >>> import simplejson
             >>> class JSONIndex(index.Index):
-            ...     dumps = staticmethod(
-            ...         lambda obj: simplejson.dumps(obj).encode('ascii'))
-            ...     loads = staticmethod(
-            ...         lambda string: simplejson.loads(string.decode('ascii'))
-            ...     )
+            ...     def dumps(self, obj):
+            ...         # This import is nested so that the doctest doesn't
+            ...         # require simplejson.
+            ...         import simplejson
+            ...         return simplejson.dumps(obj).encode('ascii')
+            ...
+            ...     def loads(self, string):
+            ...         import simplejson
+            ...         return simplejson.loads(string.decode('ascii'))
 
+            >>> stored_obj = {"nums": [23, 45], "letters": "abcd"}
             >>> json_idx = JSONIndex()
-            >>> json_idx.insert(1, (0, 1, 0, 1),
-            ...                 {"nums": [23, 45], "letters": "abcd"})
-            >>> for obj in json_idx.nearest((0, 0), 1, objects="raw"):
-            ...     for k in sorted(obj):
-            ...         print(k, obj[k])
-            letters abcd
-            nums [23, 45]
+            >>> try:
+            ...     json_idx.insert(1, (0, 1, 0, 1), stored_obj)
+            ...     list(json_idx.nearest((0, 0), 1,
+            ...                           objects="raw")) == [stored_obj]
+            ... except ImportError:
+            ...     True
+            True
 
         """
         self.properties = kwargs.get('properties', Property())
