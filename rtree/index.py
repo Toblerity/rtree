@@ -410,7 +410,7 @@ class Index(object):
             ...             41.7375853734),
             ...            obj=42)
 
-            >>> idx.count((0, 0, 60, 60))
+            >>> print(idx.count((0, 0, 60, 60)))
             1
 
         """
