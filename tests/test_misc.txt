@@ -13,8 +13,8 @@ the default serializer is pickle, can use any by overriding dumps, loads
     >>> some_data = {"a": 22, "b": [1, "ccc"]}
     >>> try:
     ...     import simplejson
-    ...     r.dumps = simplejson.dumps
-    ...     r.loads = simplejson.loads
+    ...     r.dumps = lambda obj: simplejson.dumps(obj).encode('ascii')
+    ...     r.loads = lambda string: simplejson.loads(string.decode('ascii'))
     ...     r.add(0, (0, 0, 1, 1), some_data)
     ...     list(r.nearest((0, 0), 1, objects="raw"))[0] == some_data
     ... except ImportError:

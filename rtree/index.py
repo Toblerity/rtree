@@ -173,8 +173,11 @@ class Index(object):
 
             >>> import simplejson
             >>> class JSONIndex(index.Index):
-            ...     dumps = staticmethod(simplejson.dumps)
-            ...     loads = staticmethod(simplejson.loads)
+            ...     dumps = staticmethod(
+            ...         lambda obj: simplejson.dumps(obj).encode('ascii'))
+            ...     loads = staticmethod(
+            ...         lambda string: simplejson.loads(string.decode('ascii'))
+            ...     )
 
             >>> json_idx = JSONIndex()
             >>> json_idx.insert(1, (0, 1, 0, 1), {"nums": [23, 45],
