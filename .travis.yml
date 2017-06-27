@@ -17,5 +17,4 @@ install:
   - pip install -e .
 
 script:
-  - py.test
-  - py.test --doctest-modules rtree
+  - pytest --doctest-modules rtree tests/test_*
