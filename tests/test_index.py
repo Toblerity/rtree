@@ -1,8 +1,8 @@
 import unittest
 
-from rtree import index
+import numpy as np
 
-from .data import boxes15
+from rtree import index
 
 
 class IndexTests(unittest.TestCase):
@@ -16,6 +16,7 @@ class IndexTests(unittest.TestCase):
 
 
 def boxes15_stream(interleaved=True):
+    boxes15 = np.genfromtxt('boxes_15x15.data')
     for i, (minx, miny, maxx, maxy) in enumerate(boxes15):
         if interleaved:
             yield (i, (minx, miny, maxx, maxy), 42)
