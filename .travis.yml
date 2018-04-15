@@ -15,6 +15,7 @@ addons:
       - libspatialindex-dev
 
 install:
+  - pip install pytest
   - pip install -e .
 
 script:
