@@ -18,4 +18,4 @@ install:
   - pip install -e .
 
 script:
-  - pytest --doctest-modules rtree tests/test_*
+  - python -m pytest --doctest-modules rtree tests/test_*
