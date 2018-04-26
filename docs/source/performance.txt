@@ -19,10 +19,10 @@ be pre-sorted
 
 :: 
 
-   >>> def generator_function():
+   >>> def generator_function(somedata):
    ...    for i, obj in enumerate(somedata):
    ...        yield (i, (obj.xmin, obj.ymin, obj.xmax, obj.ymax), obj)
-   >>> r = index.Index(generator_function())
+   >>> r = index.Index(generator_function(somedata))
 
 After bulk loading the index, you can then insert additional records into 
 the index using :py:meth:`~rtree.index.Index.insert`
