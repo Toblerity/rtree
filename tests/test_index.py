@@ -22,3 +22,20 @@ def boxes15_stream(interleaved=True):
             yield (i, (minx, miny, maxx, maxy), 42)
         else:
             yield (i, (minx, maxx, miny, maxy), 42)
+
+
+class ExceptionTests(unittest.TestCase):
+    def test_exception_in_generator(self):
+        """Assert exceptions raised in callbacks are raised in main thread"""
+        class TestException(Exception):
+            pass
+
+        def create_index():
+            def gen():
+                # insert at least 6 or so before the exception
+                for i in range(10):
+                    yield (i, (1,2,3,4), None)
+                raise TestException("raising here")
+            return index.Index(gen())
+
+        self.assertRaises(TestException, create_index)
