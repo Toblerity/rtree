@@ -273,7 +273,10 @@ class Index(object):
             self.properties.pagesize = int(ps)
 
         if stream:
+            self._exception = None
             self.handle = self._create_idx_from_stream(stream)
+            if self._exception:
+                raise self._exception
         else:
             self.handle = IndexHandle(self.properties.handle)
 
@@ -719,6 +722,9 @@ class Index(object):
                 p_id[0], coordinates, obj = next(stream_iter)
             except StopIteration:
                 # we're done
+                return -1
+            except Exception as exc:
+                self._exception = exc
                 return -1
 
             if self.interleaved:
