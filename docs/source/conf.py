@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Rtree'
-copyright = u'2011, Howard Butler, Brent Pedersen, Sean Gilles, and others.'
+copyright = u'2018, Sean Gilles, Howard Butler, and contributors.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
