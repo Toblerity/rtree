@@ -45,7 +45,7 @@ def test_container():
     # Intersection with bbox
     obj = objects[10]
     results = container.intersection(boxes15[10], bbox=True)
-    result, *_ = [result for result in results if result.object is obj]
+    result = [result for result in results if result.object is obj][0]
     assert np.array_equal(result.bbox, boxes15[10])
 
     # Nearest
@@ -56,5 +56,5 @@ def test_container():
     # Nearest with bbox
     obj = objects[8]
     results = container.nearest(boxes15[8], bbox=True)
-    result, *_ = [result for result in results if result.object is obj]
+    result = [result for result in results if result.object is obj][0]
     assert np.array_equal(result.bbox, boxes15[8])
