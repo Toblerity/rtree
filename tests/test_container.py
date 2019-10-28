@@ -58,3 +58,6 @@ def test_container():
     results = container.nearest(boxes15[8], bbox=True)
     result = [result for result in results if result.object is obj][0]
     assert np.array_equal(result.bbox, boxes15[8])
+
+    # Test iter method
+    assert objects[12] in set(container)

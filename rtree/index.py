@@ -1532,6 +1532,9 @@ class RtreeContainer(Rtree):
     def __len__(self):
         return sum(count for count, obj in self._objects.values())
 
+    def __iter__(self):
+        return iter(obj for count, obj in self._objects.values())
+
     def insert(self, obj, coordinates):
         """Inserts an item into the index with the given coordinates.
 
