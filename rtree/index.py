@@ -396,7 +396,7 @@ class Index(object):
 
         """
         if self.properties.type == RT_TPRTree:
-            return self._insertTP(id, *coordinates, obj)
+            return self._insertTP(id, *coordinates, obj=obj)
 
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         data = ctypes.c_ubyte(0)
@@ -519,7 +519,7 @@ class Index(object):
 
         """
         if self.properties.type == RT_TPRTree:
-            return self._intersectionTP(*coordinates, objects)
+            return self._intersectionTP(*coordinates, objects=objects)
         if objects:
             return self._intersection_obj(coordinates, objects)
 
@@ -661,7 +661,7 @@ class Index(object):
             >>> hits = idx.nearest((0, 0, 10, 10), 3, objects=True)
         """
         if self.properties.type == RT_TPRTree:
-            return self._nearestTP(self, *coordinates, objects)
+            return self._nearestTP(*coordinates, objects=objects)
 
         if objects:
             return self._nearest_obj(coordinates, num_results, objects)
