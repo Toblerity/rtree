@@ -272,13 +272,16 @@ class Index(object):
         if ps:
             self.properties.pagesize = int(ps)
 
-        if stream:
+        if stream and self.properties.type == RT_RTree:
             self._exception = None
             self.handle = self._create_idx_from_stream(stream)
             if self._exception:
                 raise self._exception
         else:
             self.handle = IndexHandle(self.properties.handle)
+            if stream:  # Bulk insert not supported, so add one by one
+                for item in stream:
+                    self.insert(*item)
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -342,6 +345,15 @@ class Index(object):
 
         return (p_mins, p_maxs)
 
+    @staticmethod
+    def _get_time_doubles(times):
+        if times[0] > times[1]:
+            raise core.RTreeError(
+                "Start time must be less than end time")
+        t_start = ctypes.c_double(times[0])
+        t_end = ctypes.c_double(times[1])
+        return t_start, t_end
+
     def _serialize(self, obj):
         serialized = self.dumps(obj)
         size = len(serialized)
@@ -383,6 +395,9 @@ class Index(object):
             ...            obj=42)
 
         """
+        if self.properties.type == RT_TPRTree:
+            return self._insertTP(id, *coordinates, obj)
+
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         data = ctypes.c_ubyte(0)
         size = 0
@@ -392,6 +407,19 @@ class Index(object):
         core.rt.Index_InsertData(self.handle, id, p_mins, p_maxs,
                                  self.properties.dimension, data, size)
     add = insert
+
+    def _insertTP(self, id, coordinates, velocities, time, obj=None):
+        p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
+        pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
+        # End time isn't used
+        t_start, t_end = self._get_time_doubles((time, time+1))
+        data = ctypes.c_ubyte(0)
+        size = 0
+        if obj is not None:
+            size, data, _ = self._serialize(obj)
+        core.rt.Index_InsertTPData(self.handle, id, p_mins, p_maxs,
+                                   pv_mins, pv_maxs, t_start, t_end,
+                                   self.properties.dimension, data, size)
 
     def count(self, coordinates):
         """Return number of objects that intersect the given coordinates.
@@ -417,6 +445,8 @@ class Index(object):
             1
 
         """
+        if self.properties.type == RT_TPRTree:
+            return self._countTP(*coordinates)
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
 
         p_num_results = ctypes.c_uint64(0)
@@ -426,6 +456,25 @@ class Index(object):
                                        p_maxs,
                                        self.properties.dimension,
                                        ctypes.byref(p_num_results))
+
+        return p_num_results.value
+
+    def _countTP(self, coordinates, velocities, times):
+        p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
+        pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
+        t_start, t_end = self._get_time_doubles(times)
+
+        p_num_results = ctypes.c_uint64(0)
+
+        core.rt.Index_TPIntersects_count(self.handle,
+                                         p_mins,
+                                         p_maxs,
+                                         pv_mins,
+                                         pv_maxs,
+                                         t_start,
+                                         t_end,
+                                         self.properties.dimension,
+                                         ctypes.byref(p_num_results))
 
         return p_num_results.value
 
@@ -469,7 +518,8 @@ class Index(object):
             [42]
 
         """
-
+        if self.properties.type == RT_TPRTree:
+            return self._intersectionTP(*coordinates, objects)
         if objects:
             return self._intersection_obj(coordinates, objects)
 
@@ -486,6 +536,30 @@ class Index(object):
                                     ctypes.byref(it),
                                     ctypes.byref(p_num_results))
         return self._get_ids(it, p_num_results.value)
+
+    def _intersectionTP(self, coordinates, velocities, times, objects=False):
+
+        p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
+        pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
+        t_start, t_end = self._get_time_doubles(times)
+
+        p_num_results = ctypes.c_uint64(0)
+
+        if objects:
+            call = core.rt.Index_TPIntersects_obj
+            it = ctypes.pointer(ctypes.c_void_p())
+        else:
+            call = core.rt.Index_TPIntersects_id
+            it = ctypes.pointer(ctypes.c_int64())
+
+        call(self.handle, p_mins, p_maxs, pv_mins, pv_maxs, t_start, t_end,
+             self.properties.dimension, ctypes.byref(it),
+             ctypes.byref(p_num_results))
+
+        if objects:
+            return self._get_objects(it, p_num_results.value, objects)
+        else:
+            return self._get_ids(it, p_num_results.value)
 
     def _intersection_obj(self, coordinates, objects):
 
@@ -586,6 +660,9 @@ class Index(object):
             >>> idx.insert(4321, (34.37, 26.73, 49.37, 41.73), obj=42)
             >>> hits = idx.nearest((0, 0, 10, 10), 3, objects=True)
         """
+        if self.properties.type == RT_TPRTree:
+            return self._nearestTP(self, *coordinates, objects)
+
         if objects:
             return self._nearest_obj(coordinates, num_results, objects)
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
@@ -602,6 +679,29 @@ class Index(object):
                                           p_num_results)
 
         return self._get_ids(it, p_num_results.contents.value)
+
+    def _nearestTP(self, coordinates, velocities, times, num_results=1,
+                  objects=False):
+        p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
+        pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
+        t_start, t_end = self._get_time_doubles(times)
+
+        p_num_results = ctypes.pointer(ctypes.c_uint64(num_results))
+
+        if objects:
+            it = ctypes.pointer(ctypes.c_void_p())
+            call = core.rt.Index_TPNearestNeighbors_obj
+        else:
+            it = ctypes.pointer(ctypes.c_int64())
+            call = core.rt.Index_TPNearestNeighbors_id
+
+        call(self.handle, p_mins, p_maxs, pv_mins, pv_maxs, t_start, t_end,
+             self.properties.dimension, ctypes.byref(it), p_num_results)
+
+        if objects:
+            return self._get_objects(it, p_num_results.contents.value, objects)
+        else:
+            return self._get_ids(it, p_num_results.contents.value)
 
     def get_bounds(self, coordinate_interleaved=None):
         """Returns the bounds of the index
@@ -647,9 +747,19 @@ class Index(object):
             ...             41.7375853734))
 
         """
+        if self.properties.type == RT_TPRTree:
+            return self._deleteTP(id, *coordinates)
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         core.rt.Index_DeleteData(
             self.handle, id, p_mins, p_maxs, self.properties.dimension)
+
+    def _deleteTP(self, id, coordinates, velocities, times):
+        p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
+        pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
+        t_start, t_end = self._get_time_doubles(times)
+        core.rt.Index_DeleteTPData(
+            self.handle, id, p_mins, p_maxs, pv_mins, pv_maxs, t_start, t_end,
+            self.properties.dimension)
 
     def valid(self):
         return bool(core.rt.Index_IsValid(self.handle))

@@ -175,6 +175,18 @@ rt.Index_DeleteData.argtypes = [ctypes.c_void_p,
 rt.Index_DeleteData.restype = ctypes.c_int
 rt.Index_DeleteData.errcheck = check_return
 
+rt.Index_DeleteTPData.argtypes = [ctypes.c_void_p,
+                                  ctypes.c_int64,
+                                  ctypes.POINTER(ctypes.c_double),
+                                  ctypes.POINTER(ctypes.c_double),
+                                  ctypes.POINTER(ctypes.c_double),
+                                  ctypes.POINTER(ctypes.c_double),
+                                  ctypes.c_double,
+                                  ctypes.c_double,
+                                  ctypes.c_uint32]
+rt.Index_DeleteTPData.restype = ctypes.c_int
+rt.Index_DeleteTPData.errcheck = check_return
+
 rt.Index_InsertData.argtypes = [ctypes.c_void_p,
                                 ctypes.c_int64,
                                 ctypes.POINTER(ctypes.c_double),
@@ -184,6 +196,20 @@ rt.Index_InsertData.argtypes = [ctypes.c_void_p,
                                 ctypes.c_uint32]
 rt.Index_InsertData.restype = ctypes.c_int
 rt.Index_InsertData.errcheck = check_return
+
+rt.Index_InsertTPData.argtypes = [ctypes.c_void_p,
+                                  ctypes.c_int64,
+                                  ctypes.POINTER(ctypes.c_double),
+                                  ctypes.POINTER(ctypes.c_double),
+                                  ctypes.POINTER(ctypes.c_double),
+                                  ctypes.POINTER(ctypes.c_double),
+                                  ctypes.c_double,
+                                  ctypes.c_double,
+                                  ctypes.c_uint32,
+                                  ctypes.POINTER(ctypes.c_ubyte),
+                                  ctypes.c_uint32]
+rt.Index_InsertTPData.restype = ctypes.c_int
+rt.Index_InsertTPData.errcheck = check_return
 
 rt.Index_GetBounds.argtypes = [ctypes.c_void_p,
                                ctypes.POINTER(ctypes.POINTER(ctypes.c_double)),
@@ -206,6 +232,20 @@ rt.Index_Intersects_obj.argtypes = [ctypes.c_void_p,
 rt.Index_Intersects_obj.restype = ctypes.c_int
 rt.Index_Intersects_obj.errcheck = check_return
 
+rt.Index_TPIntersects_obj.argtypes = [ctypes.c_void_p,
+                                      ctypes.POINTER(ctypes.c_double),
+                                      ctypes.POINTER(ctypes.c_double),
+                                      ctypes.POINTER(ctypes.c_double),
+                                      ctypes.POINTER(ctypes.c_double),
+                                      ctypes.c_double,
+                                      ctypes.c_double,
+                                      ctypes.c_uint32,
+                                      ctypes.POINTER(
+                                          ctypes.POINTER(ctypes.c_void_p)),
+                                      ctypes.POINTER(ctypes.c_uint64)]
+rt.Index_TPIntersects_obj.restype = ctypes.c_int
+rt.Index_TPIntersects_obj.errcheck = check_return
+
 rt.Index_Intersects_id.argtypes = [ctypes.c_void_p,
                                    ctypes.POINTER(ctypes.c_double),
                                    ctypes.POINTER(ctypes.c_double),
@@ -216,11 +256,35 @@ rt.Index_Intersects_id.argtypes = [ctypes.c_void_p,
 rt.Index_Intersects_id.restype = ctypes.c_int
 rt.Index_Intersects_id.errcheck = check_return
 
+rt.Index_TPIntersects_id.argtypes = [ctypes.c_void_p,
+                                     ctypes.POINTER(ctypes.c_double),
+                                     ctypes.POINTER(ctypes.c_double),
+                                     ctypes.POINTER(ctypes.c_double),
+                                     ctypes.POINTER(ctypes.c_double),
+                                     ctypes.c_double,
+                                     ctypes.c_double,
+                                     ctypes.c_uint32,
+                                     ctypes.POINTER(
+                                         ctypes.POINTER(ctypes.c_int64)),
+                                     ctypes.POINTER(ctypes.c_uint64)]
+rt.Index_TPIntersects_id.restype = ctypes.c_int
+rt.Index_TPIntersects_id.errcheck = check_return
+
 rt.Index_Intersects_count.argtypes = [ctypes.c_void_p,
                                       ctypes.POINTER(ctypes.c_double),
                                       ctypes.POINTER(ctypes.c_double),
                                       ctypes.c_uint32,
                                       ctypes.POINTER(ctypes.c_uint64)]
+
+rt.Index_TPIntersects_count.argtypes = [ctypes.c_void_p,
+                                        ctypes.POINTER(ctypes.c_double),
+                                        ctypes.POINTER(ctypes.c_double),
+                                        ctypes.POINTER(ctypes.c_double),
+                                        ctypes.POINTER(ctypes.c_double),
+                                        ctypes.c_double,
+                                        ctypes.c_double,
+                                        ctypes.c_uint32,
+                                        ctypes.POINTER(ctypes.c_uint64)]
 
 rt.Index_NearestNeighbors_obj.argtypes = [ctypes.c_void_p,
                                           ctypes.POINTER(ctypes.c_double),
@@ -232,6 +296,20 @@ rt.Index_NearestNeighbors_obj.argtypes = [ctypes.c_void_p,
 rt.Index_NearestNeighbors_obj.restype = ctypes.c_int
 rt.Index_NearestNeighbors_obj.errcheck = check_return
 
+rt.Index_TPNearestNeighbors_obj.argtypes = [ctypes.c_void_p,
+                                            ctypes.POINTER(ctypes.c_double),
+                                            ctypes.POINTER(ctypes.c_double),
+                                            ctypes.POINTER(ctypes.c_double),
+                                            ctypes.POINTER(ctypes.c_double),
+                                            ctypes.c_double,
+                                            ctypes.c_double,
+                                            ctypes.c_uint32,
+                                            ctypes.POINTER(
+                                                ctypes.POINTER(ctypes.c_void_p)),
+                                            ctypes.POINTER(ctypes.c_uint64)]
+rt.Index_TPNearestNeighbors_obj.restype = ctypes.c_int
+rt.Index_TPNearestNeighbors_obj.errcheck = check_return
+
 rt.Index_NearestNeighbors_id.argtypes = [ctypes.c_void_p,
                                          ctypes.POINTER(ctypes.c_double),
                                          ctypes.POINTER(ctypes.c_double),
@@ -241,6 +319,20 @@ rt.Index_NearestNeighbors_id.argtypes = [ctypes.c_void_p,
                                          ctypes.POINTER(ctypes.c_uint64)]
 rt.Index_NearestNeighbors_id.restype = ctypes.c_int
 rt.Index_NearestNeighbors_id.errcheck = check_return
+
+rt.Index_TPNearestNeighbors_id.argtypes = [ctypes.c_void_p,
+                                           ctypes.POINTER(ctypes.c_double),
+                                           ctypes.POINTER(ctypes.c_double),
+                                           ctypes.POINTER(ctypes.c_double),
+                                           ctypes.POINTER(ctypes.c_double),
+                                           ctypes.c_double,
+                                           ctypes.c_double,
+                                           ctypes.c_uint32,
+                                           ctypes.POINTER(
+                                               ctypes.POINTER(ctypes.c_int64)),
+                                           ctypes.POINTER(ctypes.c_uint64)]
+rt.Index_TPNearestNeighbors_id.restype = ctypes.c_int
+rt.Index_TPNearestNeighbors_id.errcheck = check_return
 
 rt.Index_GetLeaves.argtypes = [ctypes.c_void_p,
                                ctypes.POINTER(ctypes.c_uint32),
