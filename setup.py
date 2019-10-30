@@ -1,24 +1,12 @@
 #!/usr/bin/env python
 from setuptools import setup
-
 import rtree
+import os
 
 # Get text from README.txt
 with open('docs/source/README.txt', 'r') as fp:
     readme_text = fp.read()
 
-import os
-
-if os.name == 'nt':
-    data_files = [('Lib/site-packages/rtree',
-                  [os.environ['SPATIALINDEX_LIBRARY']
-                      if 'SPATIALINDEX_LIBRARY' in os.environ else
-                      r'D:\libspatialindex\bin\spatialindex.dll',
-                   os.environ['SPATIALINDEX_C_LIBRARY']
-                      if 'SPATIALINDEX_C_LIBRARY' in os.environ else
-                      r'D:\libspatialindex\bin\spatialindex_c.dll'])]
-else:
-    data_files = None
 
 setup(
     name          = 'Rtree',
@@ -34,8 +22,7 @@ setup(
     long_description = readme_text,
     packages      = ['rtree'],
     install_requires = ['setuptools'],
-    test_suite = 'tests.test_suite',
-    data_files = data_files,
+    test_suite = 'tests.test_doctest',
     zip_safe = False,
     classifiers   = [
       'Development Status :: 5 - Production/Stable',

@@ -1,4 +1,6 @@
 import os
+import sys
+import platform
 import ctypes
 from ctypes.util import find_library
 
@@ -75,55 +77,28 @@ def free_error_msg_ptr(result, func, cargs):
     return retvalue
 
 
+
+
 if os.name == 'nt':
 
-    def _load_library(dllname, loadfunction, dllpaths=('', )):
-        """Load a DLL via ctypes load function. Return None on failure.
-
-        Try loading the DLL from the current package directory first,
-        then from the Windows DLL search path.
-
-        """
-        try:
-            dllpaths = (os.path.abspath(os.path.dirname(__file__)),
-                        ) + dllpaths
-        except NameError:
-            pass  # no __file__ attribute on PyPy and some frozen distributions
-        for path in dllpaths:
-            if path:
-                # temporarily add the path to the PATH environment variable
-                # so Windows can find additional DLL dependencies.
-                try:
-                    oldenv = os.environ['PATH']
-                    os.environ['PATH'] = path + ';' + oldenv
-                except KeyError:
-                    oldenv = None
-            try:
-                return loadfunction(os.path.join(path, dllname))
-            except (WindowsError, OSError):
-                pass
-            finally:
-                if path and oldenv is not None:
-                    os.environ['PATH'] = oldenv
-        return None
-
-    if 'SPATIALINDEX_C_LIBRARY' in os.environ:
-        lib_path, lib_name = os.path.split(os.environ['SPATIALINDEX_C_LIBRARY'])
-        rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
+    
+    base_name = 'spatialindex_c'
+    if '64' in platform.architecture()[0]:
+        arch = '64'
     else:
-        rt = _load_library('spatialindex_c.dll', ctypes.cdll.LoadLibrary)
-    if not rt:
-        raise OSError("could not find or load spatialindex_c.dll")
+        arch = '32'
+
+    if 'conda' in sys.version:
+        os.environ['PATH'] = "{};{}".format(os.environ['PATH'], os.path.join(sys.prefix, "Library", "bin"))
+    rt = ctypes.CDLL('%s-%s.dll' % (base_name, arch))    
 
 elif os.name == 'posix':
-    if 'SPATIALINDEX_C_LIBRARY' in os.environ:
-        lib_name = os.environ['SPATIALINDEX_C_LIBRARY']
+    if 'linux' in sys.platform:
+        lib_name = 'libspatialindex_c.so'
+    elif 'darwin' in sys.platform:
+        lib_name = 'libspatialindex_c.dylib'
     else:
-        lib_name = find_library('spatialindex_c')
-
-    if lib_name is None:
-        raise OSError("Could not find libspatialindex_c library file")
-
+        lib_name = 'libspatialindex_c'
     rt = ctypes.CDLL(lib_name)
 else:
     raise RTreeError('Unsupported OS "%s"' % os.name)
@@ -292,6 +267,25 @@ rt.IndexItem_GetID.argtypes = [ctypes.c_void_p]
 rt.IndexItem_GetID.restype = ctypes.c_int64
 rt.IndexItem_GetID.errcheck = check_value
 
+try:
+    rt.Index_GetResultSetOffset.argtypes = [ctypes.c_void_p]
+    rt.Index_GetResultSetOffset.restype = ctypes.c_int64
+    rt.Index_GetResultSetOffset.errcheck = check_value
+
+    rt.Index_SetResultSetOffset.argtypes = [ctypes.c_void_p, ctypes.c_int64]
+    rt.Index_SetResultSetOffset.restype = ctypes.c_int
+    rt.Index_SetResultSetOffset.errcheck = check_return
+
+    rt.Index_GetResultSetLimit.argtypes = [ctypes.c_void_p]
+    rt.Index_GetResultSetLimit.restype = ctypes.c_int64
+    rt.Index_GetResultSetLimit.errcheck = check_value
+
+    rt.Index_SetResultSetLimit.argtypes = [ctypes.c_void_p, ctypes.c_int64]
+    rt.Index_SetResultSetLimit.restype = ctypes.c_int
+    rt.Index_SetResultSetLimit.errcheck = check_return
+except AttributeError:
+    pass
+    
 rt.IndexProperty_Create.argtypes = []
 rt.IndexProperty_Create.restype = ctypes.c_void_p
 rt.IndexProperty_Create.errcheck = check_void

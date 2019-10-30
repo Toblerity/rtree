@@ -93,8 +93,8 @@ Check that nearest returns *all* of the items that are nearby
     >>> for i, (minx, miny, maxx, maxy) in enumerate(locs):
     ...        idx2.add(i, (minx, miny, maxx, maxy))
 
-    >>> sorted(idx2.nearest((15, 10, 15, 10), 1))
-    [0, 1]
+    >>> sorted(idx2.nearest((15, 10, 15, 10),1))
+    [0]
 
 
 Check that nearest returns *all* of the items that are nearby (with objects)
@@ -122,7 +122,7 @@ Check that nearest returns *all* of the items that are nearby (with objects)
     ...        idx2.add(i, (start, 1, stop, 1))
 
     >>> sorted(idx2.nearest((13, 0, 20, 2), 1))
-    [3, 4, 5]
+    [3]
 
 Default page size 4096
 

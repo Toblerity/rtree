@@ -274,7 +274,11 @@ class Index(object):
 
         if stream:
             self._exception = None
-            self.handle = self._create_idx_from_stream(stream)
+            try:
+                self.handle = self._create_idx_from_stream(stream)
+            except:
+                if self._exception:
+                    raise self._exception
             if self._exception:
                 raise self._exception
         else:
@@ -352,7 +356,22 @@ class Index(object):
 
         # return serialized to keep it alive for the pointer.
         return size, ctypes.cast(p, ctypes.POINTER(ctypes.c_uint8)), serialized
+    
+    
+    def set_result_limit(self, value):
+        return core.rt.Index_SetResultSetOffset(self.handle, value)
+       
+    def get_result_limit(self):
+        return core.rt.Index_GetResultSetOffset(self.handle)
+    result_limit = property(get_result_limit, set_result_limit)
 
+    def set_result_offset(self, value):
+        return core.rt.Index_SetResultSetLimit(self.handle, value)
+       
+    def get_result_offset(self):
+        return core.rt.Index_GetResultSetLimit(self.handle)
+    result_offset = property(get_result_offset, set_result_offset)        
+    
     def insert(self, id, coordinates, obj=None):
         """Inserts an item into the index with the given coordinates.
 
@@ -601,7 +620,7 @@ class Index(object):
                                           ctypes.byref(it),
                                           p_num_results)
 
-        return self._get_ids(it, p_num_results.contents.value)
+        return self._get_ids(it, min(num_results,p_num_results.contents.value))
 
     def get_bounds(self, coordinate_interleaved=None):
         """Returns the bounds of the index
@@ -886,9 +905,13 @@ class Handle(object):
         raise NotImplementedError
 
     def destroy(self):
-        if self._ptr is not None:
-            self._destroy(self._ptr)
-            self._ptr = None
+        try:
+        
+            if self._ptr is not None:
+               self._destroy(self._ptr)
+               self._ptr = None
+        except AttributeError:
+            pass
 
     @property
     def _as_parameter_(self):
