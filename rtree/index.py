@@ -197,6 +197,11 @@ class Index(object):
         """
         self.properties = kwargs.get('properties', Property())
 
+        if self.properties.type == RT_TPRTree \
+                and not hasattr(core.rt, 'Index_InsertTPData'):
+            raise RuntimeError(
+                "TPR-Tree type not supported with version of libspatialindex")
+
         # interleaved True gives 'bbox' order.
         self.interleaved = bool(kwargs.get('interleaved', True))
 
