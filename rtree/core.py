@@ -81,7 +81,7 @@ def free_error_msg_ptr(result, func, cargs):
 
 if os.name == 'nt':
 
-    
+
     base_name = 'spatialindex_c'
     if '64' in platform.architecture()[0]:
         arch = '64'
@@ -90,9 +90,11 @@ if os.name == 'nt':
 
     if 'conda' in sys.version:
         os.environ['PATH'] = "{};{}".format(os.environ['PATH'], os.path.join(sys.prefix, "Library", "bin"))
-    rt = ctypes.CDLL('%s-%s.dll' % (base_name, arch))    
+    rt = ctypes.CDLL('%s-%s.dll' % (base_name, arch))
 
 elif os.name == 'posix':
+    if 'conda' in sys.version:
+        os.environ['PATH'] = "{};{}".format(os.environ['PATH'], os.path.join(sys.prefix, "lib"))
     if 'linux' in sys.platform:
         lib_name = 'libspatialindex_c.so'
     elif 'darwin' in sys.platform:
@@ -285,7 +287,7 @@ try:
     rt.Index_SetResultSetLimit.errcheck = check_return
 except AttributeError:
     pass
-    
+
 rt.IndexProperty_Create.argtypes = []
 rt.IndexProperty_Create.restype = ctypes.c_void_p
 rt.IndexProperty_Create.errcheck = check_void

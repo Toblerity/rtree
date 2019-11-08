@@ -3,10 +3,17 @@ from setuptools import setup
 import rtree
 import os
 
+import itertools as it
+
 # Get text from README.txt
 with open('docs/source/README.txt', 'r') as fp:
     readme_text = fp.read()
 
+extras_require = {
+    'test': ['pytest>=3', 'pytest-cov', 'numpy']
+}
+
+extras_require['all'] = list(set(it.chain(*extras_require.values())))
 
 setup(
     name          = 'Rtree',
@@ -22,7 +29,7 @@ setup(
     long_description = readme_text,
     packages      = ['rtree'],
     install_requires = ['setuptools'],
-    test_suite = 'tests.test_doctest',
+    extras_require = extras_require,
     zip_safe = False,
     classifiers   = [
       'Development Status :: 5 - Production/Stable',
