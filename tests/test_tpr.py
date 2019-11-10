@@ -39,10 +39,10 @@ class QueryObject(namedtuple("QueryObject", (
 
 
 def data_generator(
-        dataset_size=1000, simulation_length=100, max_update_interval=10,
-        queries_per_time_instant=5, min_query_extent=5, max_query_extent=10,
-        horizon=20, min_query_interval=2, max_query_interval=10, agility=0.2,
-        min_speed=0.25, max_speed=1.66, min_x=0, min_y=0, max_x=100, max_y=100,
+        dataset_size=1000, simulation_length=100, max_update_interval=20,
+        queries_per_time_step=5, min_query_extent=0.05, max_query_extent=0.1,
+        horizon=20, min_query_interval=2, max_query_interval=10, agility=0.01,
+        min_speed=0.0025, max_speed=0.0166, min_x=0, min_y=0, max_x=1, max_y=1,
         ):
 
     def create_object(id_, time, x=None, y=None):
@@ -84,6 +84,8 @@ def data_generator(
             kill = False
             if objects_to_update[t_now]:
                 object_ = objects_to_update[t_now].pop()
+                if object_ not in objects:
+                    continue
                 kill = object_.out_of_bounds
             else:
                 id_ = np.random.randint(0, dataset_size)
@@ -106,7 +108,7 @@ def data_generator(
 
             yield "INSERT", t_now, object_
 
-        for _ in range(queries_per_time_instant):
+        for _ in range(queries_per_time_step):
             x = np.random.uniform(min_x, max_x)
             y = np.random.uniform(min_y, max_y)
             dx = np.random.uniform(min_query_extent, max_query_extent)
@@ -137,8 +139,7 @@ def intersects(x1, y1, x2, y2, x, y, dx, dy):
 
 
 @pytest.fixture(scope="function", params=[
-    pytest.param({'leaf_capacity': 100}, id="100 leaf"),
-    pytest.param({'leaf_capacity': 1000}, id="1000 leaf"),
+    pytest.param({}, id="default tree"),
 ])
 def tpr_tree(request):
     # Create tree
@@ -147,8 +148,7 @@ def tpr_tree(request):
 
 
 @pytest.fixture(scope="function", params=[
-    pytest.param({'dataset_size': 100}, id="dataset size 100"),
-    pytest.param({'dataset_size': 1000}, id="dataset size 1000"),
+    pytest.param({}, id="default simulation"),
 ])
 def simulation(request):
     return data_generator(**request.param)
