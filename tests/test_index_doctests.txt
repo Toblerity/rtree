@@ -167,6 +167,7 @@ Load a persisted index
 
     >>> idx = Rtree("testing")
     >>> hits = list(idx.intersection((0, 0, 60, 60)))
+    >>> idx.flush()
     >>> len(hits)
     10
 
@@ -211,6 +212,7 @@ Check that we can make an index with custom filename extensions
     >>> p.idx_extension = 'index'
 
     >>> idx_cust = Rtree('custom', properties=p)
+    >>> idx_cust.flush()
     >>> for i, coords in enumerate(boxes15):
     ...     idx_cust.add(i, coords)
     >>> hits = list(idx_cust.intersection((0, 0, 60, 60)))

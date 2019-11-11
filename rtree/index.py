@@ -308,6 +308,11 @@ class Index(object):
         else:
             raise IOError("Unclosable index")
 
+    def flush(self):
+        """Force a flush of the index to storage."""
+        if self.handle:
+            self.handle.flush()
+
     def get_coordinate_pointers(self, coordinates):
 
         try:
@@ -935,6 +940,13 @@ class IndexHandle(Handle):
     _create = core.rt.Index_Create
     _destroy = core.rt.Index_Destroy
 
+    def flush(self):
+        try:
+            core.rt.Index_Flush
+            if self._ptr is not None:
+               core.rt.Index_Flush(self._ptr)
+        except AttributeError:
+            pass
 
 class IndexStreamHandle(IndexHandle):
 

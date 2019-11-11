@@ -285,6 +285,11 @@ try:
     rt.Index_SetResultSetLimit.argtypes = [ctypes.c_void_p, ctypes.c_int64]
     rt.Index_SetResultSetLimit.restype = ctypes.c_int
     rt.Index_SetResultSetLimit.errcheck = check_return
+
+    rt.Index_Flush.argtypes = [ctypes.c_void_p]
+    rt.Index_Flush.restype = None
+    rt.Index_Flush.errcheck = check_void_done
+
 except AttributeError:
     pass
 
