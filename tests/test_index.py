@@ -1,6 +1,7 @@
 import unittest
-from rtree import index
+from rtree import index, core
 import numpy as np
+import pytest
 
 def boxes15_stream(interleaved=True):
     boxes15 = np.genfromtxt('boxes_15x15.data')
@@ -21,11 +22,17 @@ class IndexTests(unittest.TestCase):
         hits = sindex.intersection(bounds)
         self.assertEqual(sorted(hits), [0, 4, 16, 27, 35, 40, 47, 50, 76, 80])
     
+    @pytest.mark.skipif(
+        not hasattr(core.rt, 'Index_GetResultSetOffset'),
+        reason="Index_GetResultsSetOffset required in libspatialindex")
     def test_result_offset(self):
         idx = index.Rtree()
         idx.set_result_offset(3)
         self.assertEqual(idx.result_offset, 3)
 
+    @pytest.mark.skipif(
+        not hasattr(core.rt, 'Index_GetResultSetLimit'),
+        reason="Index_GetResultsSetOffset required in libspatialindex")
     def test_result_limit(self):
         idx = index.Rtree()
         idx.set_result_limit(44)
