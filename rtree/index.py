@@ -308,6 +308,11 @@ class Index(object):
         else:
             raise IOError("Unclosable index")
 
+    def flush(self):
+        """Force a flush of the index to storage."""
+        if self.handle:
+            self.handle.flush()
+
     def get_coordinate_pointers(self, coordinates):
 
         try:
@@ -356,22 +361,22 @@ class Index(object):
 
         # return serialized to keep it alive for the pointer.
         return size, ctypes.cast(p, ctypes.POINTER(ctypes.c_uint8)), serialized
-    
-    
+
+
     def set_result_limit(self, value):
         return core.rt.Index_SetResultSetOffset(self.handle, value)
-       
+
     def get_result_limit(self):
         return core.rt.Index_GetResultSetOffset(self.handle)
     result_limit = property(get_result_limit, set_result_limit)
 
     def set_result_offset(self, value):
         return core.rt.Index_SetResultSetLimit(self.handle, value)
-       
+
     def get_result_offset(self):
         return core.rt.Index_GetResultSetLimit(self.handle)
-    result_offset = property(get_result_offset, set_result_offset)        
-    
+    result_offset = property(get_result_offset, set_result_offset)
+
     def insert(self, id, coordinates, obj=None):
         """Inserts an item into the index with the given coordinates.
 
@@ -906,7 +911,7 @@ class Handle(object):
 
     def destroy(self):
         try:
-        
+
             if self._ptr is not None:
                self._destroy(self._ptr)
                self._ptr = None
@@ -934,7 +939,14 @@ class IndexHandle(Handle):
 
     _create = core.rt.Index_Create
     _destroy = core.rt.Index_Destroy
+    _flush = core.rt.Index_Flush
 
+    def flush(self):
+        try:
+            if self._ptr is not None:
+               self._flush(self._ptr)
+        except AttributeError:
+            pass
 
 class IndexStreamHandle(IndexHandle):
 
