@@ -138,20 +138,16 @@ def intersects(x1, y1, x2, y2, x, y, dx, dy):
     return any(np.sign(calc) != sign for calc in calcs)  # Check remaining 3
 
 
-@pytest.fixture(scope="function", params=[
-    pytest.param({}, id="default tree"),
-])
+@pytest.fixture(scope="function")
 def tpr_tree(request):
     # Create tree
     from rtree.index import Index, Property, RT_TPRTree
-    return Index(properties=Property(type=RT_TPRTree, **request.param))
+    return Index(properties=Property(type=RT_TPRTree))
 
 
-@pytest.fixture(scope="function", params=[
-    pytest.param({}, id="default simulation"),
-])
-def simulation(request):
-    return data_generator(**request.param)
+@pytest.fixture(scope="function")
+def simulation():
+    return data_generator()
 
 
 @pytest.mark.skipif(
