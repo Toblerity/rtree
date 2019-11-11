@@ -939,12 +939,12 @@ class IndexHandle(Handle):
 
     _create = core.rt.Index_Create
     _destroy = core.rt.Index_Destroy
-    _flush = core.rt.Index_Flush
 
     def flush(self):
         try:
+            core.rt.Index_Flush
             if self._ptr is not None:
-               self._flush(self._ptr)
+               core.rt.Index_Flush(self._ptr)
         except AttributeError:
             pass
 
