@@ -1541,13 +1541,22 @@ class RtreeContainer(Rtree):
             [34.37768294..., 26.73758537..., 49.37768294..., 41.73758537...]
         """
         if args:
-            if isinstance(args[0], rtree.index.string_types) \
+            if isinstance(args[0], string_types) \
                     or isinstance(args[0], bytes) \
-                    or isinstance(args[0], rtree.index.ICustomStorage):
+                    or isinstance(args[0], ICustomStorage):
                 raise ValueError('%s supports only in-memory indexes'
                                  % self.__class__)
         self._objects = {}
         return super(RtreeContainer, self).__init__(*args, **kwargs)
+
+    def __contains__(self, obj):
+        return id(obj) in self._objects
+
+    def __len__(self):
+        return sum(count for count, obj in self._objects.values())
+
+    def __iter__(self):
+        return iter(obj for count, obj in self._objects.values())
 
     def insert(self, obj, coordinates):
         """Inserts an item into the index with the given coordinates.
@@ -1573,7 +1582,7 @@ class RtreeContainer(Rtree):
 
         """
         try:
-            count = self._objects[id(obj)] + 1
+            count = self._objects[id(obj)][0] + 1
         except KeyError:
             count = 1
         self._objects[id(obj)] = (count, obj)
@@ -1701,14 +1710,14 @@ class RtreeContainer(Rtree):
 
         """
         try:
-            count = self._objects[id(obj)] - 1
+            count = self._objects[id(obj)][0] - 1
         except KeyError:
             raise IndexError('object is not in the index')
         if count == 0:
-            del self._objects[obj]
+            del self._objects[id(obj)]
         else:
             self._objects[id(obj)] = (count, obj)
-        return super(RtreeContainer, self).delete(id, coordinates)
+        return super(RtreeContainer, self).delete(id(obj), coordinates)
 
     def leaves(self):
         return [(self._objects[id][1], [self._objects[child_id][1]
