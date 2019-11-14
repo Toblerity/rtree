@@ -29,6 +29,6 @@ jobs:
 
   - bash: |
       source activate rtree
-      pip install -e pytest numpy
+      pip install pytest numpy
       python -m pytest --doctest-modules rtree tests/test_*
     displayName: pytest
