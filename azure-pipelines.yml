@@ -1,0 +1,10 @@
+pr:
+  branches:
+    include:
+    - master
+
+jobs:
+  - template: ./ci/azp/linux.yml
+  - template: ./ci/azp/win.yml
+  - template: ./ci/azp/osx.yml
+
