@@ -30,7 +30,7 @@ setup(
     packages      = ['rtree'],
     install_requires = ['setuptools'],
     extras_require = extras_require,
-    test_require = extras_require,
+    tests_require = extras_require['test'],
     zip_safe = False,
     classifiers   = [
       'Development Status :: 5 - Production/Stable',
