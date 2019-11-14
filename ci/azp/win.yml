@@ -32,5 +32,5 @@ jobs:
   - script: |
       call activate rtree
       pip install pytest numpy
-      python -m pytest --doctest-modules rtree tests/test_*
+      python -m pytest --doctest-modules rtree tests\test_*
     displayName: pytest
