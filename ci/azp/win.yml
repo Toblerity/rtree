@@ -1,0 +1,35 @@
+# -*- mode: yaml -*-
+
+- job:
+  displayName: macOS-10.13
+  pool:
+    vmImage: 'macOS-10.13'
+  strategy:
+    matrix:
+      Python36_185:
+        python.version: '3.6'
+        sidx.version: '1.8.5'
+      Python36_193:
+        python.version: '3.6'
+        sidx.version: '1.9.3'
+      Python37:
+        python.version: '3.7'
+        sidx.version: '1.9.3'
+
+  steps:
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+    displayName: Add conda to PATH
+
+  - bash: conda create --yes --quiet --name rtree
+    displayName: Create Anaconda environment
+
+  - bash: |
+      source activate rtree
+      conda install --yes --quiet --name rtree python=$PYTHON_VERSION libspatialindex=$SIDX_VERSION
+    displayName: Install Anaconda packages
+
+  - bash: |
+      source activate rtree
+      pip install pytest numpy
+      python -m pytest --doctest-modules rtree tests/test_*
+    displayName: pytest
