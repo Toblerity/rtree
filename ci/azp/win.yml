@@ -25,12 +25,12 @@ jobs:
     displayName: Create Anaconda environment
 
   - script: |
-      source activate rtree
+      call activate rtree
       conda install --yes --quiet --name rtree python=%PYTHON_VERSION% libspatialindex=%SIDX_VERSION%
     displayName: Install Anaconda packages
 
   - script: |
-      source activate rtree
+      call activate rtree
       pip install pytest numpy
       python -m pytest --doctest-modules rtree tests/test_*
     displayName: pytest
