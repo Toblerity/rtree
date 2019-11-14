@@ -113,11 +113,20 @@ class Index(object):
             :attr:`interleaved` attribute of the index. The following example
             would assume :attr:`interleaved` is False::
 
-            (id, (minx, maxx, miny, maxy, minz, maxz, ..., ..., mink, maxk),
-             object)
+                (id,
+                 (minx, maxx, miny, maxy, minz, maxz, ..., ..., mink, maxk),
+                 object)
 
             The object can be None, but you must put a place holder of
             ``None`` there.
+
+            For a TPR-Tree, this would be in the form::
+
+                (id,
+                 ((minx, maxx, miny, maxy, ..., ..., mink, maxk),
+                  (minvx, maxvx, minvy, maxvy, ..., ..., minvk, maxvk),
+                  time),
+                 object)
 
         :param storage:
             If the first argument in the constructor is an instance of
@@ -141,7 +150,8 @@ class Index(object):
             is False, the coordinates must be in the form
             [xmin, xmax, ymin, ymax, ..., ..., kmin, kmax]. If
             :attr:`interleaved` is True, the coordinates must be in the form
-            [xmin, ymin, ..., kmin, xmax, ymax, ..., kmax].
+            [xmin, ymin, ..., kmin, xmax, ymax, ..., kmax]. This also applies
+            to velocities when using a TPR-Tree.
 
         A basic example
         ::
@@ -197,6 +207,11 @@ class Index(object):
 
         """
         self.properties = kwargs.get('properties', Property())
+
+        if self.properties.type == RT_TPRTree \
+                and not hasattr(core.rt, 'Index_InsertTPData'):
+            raise RuntimeError(
+                "TPR-Tree type not supported with version of libspatialindex")
 
         # interleaved True gives 'bbox' order.
         self.interleaved = bool(kwargs.get('interleaved', True))
@@ -273,7 +288,7 @@ class Index(object):
         if ps:
             self.properties.pagesize = int(ps)
 
-        if stream:
+        if stream and self.properties.type == RT_RTree:
             self._exception = None
             try:
                 self.handle = self._create_idx_from_stream(stream)
@@ -284,6 +299,9 @@ class Index(object):
                 raise self._exception
         else:
             self.handle = IndexHandle(self.properties.handle)
+            if stream:  # Bulk insert not supported, so add one by one
+                for item in stream:
+                    self.insert(*item)
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -352,6 +370,15 @@ class Index(object):
 
         return (p_mins, p_maxs)
 
+    @staticmethod
+    def _get_time_doubles(times):
+        if times[0] > times[1]:
+            raise core.RTreeError(
+                "Start time must be less than end time")
+        t_start = ctypes.c_double(times[0])
+        t_end = ctypes.c_double(times[1])
+        return t_start, t_end
+
     def _serialize(self, obj):
         serialized = self.dumps(obj)
         size = len(serialized)
@@ -391,6 +418,9 @@ class Index(object):
             protocol, providing the index's dimension * 2 coordinate
             pairs representing the `mink` and `maxk` coordinates in
             each dimension defining the bounds of the query window.
+            For a TPR-Tree, this must be a 3-element sequence including
+            not only the positional coordinate pairs but also the
+            velocity pairs `minvk` and `maxvk` and a time value as a float.
 
         :param obj: a pickleable object.  If not None, this object will be
             stored in the index with the :attr:`id`.
@@ -407,7 +437,22 @@ class Index(object):
             ...             41.7375853734),
             ...            obj=42)
 
+        This example is inserting the same object for a TPR-Tree, additionally
+        including a set of velocities at time `3`::
+
+            >>> p = index.Property(type=index.RT_TPRTree)  # doctest: +SKIP
+            >>> idx = index.Index(properties=p)  # doctest: +SKIP
+            >>> idx.insert(4321,
+            ...            ((34.3776829412, 26.7375853734, 49.3776829412,
+            ...             41.7375853734),
+            ...             (0.5, 2, 1.5, 2.5),
+            ...            3.0),
+            ...            obj=42)  # doctest: +SKIP
+
         """
+        if self.properties.type == RT_TPRTree:
+            return self._insertTP(id, *coordinates, obj=obj)
+
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         data = ctypes.c_ubyte(0)
         size = 0
@@ -418,6 +463,19 @@ class Index(object):
                                  self.properties.dimension, data, size)
     add = insert
 
+    def _insertTP(self, id, coordinates, velocities, time, obj=None):
+        p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
+        pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
+        # End time isn't used
+        t_start, t_end = self._get_time_doubles((time, time+1))
+        data = ctypes.c_ubyte(0)
+        size = 0
+        if obj is not None:
+            size, data, _ = self._serialize(obj)
+        core.rt.Index_InsertTPData(self.handle, id, p_mins, p_maxs,
+                                   pv_mins, pv_maxs, t_start, t_end,
+                                   self.properties.dimension, data, size)
+
     def count(self, coordinates):
         """Return number of objects that intersect the given coordinates.
 
@@ -426,6 +484,10 @@ class Index(object):
             protocol, providing the index's dimension * 2 coordinate
             pairs representing the `mink` and `maxk` coordinates in
             each dimension defining the bounds of the query window.
+            For a TPR-Tree, this must be a 3-element sequence including
+            not only the positional coordinate pairs but also the
+            velocity pairs `minvk` and `maxvk` and a time pair for the
+            time range as a float.
 
         The following example queries the index for any objects any objects
         that were stored in the index intersect the bounds given in the
@@ -441,7 +503,24 @@ class Index(object):
             >>> print(idx.count((0, 0, 60, 60)))
             1
 
+        This example is similar for a TPR-Tree::
+
+            >>> p = index.Property(type=index.RT_TPRTree)  # doctest: +SKIP
+            >>> idx = index.Index(properties=p)  # doctest: +SKIP
+            >>> idx.insert(4321,
+            ...            ((34.3776829412, 26.7375853734, 49.3776829412,
+            ...             41.7375853734),
+            ...             (0.5, 2, 1.5, 2.5),
+            ...             3.0),
+            ...            obj=42)  # doctest: +SKIP
+
+            >>> print(idx.count(((0, 0, 60, 60), (0, 0, 0, 0), (3, 5))))
+            ... # doctest: +SKIP
+            1
+
         """
+        if self.properties.type == RT_TPRTree:
+            return self._countTP(*coordinates)
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
 
         p_num_results = ctypes.c_uint64(0)
@@ -454,7 +533,27 @@ class Index(object):
 
         return p_num_results.value
 
-    def contains(self, coordinates, objects=False):
+
+    def _countTP(self, coordinates, velocities, times):
+        p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
+        pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
+        t_start, t_end = self._get_time_doubles(times)
+
+        p_num_results = ctypes.c_uint64(0)
+
+        core.rt.Index_TPIntersects_count(self.handle,
+                                         p_mins,
+                                         p_maxs,
+                                         pv_mins,
+                                         pv_maxs,
+                                         t_start,
+                                         t_end,
+                                         self.properties.dimension,
+                                         ctypes.byref(p_num_results))
+
+        return p_num_results.value
+
+      def contains(self, coordinates, objects=False):
         """Return ids or objects in the index that contains within the given
         coordinates.
 
@@ -519,7 +618,7 @@ class Index(object):
                                   ctypes.byref(p_num_results))
         return self._get_ids(it, p_num_results.value)
 
-    def intersection(self, coordinates, objects=False):
+      def intersection(self, coordinates, objects=False):
         """Return ids or objects in the index that intersect the given
         coordinates.
 
@@ -528,6 +627,10 @@ class Index(object):
             protocol, providing the index's dimension * 2 coordinate
             pairs representing the `mink` and `maxk` coordinates in
             each dimension defining the bounds of the query window.
+            For a TPR-Tree, this must be a 3-element sequence including
+            not only the positional coordinate pairs but also the
+            velocity pairs `minvk` and `maxvk` and a time pair for the
+            time range as a float.
 
         :param objects: True or False or 'raw'
             If True, the intersection method will return index objects that
@@ -558,8 +661,28 @@ class Index(object):
             >>> list(idx.intersection((0, 0, 60, 60), objects="raw"))
             [42]
 
-        """
+        Similar for the TPR-Tree::
 
+            >>> p = index.Property(type=index.RT_TPRTree)  # doctest: +SKIP
+            >>> idx = index.Index(properties=p)  # doctest: +SKIP
+            >>> idx.insert(4321,
+            ...            ((34.3776829412, 26.7375853734, 49.3776829412,
+            ...             41.7375853734),
+            ...             (0.5, 2, 1.5, 2.5),
+            ...             3.0),
+            ...            obj=42)  # doctest: +SKIP
+
+            >>> hits = list(idx.intersection(
+            ...     ((0, 0, 60, 60), (0, 0, 0, 0), (3, 5)), objects=True))
+            ...  # doctest: +SKIP
+            >>> [(item.object, item.bbox) for item in hits if item.id == 4321]
+            ... # doctest: +SKIP
+            [(42, [34.37768294..., 26.73758537..., 49.37768294...,
+                   41.73758537...])]
+
+        """
+        if self.properties.type == RT_TPRTree:
+            return self._intersectionTP(*coordinates, objects=objects)
         if objects:
             return self._intersection_obj(coordinates, objects)
 
@@ -576,6 +699,30 @@ class Index(object):
                                     ctypes.byref(it),
                                     ctypes.byref(p_num_results))
         return self._get_ids(it, p_num_results.value)
+
+    def _intersectionTP(self, coordinates, velocities, times, objects=False):
+
+        p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
+        pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
+        t_start, t_end = self._get_time_doubles(times)
+
+        p_num_results = ctypes.c_uint64(0)
+
+        if objects:
+            call = core.rt.Index_TPIntersects_obj
+            it = ctypes.pointer(ctypes.c_void_p())
+        else:
+            call = core.rt.Index_TPIntersects_id
+            it = ctypes.pointer(ctypes.c_int64())
+
+        call(self.handle, p_mins, p_maxs, pv_mins, pv_maxs, t_start, t_end,
+             self.properties.dimension, ctypes.byref(it),
+             ctypes.byref(p_num_results))
+
+        if objects:
+            return self._get_objects(it, p_num_results.value, objects)
+        else:
+            return self._get_ids(it, p_num_results.value)
 
     def _intersection_obj(self, coordinates, objects):
 
@@ -676,6 +823,10 @@ class Index(object):
             protocol, providing the index's dimension * 2 coordinate
             pairs representing the `mink` and `maxk` coordinates in
             each dimension defining the bounds of the query window.
+            For a TPR-Tree, this must be a 3-element sequence including
+            not only the positional coordinate pairs but also the
+            velocity pairs `minvk` and `maxvk` and a time pair for the
+            time range as a float.
 
         :param num_results: integer
             The number of results to return nearest to the given coordinates.
@@ -690,6 +841,9 @@ class Index(object):
             If 'raw', it will return the object as entered into the database
             without the :class:`rtree.index.Item` wrapper.
 
+        .. warning::
+            This is currently not implemented for the TPR-Tree.
+
         Example of finding the three items nearest to this one::
 
             >>> from rtree import index
@@ -697,6 +851,9 @@ class Index(object):
             >>> idx.insert(4321, (34.37, 26.73, 49.37, 41.73), obj=42)
             >>> hits = idx.nearest((0, 0, 10, 10), 3, objects=True)
         """
+        if self.properties.type == RT_TPRTree:
+            return self._nearestTP(*coordinates, objects=objects)
+
         if objects:
             return self._nearest_obj(coordinates, num_results, objects)
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
@@ -713,6 +870,29 @@ class Index(object):
                                           p_num_results)
 
         return self._get_ids(it, min(num_results,p_num_results.contents.value))
+
+    def _nearestTP(self, coordinates, velocities, times, num_results=1,
+                  objects=False):
+        p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
+        pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
+        t_start, t_end = self._get_time_doubles(times)
+
+        p_num_results = ctypes.pointer(ctypes.c_uint64(num_results))
+
+        if objects:
+            it = ctypes.pointer(ctypes.c_void_p())
+            call = core.rt.Index_TPNearestNeighbors_obj
+        else:
+            it = ctypes.pointer(ctypes.c_int64())
+            call = core.rt.Index_TPNearestNeighbors_id
+
+        call(self.handle, p_mins, p_maxs, pv_mins, pv_maxs, t_start, t_end,
+             self.properties.dimension, ctypes.byref(it), p_num_results)
+
+        if objects:
+            return self._get_objects(it, p_num_results.contents.value, objects)
+        else:
+            return self._get_ids(it, p_num_results.contents.value)
 
     def get_bounds(self, coordinate_interleaved=None):
         """Returns the bounds of the index
@@ -748,6 +928,11 @@ class Index(object):
             item, but those of the item itself. Together with the
             id parameter, they determine which item will be deleted.
             This may be an object that satisfies the numpy array protocol.
+            For a TPR-Tree, this must be a 3-element sequence including
+            not only the positional coordinate pairs but also the
+            velocity pairs `minvk` and `maxvk` and a time pair for the
+            original time the object was inserted and the current time
+            as a float.
 
         Example::
 
@@ -757,10 +942,30 @@ class Index(object):
             ...            (34.3776829412, 26.7375853734, 49.3776829412,
             ...             41.7375853734))
 
+        For the TPR-Tree::
+
+            >>> p = index.Property(type=index.RT_TPRTree)  # doctest: +SKIP
+            >>> idx = index.Index(properties=p)  # doctest: +SKIP
+            >>> idx.delete(4321,
+            ...            ((34.3776829412, 26.7375853734, 49.3776829412,
+            ...             41.7375853734),
+            ...             (0.5, 2, 1.5, 2.5),
+            ...             (3.0, 5.0)))  # doctest: +SKIP
+
         """
+        if self.properties.type == RT_TPRTree:
+            return self._deleteTP(id, *coordinates)
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         core.rt.Index_DeleteData(
             self.handle, id, p_mins, p_maxs, self.properties.dimension)
+
+    def _deleteTP(self, id, coordinates, velocities, times):
+        p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
+        pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
+        t_start, t_end = self._get_time_doubles(times)
+        core.rt.Index_DeleteTPData(
+            self.handle, id, p_mins, p_maxs, pv_mins, pv_maxs, t_start, t_end,
+            self.properties.dimension)
 
     def valid(self):
         return bool(core.rt.Index_IsValid(self.handle))
@@ -1592,7 +1797,16 @@ class RtreeContainer(Rtree):
             :attr:`interleaved` attribute of the index. The following example
             would assume :attr:`interleaved` is False::
 
-            (obj, (minx, maxx, miny, maxy, minz, maxz, ..., ..., mink, maxk))
+                (obj,
+                 (minx, maxx, miny, maxy, minz, maxz, ..., ..., mink, maxk))
+
+            For a TPR-Tree, this would be in the form::
+
+                (id,
+                 ((minx, maxx, miny, maxy, ..., ..., mink, maxk),
+                  (minvx, maxvx, minvy, maxvy, ..., ..., minvk, maxvk),
+                  time),
+                 object)
 
         :param interleaved: True or False, defaults to True.
             This parameter determines the coordinate order for all methods that
@@ -1612,7 +1826,8 @@ class RtreeContainer(Rtree):
             is False, the coordinates must be in the form
             [xmin, xmax, ymin, ymax, ..., ..., kmin, kmax]. If
             :attr:`interleaved` is True, the coordinates must be in the form
-            [xmin, ymin, ..., kmin, xmax, ymax, ..., kmax].
+            [xmin, ymin, ..., kmin, xmax, ymax, ..., kmax]. This also applies
+            to velocities when using a TPR-Tree.
 
         A basic example
         ::
@@ -1668,6 +1883,9 @@ class RtreeContainer(Rtree):
             protocol, providing the index's dimension * 2 coordinate
             pairs representing the `mink` and `maxk` coordinates in
             each dimension defining the bounds of the query window.
+            For a TPR-Tree, this must be a 3-element sequence including
+            not only the positional coordinate pairs but also the
+            velocity pairs `minvk` and `maxvk` and a time value as a float.
 
         The following example inserts a simple object into the container.
         The coordinate ordering in this instance is the default
@@ -1678,6 +1896,16 @@ class RtreeContainer(Rtree):
             >>> idx.insert(object(),
             ...            (34.3776829412, 26.7375853734, 49.3776829412,
             ...             41.7375853734))
+
+        Similar for TPR-Tree::
+
+            >>> p = index.Property(type=index.RT_TPRTree)  # doctest: +SKIP
+            >>> idx = index.RtreeContainer(properties=p)  # doctest: +SKIP
+            >>> idx.insert(object(),
+            ...            ((34.3776829412, 26.7375853734, 49.3776829412,
+            ...             41.7375853734),
+            ...             (0.5, 2, 1.5, 2.5),
+            ...            3.0))  # doctest: +SKIP
 
         """
         try:
@@ -1698,6 +1926,10 @@ class RtreeContainer(Rtree):
             protocol, providing the index's dimension * 2 coordinate
             pairs representing the `mink` and `maxk` coordinates in
             each dimension defining the bounds of the query window.
+            For a TPR-Tree, this must be a 3-element sequence including
+            not only the positional coordinate pairs but also the
+            velocity pairs `minvk` and `maxvk` and a time pair for the
+            time range as a float.
 
         :param bbox: True or False
             If True, the intersection method will return the stored objects,
@@ -1724,6 +1956,24 @@ class RtreeContainer(Rtree):
             >>> list(idx.intersection((0, 0, 60, 60)))   # doctest: +ELLIPSIS
             [<object object at 0x...>]
 
+        Similar for the TPR-Tree::
+
+            >>> p = index.Property(type=index.RT_TPRTree)  # doctest: +SKIP
+            >>> idx = index.RtreeContainer(properties=p)  # doctest: +SKIP
+            >>> idx.insert(object(),
+            ...            ((34.3776829412, 26.7375853734, 49.3776829412,
+            ...             41.7375853734),
+            ...             (0.5, 2, 1.5, 2.5),
+            ...             3.0))  # doctest: +SKIP
+
+            >>> hits = list(idx.intersection(
+            ...     ((0, 0, 60, 60), (0, 0, 0, 0), (3, 5)), bbox=True))
+            ... # doctest: +SKIP
+            >>> [(item.object, item.bbox) for item in hits]
+            ... # doctest: +SKIP
+            [(<object object at 0x...>, [34.3776829412, 26.7375853734,
+            49.3776829412, 41.7375853734])]
+
         """
         if bbox == False:
             for id in super(RtreeContainer,
@@ -1748,6 +1998,10 @@ class RtreeContainer(Rtree):
             protocol, providing the index's dimension * 2 coordinate
             pairs representing the `mink` and `maxk` coordinates in
             each dimension defining the bounds of the query window.
+            For a TPR-Tree, this must be a 3-element sequence including
+            not only the positional coordinate pairs but also the
+            velocity pairs `minvk` and `maxvk` and a time pair for the
+            time range as a float.
 
         :param num_results: integer
             The number of results to return nearest to the given coordinates.
@@ -1758,6 +2012,9 @@ class RtreeContainer(Rtree):
         :param bbox: True or False
             If True, the nearest method will return the stored objects, as
             well as the bounds of the entry.
+
+        .. warning::
+            This is currently not implemented for the TPR-Tree.
 
         Example of finding the three items nearest to this one::
 
@@ -1796,6 +2053,11 @@ class RtreeContainer(Rtree):
             item, but those of the item itself. Together with the
             id parameter, they determine which item will be deleted.
             This may be an object that satisfies the numpy array protocol.
+            For a TPR-Tree, this must be a 3-element sequence including
+            not only the positional coordinate pairs but also the
+            velocity pairs `minvk` and `maxvk` and a time pair for the
+            original time the object was inserted and the current time
+            as a float.
 
         Example::
 
@@ -1804,6 +2066,19 @@ class RtreeContainer(Rtree):
             >>> idx.delete(object(),
             ...            (34.3776829412, 26.7375853734, 49.3776829412,
             ...             41.7375853734))
+            Traceback (most recent call last):
+             ...
+            IndexError: object is not in the index
+
+        For the TPR-Tree::
+
+            >>> p = index.Property(type=index.RT_TPRTree)  # doctest: +SKIP
+            >>> idx = index.RtreeContainer(properties=p)  # doctest: +SKIP
+            >>> idx.delete(object(),
+            ...            ((34.3776829412, 26.7375853734, 49.3776829412,
+            ...             41.7375853734),
+            ...             (0.5, 2, 1.5, 2.5),
+            ...             (3.0, 5.0)))  # doctest: +SKIP
             Traceback (most recent call last):
              ...
             IndexError: object is not in the index
