@@ -5,6 +5,6 @@ pr:
 
 jobs:
   - template: ./ci/azp/linux.yml
-    #  - template: ./ci/azp/win.yml
-    #- template: ./ci/azp/osx.yml
+  - template: ./ci/azp/win.yml
+  - template: ./ci/azp/osx.yml
 
