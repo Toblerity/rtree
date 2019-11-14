@@ -482,8 +482,9 @@ class Index(object):
             ...            obj=42)
 
             >>> hits = list(idx.contains((0, 0, 60, 60), objects=True))
+            ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS +SKIP
             >>> [(item.object, item.bbox) for item in hits if item.id == 4321]
-            ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+            ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS +SKIP
             [(42, [34.37768294..., 26.73758537..., 49.37768294...,
                    41.73758537...])]
 
@@ -491,6 +492,7 @@ class Index(object):
         request the 'raw' objects::
 
             >>> list(idx.contains((0, 0, 60, 60), objects="raw"))
+            ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS +SKIP
             [42]
 
         """
