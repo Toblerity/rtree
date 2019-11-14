@@ -2,9 +2,9 @@
 
 jobs:
 - job:
-  displayName: macOS-10.13
+  displayName: vs2017-win2016
   pool:
-    vmImage: 'macOS-10.13'
+    vmImage: 'vs2017-win2016'
   strategy:
     matrix:
       Python36_185:
@@ -18,7 +18,7 @@ jobs:
         sidx.version: '1.9.3'
 
   steps:
-  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
 
   - bash: conda create --yes --quiet --name rtree
@@ -26,7 +26,7 @@ jobs:
 
   - bash: |
       source activate rtree
-      conda install --yes --quiet --name rtree python=$PYTHON_VERSION libspatialindex=$SIDX_VERSION
+      conda install --yes --quiet --name rtree python=%PYTHON_VERSION% libspatialindex=%SIDX_VERSION%
     displayName: Install Anaconda packages
 
   - bash: |
