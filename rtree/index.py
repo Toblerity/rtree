@@ -275,7 +275,11 @@ class Index(object):
 
         if stream:
             self._exception = None
-            self.handle = self._create_idx_from_stream(stream)
+            try:
+                self.handle = self._create_idx_from_stream(stream)
+            except:
+                if self._exception:
+                    raise self._exception
             if self._exception:
                 raise self._exception
         else:
@@ -304,6 +308,11 @@ class Index(object):
             self.handle = None
         else:
             raise IOError("Unclosable index")
+
+    def flush(self):
+        """Force a flush of the index to storage."""
+        if self.handle:
+            self.handle.flush()
 
     def get_coordinate_pointers(self, coordinates):
 
@@ -353,6 +362,21 @@ class Index(object):
 
         # return serialized to keep it alive for the pointer.
         return size, ctypes.cast(p, ctypes.POINTER(ctypes.c_uint8)), serialized
+
+
+    def set_result_limit(self, value):
+        return core.rt.Index_SetResultSetOffset(self.handle, value)
+
+    def get_result_limit(self):
+        return core.rt.Index_GetResultSetOffset(self.handle)
+    result_limit = property(get_result_limit, set_result_limit)
+
+    def set_result_offset(self, value):
+        return core.rt.Index_SetResultSetLimit(self.handle, value)
+
+    def get_result_offset(self):
+        return core.rt.Index_GetResultSetLimit(self.handle)
+    result_offset = property(get_result_offset, set_result_offset)
 
     def insert(self, id, coordinates, obj=None):
         """Inserts an item into the index with the given coordinates.
@@ -676,7 +700,7 @@ class Index(object):
                                           ctypes.byref(it),
                                           p_num_results)
 
-        return self._get_ids(it, p_num_results.contents.value)
+        return self._get_ids(it, min(num_results,p_num_results.contents.value))
 
     def get_bounds(self, coordinate_interleaved=None):
         """Returns the bounds of the index
@@ -961,9 +985,13 @@ class Handle(object):
         raise NotImplementedError
 
     def destroy(self):
-        if self._ptr is not None:
-            self._destroy(self._ptr)
-            self._ptr = None
+        try:
+
+            if self._ptr is not None:
+               self._destroy(self._ptr)
+               self._ptr = None
+        except AttributeError:
+            pass
 
     @property
     def _as_parameter_(self):
@@ -987,6 +1015,13 @@ class IndexHandle(Handle):
     _create = core.rt.Index_Create
     _destroy = core.rt.Index_Destroy
 
+    def flush(self):
+        try:
+            core.rt.Index_Flush
+            if self._ptr is not None:
+               core.rt.Index_Flush(self._ptr)
+        except AttributeError:
+            pass
 
 class IndexStreamHandle(IndexHandle):
 
@@ -1593,13 +1628,22 @@ class RtreeContainer(Rtree):
             [34.37768294..., 26.73758537..., 49.37768294..., 41.73758537...]
         """
         if args:
-            if isinstance(args[0], rtree.index.string_types) \
+            if isinstance(args[0], string_types) \
                     or isinstance(args[0], bytes) \
-                    or isinstance(args[0], rtree.index.ICustomStorage):
+                    or isinstance(args[0], ICustomStorage):
                 raise ValueError('%s supports only in-memory indexes'
                                  % self.__class__)
         self._objects = {}
         return super(RtreeContainer, self).__init__(*args, **kwargs)
+
+    def __contains__(self, obj):
+        return id(obj) in self._objects
+
+    def __len__(self):
+        return sum(count for count, obj in self._objects.values())
+
+    def __iter__(self):
+        return iter(obj for count, obj in self._objects.values())
 
     def insert(self, obj, coordinates):
         """Inserts an item into the index with the given coordinates.
@@ -1625,7 +1669,7 @@ class RtreeContainer(Rtree):
 
         """
         try:
-            count = self._objects[id(obj)] + 1
+            count = self._objects[id(obj)][0] + 1
         except KeyError:
             count = 1
         self._objects[id(obj)] = (count, obj)
@@ -1684,7 +1728,8 @@ class RtreeContainer(Rtree):
                 "valid values for the bbox argument are True and False")
 
     def nearest(self, coordinates, num_results = 1, bbox=False):
-        """Returns the ``k``-nearest objects to the given coordinates.
+        """Returns the ``k``-nearest objects to the given coordinates
+        in increasing distance order.
 
         :param coordinates: sequence or array
             This may be an object that satisfies the numpy array
@@ -1753,14 +1798,14 @@ class RtreeContainer(Rtree):
 
         """
         try:
-            count = self._objects[id(obj)] - 1
+            count = self._objects[id(obj)][0] - 1
         except KeyError:
             raise IndexError('object is not in the index')
         if count == 0:
-            del self._objects[obj]
+            del self._objects[id(obj)]
         else:
             self._objects[id(obj)] = (count, obj)
-        return super(RtreeContainer, self).delete(id, coordinates)
+        return super(RtreeContainer, self).delete(id(obj), coordinates)
 
     def leaves(self):
         return [(self._objects[id][1], [self._objects[child_id][1]
