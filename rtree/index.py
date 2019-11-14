@@ -504,6 +504,11 @@ class Index(object):
 
         it = ctypes.pointer(ctypes.c_int64())
 
+        try:
+            core.rt.Index_Contains_id
+        except AttributeError:
+            return None
+
         core.rt.Index_Contains_id(self.handle,
                                   p_mins,
                                   p_maxs,
@@ -593,6 +598,11 @@ class Index(object):
         p_num_results = ctypes.c_uint64(0)
 
         it = ctypes.pointer(ctypes.c_void_p())
+
+        try:
+            core.rt.Index_Contains_obj
+        except AttributeError:
+            return None
 
         core.rt.Index_Contains_obj(self.handle,
                                    p_mins,
