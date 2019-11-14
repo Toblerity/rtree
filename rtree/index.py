@@ -553,7 +553,7 @@ class Index(object):
 
         return p_num_results.value
 
-      def contains(self, coordinates, objects=False):
+    def contains(self, coordinates, objects=False):
         """Return ids or objects in the index that contains within the given
         coordinates.
 
@@ -618,7 +618,7 @@ class Index(object):
                                   ctypes.byref(p_num_results))
         return self._get_ids(it, p_num_results.value)
 
-      def intersection(self, coordinates, objects=False):
+    def intersection(self, coordinates, objects=False):
         """Return ids or objects in the index that intersect the given
         coordinates.
 
