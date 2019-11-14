@@ -1,9 +1,10 @@
+import ctypes
 import os
 import os.path
 import pprint
 
 from . import core
-import ctypes
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -532,6 +533,7 @@ class Index(object):
 
         return p_num_results.value
 
+
     def _countTP(self, coordinates, velocities, times):
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
@@ -551,7 +553,72 @@ class Index(object):
 
         return p_num_results.value
 
-    def intersection(self, coordinates, objects=False):
+      def contains(self, coordinates, objects=False):
+        """Return ids or objects in the index that contains within the given
+        coordinates.
+
+        :param coordinates: sequence or array
+            This may be an object that satisfies the numpy array
+            protocol, providing the index's dimension * 2 coordinate
+            pairs representing the `mink` and `maxk` coordinates in
+            each dimension defining the bounds of the query window.
+
+        :param objects: True or False or 'raw'
+            If True, the intersection method will return index objects that
+            were pickled when they were stored with each index entry, as well
+            as the id and bounds of the index entries. If 'raw', the objects
+            will be returned without the :class:`rtree.index.Item` wrapper.
+
+        The following example queries the index for any objects any objects
+        that were stored in the index intersect the bounds given in the
+        coordinates::
+
+            >>> from rtree import index
+            >>> idx = index.Index()
+            >>> idx.insert(4321,
+            ...            (34.3776829412, 26.7375853734, 49.3776829412,
+            ...             41.7375853734),
+            ...            obj=42)
+
+            >>> hits = list(idx.contains((0, 0, 60, 60), objects=True))
+            ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS +SKIP
+            >>> [(item.object, item.bbox) for item in hits if item.id == 4321]
+            ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS +SKIP
+            [(42, [34.37768294..., 26.73758537..., 49.37768294...,
+                   41.73758537...])]
+
+        If the :class:`rtree.index.Item` wrapper is not used, it is faster to
+        request the 'raw' objects::
+
+            >>> list(idx.contains((0, 0, 60, 60), objects="raw"))
+            ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS +SKIP
+            [42]
+
+        """
+
+        if objects:
+            return self._contains_obj(coordinates, objects)
+
+        p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
+
+        p_num_results = ctypes.c_uint64(0)
+
+        it = ctypes.pointer(ctypes.c_int64())
+
+        try:
+            core.rt.Index_Contains_id
+        except AttributeError:
+            return None
+
+        core.rt.Index_Contains_id(self.handle,
+                                  p_mins,
+                                  p_maxs,
+                                  self.properties.dimension,
+                                  ctypes.byref(it),
+                                  ctypes.byref(p_num_results))
+        return self._get_ids(it, p_num_results.value)
+
+      def intersection(self, coordinates, objects=False):
         """Return ids or objects in the index that intersect the given
         coordinates.
 
@@ -671,6 +738,27 @@ class Index(object):
                                      self.properties.dimension,
                                      ctypes.byref(it),
                                      ctypes.byref(p_num_results))
+        return self._get_objects(it, p_num_results.value, objects)
+
+    def _contains_obj(self, coordinates, objects):
+
+        p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
+
+        p_num_results = ctypes.c_uint64(0)
+
+        it = ctypes.pointer(ctypes.c_void_p())
+
+        try:
+            core.rt.Index_Contains_obj
+        except AttributeError:
+            return None
+
+        core.rt.Index_Contains_obj(self.handle,
+                                   p_mins,
+                                   p_maxs,
+                                   self.properties.dimension,
+                                   ctypes.byref(it),
+                                   ctypes.byref(p_num_results))
         return self._get_objects(it, p_num_results.value, objects)
 
     def _get_objects(self, it, num_results, objects):

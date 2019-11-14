@@ -337,3 +337,17 @@ Note the arguments to intersection must be xmin, xmax, ymin, ymax for interleave
 
     >>> (np.array(tid) == 0).all()
     False
+
+    >>> from rtree import index
+    >>> idx = index.Index()
+    >>> idx.insert(4321,
+    ...            (34.3776829412, 26.7375853734, 49.3776829412,
+    ...             41.7375853734),
+    ...            obj=42)
+
+    >>> hits = list(idx.contains((0, 0, 60, 60), objects=True))
+    ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS +SKIP
+    >>> [(item.object, item.bbox) for item in hits if item.id == 4321]
+    ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS +SKIP
+    [(42, [34.37768294..., 26.73758537..., 49.37768294...,
+           41.73758537...])]
