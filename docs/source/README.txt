@@ -17,12 +17,12 @@ user.  These features include:
 Documentation and Website
 ..............................................................................
 
-http://toblerity.github.com/rtree/
+https://rtree.readthedocs.io/en/latest/
 
 Requirements
 ..............................................................................
 
-* `libspatialindex`_ 1.8.0+.
+* `libspatialindex`_ 1.8.5+.
 
 Download
 ..............................................................................
