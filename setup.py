@@ -25,7 +25,7 @@ setup(
     author_email  = 'sean.gillies@gmail.com',
     maintainer        = 'Howard Butler',
     maintainer_email  = 'howard@hobu.co',
-    url   = 'http://toblerity.github.com/rtree/',
+    url   = 'https://github.com/Toblerity/rtree',
     long_description = readme_text,
     packages      = ['rtree'],
     install_requires = ['setuptools'],

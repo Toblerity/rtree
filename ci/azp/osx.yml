@@ -17,7 +17,10 @@ jobs:
       Python37:
         python.version: '3.7'
         sidx.version: '1.9.3'
-
+      Python38:
+        python.version: '3.8'
+        sidx.version: '1.9.3'
+        
   steps:
   - script: |
       echo "Removing homebrew from Azure to avoid conflicts."
