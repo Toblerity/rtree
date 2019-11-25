@@ -24,7 +24,6 @@ Documentation
    
    install
    tutorial
-   Mailing List <http://lists.gispython.org/mailman/listinfo/community>
    class
    changes
    performance

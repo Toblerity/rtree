@@ -35,7 +35,7 @@ and can now evolve separately. Rtree is pure Python as of 0.6.0+.
 
 
 .. _`Sean Gillies`: http://sgillies.net/blog/
-.. _`Howard Butler`: http://hobu.biz
+.. _`Howard Butler`: http://hobu.co
 .. _`Brent Pedersen`: http://hackmap.blogspot.com/
 .. _`QGIS`: http://qgis.org
 

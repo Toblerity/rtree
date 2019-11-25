@@ -3,10 +3,22 @@
 Changes
 ..............................................................................
 
-Next
-====
+0.9.0: 2019-11-24
+===============
 
-- Change license to MIT.
+- Add Index.GetResultSetOffset() 
+- Add Index.contains() method for object and id (requires libspatialindex 1.9.3+) #116
+- Add Index.Flush() #107 
+- Add TPRTree index support (thanks @sdhiscocks #117 )
+- Return container sizes without returning objects #90
+- Add set_result_limit and set_result_offset for Index paging  44ad21aecd3f7b49314b9be12f3334d8bae7e827
+
+## Bug fixes
+- Better exceptions in cases where stream functions throw #80 
+- Migrated CI platform to Azure Pipelines  https://dev.azure.com/hobuinc/rtree/_build?definitionId=5
+- Minor test enhancements and fixups. Both libspatialindex 1.8.5 and libspatialindex 1.9.3 are tested with CI
+
+
 
 0.8: 2014-07-17
 ===============
