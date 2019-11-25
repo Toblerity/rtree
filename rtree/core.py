@@ -95,12 +95,8 @@ if os.name == 'nt':
 elif os.name == 'posix':
     if 'conda' in sys.version:
         os.environ['PATH'] = "{};{}".format(os.environ['PATH'], os.path.join(sys.prefix, "lib"))
-    if 'linux' in sys.platform:
-        lib_name = 'libspatialindex_c.so'
-    elif 'darwin' in sys.platform:
-        lib_name = 'libspatialindex_c.dylib'
-    else:
-        lib_name = 'libspatialindex_c'
+    
+    lib_name = find_library('spatialindex_c')
     rt = ctypes.CDLL(lib_name)
 else:
     raise RTreeError('Unsupported OS "%s"' % os.name)
