@@ -89,12 +89,12 @@ if os.name == 'nt':
         arch = '32'
 
     if 'conda' in sys.version:
-        os.environ['PATH'] = "{};{}".format(os.environ['PATH'], os.path.join(sys.prefix, "Library", "bin"))
+        os.environ['PATH'] = "{}{}{}".format(os.environ['PATH'], os.pathsep, os.path.join(sys.prefix, "Library", "bin"))
     rt = ctypes.CDLL('%s-%s.dll' % (base_name, arch))
 
 elif os.name == 'posix':
     if 'conda' in sys.version:
-        os.environ['PATH'] = "{};{}".format(os.environ['PATH'], os.path.join(sys.prefix, "lib"))
+        os.environ['PATH'] = "{}{}{}".format(os.environ['PATH'], os.pathsep, os.path.join(sys.prefix, "lib"))
     
     lib_name = find_library('spatialindex_c')
     if not lib_name:
