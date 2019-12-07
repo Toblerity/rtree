@@ -290,11 +290,7 @@ class Index(object):
 
         if stream and self.properties.type == RT_RTree:
             self._exception = None
-            try:
-                self.handle = self._create_idx_from_stream(stream)
-            except:
-                if self._exception:
-                    raise self._exception
+            self.handle = self._create_idx_from_stream(stream)
             if self._exception:
                 raise self._exception
         else:
