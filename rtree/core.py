@@ -121,9 +121,9 @@ if os.name == 'nt':
         lib_path = os.path.join(sys.prefix, "Library", "bin")
         rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
     else:
-        rt = _load_library('spatialindex_c.dll', ctypes.cdll.LoadLibrary)
+        rt = _load_library(lib_name, ctypes.cdll.LoadLibrary)
     if not rt:
-        raise OSError("could not find or load spatialindex_c.dll")
+        raise OSError("could not find or load %s" % lib_name)
 
 elif os.name == 'posix':
 
