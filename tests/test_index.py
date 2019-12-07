@@ -15,12 +15,7 @@ def boxes15_stream(interleaved=True):
 
 class IndexTests(unittest.TestCase):
 
-    def test_stream_input(self):
-        p = index.Property()
-        sindex = index.Index(boxes15_stream(), properties=p)
-        bounds = (0, 0, 60, 60)
-        hits = sindex.intersection(bounds)
-        self.assertEqual(sorted(hits), [0, 4, 16, 27, 35, 40, 47, 50, 76, 80])
+
 
 
     @pytest.mark.skipif(
@@ -41,6 +36,13 @@ class IndexTests(unittest.TestCase):
 
 
 class StreamTests(unittest.TestCase):
+
+    def test_stream_input(self):
+        p = index.Property()
+        sindex = index.Index(boxes15_stream(), properties=p)
+        bounds = (0, 0, 60, 60)
+        hits = sindex.intersection(bounds)
+        self.assertEqual(sorted(hits), [0, 4, 16, 27, 35, 40, 47, 50, 76, 80])
 
     def test_empty_stream(self):
         """Assert empty stream raises exception"""
