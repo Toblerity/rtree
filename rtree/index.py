@@ -1167,6 +1167,9 @@ class Item(object):
         self.bounds = _get_bounds(
             self.handle, core.rt.IndexItem_GetBounds, False)
 
+    def __gt__(self, other):
+        return self.id > other.id
+
     @property
     def bbox(self):
         """Returns the bounding box of the index entry"""
