@@ -76,11 +76,36 @@ def free_error_msg_ptr(result, func, cargs):
     rt.Index_Free(p)
     return retvalue
 
-
+def _load_library(dllname, loadfunction, dllpaths=('', )):
+    """Load a DLL via ctypes load function. Return None on failure.
+    Try loading the DLL from the current package directory first,
+    then from the Windows DLL search path.
+    """
+    try:
+        dllpaths = (os.path.abspath(os.path.dirname(__file__)),
+                    ) + dllpaths
+    except NameError:
+        pass  # no __file__ attribute on PyPy and some frozen distributions
+    for path in dllpaths:
+        if path:
+            # temporarily add the path to the PATH environment variable
+            # so Windows can find additional DLL dependencies.
+            try:
+                oldenv = os.environ['PATH']
+                os.environ['PATH'] = path + ';' + oldenv
+            except KeyError:
+                oldenv = None
+        try:
+            return loadfunction(os.path.join(path, dllname))
+        except (WindowsError, OSError):
+            pass
+        finally:
+            if path and oldenv is not None:
+                os.environ['PATH'] = oldenv
+    return None
 
 
 if os.name == 'nt':
-
 
     base_name = 'spatialindex_c'
     if '64' in platform.architecture()[0]:
@@ -88,23 +113,34 @@ if os.name == 'nt':
     else:
         arch = '32'
 
-    if 'conda' in sys.version:
-        os.environ['PATH'] = "{}{}{}".format(os.environ['PATH'], os.pathsep, os.path.join(sys.prefix, "Library", "bin"))
-    rt = ctypes.CDLL('%s-%s.dll' % (base_name, arch))
+    lib_name = '%s-%s.dll' % (base_name, arch)
+    if 'SPATIALINDEX_C_LIBRARY' in os.environ:
+        lib_path, lib_name = os.path.split(os.environ['SPATIALINDEX_C_LIBRARY'])
+        rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
+    elif 'conda' in sys.version:
+        lib_path = os.path.join(sys.prefix, "Library", "bin")
+        rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
+    else:
+        rt = _load_library(lib_name, ctypes.cdll.LoadLibrary)
+    if not rt:
+        raise OSError("could not find or load %s" % lib_name)
 
 elif os.name == 'posix':
-    if 'conda' in sys.version:
-        os.environ['PATH'] = "{}{}{}".format(os.environ['PATH'], os.pathsep, os.path.join(sys.prefix, "lib"))
-    
-    lib_name = find_library('spatialindex_c')
-    if not lib_name:
-        if 'linux' in sys.platform:
-            lib_name = 'libspatialindex_c.so'
-        elif 'darwin' in sys.platform:
-            lib_name = 'libspatialindex_c.dylib'
-        else:
-            lib_name = 'libspatialindex_c'
-    rt = ctypes.CDLL(lib_name)
+
+    if 'SPATIALINDEX_C_LIBRARY' in os.environ:
+        lib_name = os.environ['SPATIALINDEX_C_LIBRARY']
+        rt = ctypes.CDLL(lib_name)
+    elif 'conda' in sys.version:
+        lib_path = os.path.join(sys.prefix, "lib")
+        lib_name = find_library('spatialindex_c')
+        rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
+    else:
+        lib_name = find_library('spatialindex_c')
+        rt = ctypes.CDLL(lib_name)
+
+    if not rt:
+        raise OSError("Could not load libspatialindex_c library")
+
 else:
     raise RTreeError('Unsupported OS "%s"' % os.name)
 
