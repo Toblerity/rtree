@@ -3,19 +3,26 @@
 Changes
 ..............................................................................
 
+0.9.2: 2019-12-09
+===============
+
+- Refactored tests to be based on unittest https://github.com/Toblerity/rtree/pull/129
+- Update libspatialindex library loading code to adapt previous behavior https://github.com/Toblerity/rtree/pull/128
+- Empty data streams throw exceptions and do not partially construct indexes https://github.com/Toblerity/rtree/pull/127
+
 0.9.0: 2019-11-24
 ===============
 
-- Add Index.GetResultSetOffset() 
+- Add Index.GetResultSetOffset()
 - Add Index.contains() method for object and id (requires libspatialindex 1.9.3+) #116
-- Add Index.Flush() #107 
+- Add Index.Flush() #107
 - Add TPRTree index support (thanks @sdhiscocks #117 )
 - Return container sizes without returning objects #90
 - Add set_result_limit and set_result_offset for Index paging  44ad21aecd3f7b49314b9be12f3334d8bae7e827
 
 Bug fixes:
 
-- Better exceptions in cases where stream functions throw #80 
+- Better exceptions in cases where stream functions throw #80
 - Migrated CI platform to Azure Pipelines  https://dev.azure.com/hobuinc/rtree/_build?definitionId=5
 - Minor test enhancements and fixups. Both libspatialindex 1.8.5 and libspatialindex 1.9.3 are tested with CI
 
@@ -46,13 +53,13 @@ Bug fixes:
 - Number of results for :py:meth:`~rtree.index.Index.nearest` defaults to 1.
 - libsidx C library of 0.5.0 removed and included in libspatialindex
 - objects="raw" in :py:meth:`~rtree.index.Index.intersection` to return the object sent in (for speed).
-- :py:meth:`~rtree.index.Index.count` method to return the intersection count without the overhead 
+- :py:meth:`~rtree.index.Index.count` method to return the intersection count without the overhead
   of returning a list (thanks Leonard Norrgård).
 - Improved bulk loading performance
 - Supposedly no memory leaks :)
 - Many other performance tweaks (see docs).
 - Bulk loader supports interleaved coordinates
-- Leaf queries.  You can return the box and ids of the leaf nodes of the index.  
+- Leaf queries.  You can return the box and ids of the leaf nodes of the index.
   Useful for visualization, etc.
 - Many more docstrings, sphinx docs, etc
 
@@ -71,9 +78,9 @@ available as a result of this refactoring.
 * bulk loading of indexes at instantiation time
 * ability to quickly return the bounds of the entire index
 * ability to return the bounds of index entries
-* much better windows support 
+* much better windows support
 * libspatialindex 1.4.0 required.
-  
+
 0.4.3: 2009-06-05
 =================
 - Fix reference counting leak #181
@@ -100,7 +107,7 @@ available as a result of this refactoring.
 - Reraise index query errors as Python exceptions.
 - Improved persistence.
 
-0.2: 
+0.2:
 ==================
 - Link spatialindex system library.
 
