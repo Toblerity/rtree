@@ -4,6 +4,7 @@ pr:
     - master
 
 jobs:
+  - template: ./ci/azp/docker.yml
   - template: ./ci/azp/conda.yml
   - template: ./ci/azp/win.yml
   - template: ./ci/azp/osx.yml
