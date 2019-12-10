@@ -8,7 +8,9 @@ jobs:
   - bash: sudo apt install libspatialindex-c4v5 python3-pip
     displayName: Install libspatialindex and pip
 
-  - bash: pip3 install .
+  - bash: |
+      pip3 install setuptools
+      pip3 install .
     displayName: pip install
 
   - bash: |
