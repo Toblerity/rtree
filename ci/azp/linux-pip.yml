@@ -8,10 +8,10 @@ jobs:
   - bash: sudo apt install libspatialindex-c4v5 python3-pip
     displayName: Install libspatialindex and pip
 
-  - bash: pip install .
+  - bash: pip3 install .
     displayName: pip install
 
   - bash: |
-      pip install pytest numpy
-      python -m pytest --doctest-modules rtree tests/test_*
+      pip3 install pytest numpy
+      python3 -m pytest --doctest-modules rtree tests/test_*
     displayName: pytest
