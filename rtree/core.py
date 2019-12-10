@@ -79,7 +79,7 @@ def free_error_msg_ptr(result, func, cargs):
 try:
     WindowsError
 except NameError:
-    WindowsError = None
+    WindowsError = OSError
 
 def _load_library(dllname, loadfunction, dllpaths=('', )):
     """Load a DLL via ctypes load function. Return None on failure.
