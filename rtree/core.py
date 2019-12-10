@@ -76,6 +76,11 @@ def free_error_msg_ptr(result, func, cargs):
     rt.Index_Free(p)
     return retvalue
 
+try:
+    WindowsError
+except NameError:
+    WindowsError = None
+
 def _load_library(dllname, loadfunction, dllpaths=('', )):
     """Load a DLL via ctypes load function. Return None on failure.
     Try loading the DLL from the current package directory first,
