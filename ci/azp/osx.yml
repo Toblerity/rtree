@@ -3,7 +3,7 @@
 
 jobs:
 - job:
-  displayName: macOS-10.13
+  displayName: Conda OSX 10.13
   pool:
     vmImage: 'macOS-10.13'
   strategy:
@@ -20,7 +20,7 @@ jobs:
       Python38:
         python.version: '3.8'
         sidx.version: '1.9.3'
-        
+
   steps:
   - script: |
       echo "Removing homebrew from Azure to avoid conflicts."
