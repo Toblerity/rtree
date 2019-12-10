@@ -76,36 +76,38 @@ def free_error_msg_ptr(result, func, cargs):
     rt.Index_Free(p)
     return retvalue
 
-def _load_library(dllname, loadfunction, dllpaths=('', )):
-    """Load a DLL via ctypes load function. Return None on failure.
-    Try loading the DLL from the current package directory first,
-    then from the Windows DLL search path.
-    """
-    try:
-        dllpaths = (os.path.abspath(os.path.dirname(__file__)),
-                    ) + dllpaths
-    except NameError:
-        pass  # no __file__ attribute on PyPy and some frozen distributions
-    for path in dllpaths:
-        if path:
-            # temporarily add the path to the PATH environment variable
-            # so Windows can find additional DLL dependencies.
-            try:
-                oldenv = os.environ['PATH']
-                os.environ['PATH'] = path + ';' + oldenv
-            except KeyError:
-                oldenv = None
-        try:
-            return loadfunction(os.path.join(path, dllname))
-        except (WindowsError, OSError):
-            pass
-        finally:
-            if path and oldenv is not None:
-                os.environ['PATH'] = oldenv
-    return None
-
 
 if os.name == 'nt':
+
+    def _load_library(dllname, loadfunction, dllpaths=('', )):
+        """Load a DLL via ctypes load function. Return None on failure.
+        Try loading the DLL from the current package directory first,
+        then from the Windows DLL search path.
+        """
+        try:
+            dllpaths = (os.path.abspath(os.path.dirname(__file__)),
+                        ) + dllpaths
+        except NameError:
+            pass  # no __file__ attribute on PyPy and some frozen distributions
+        for path in dllpaths:
+            if path:
+                # temporarily add the path to the PATH environment variable
+                # so Windows can find additional DLL dependencies.
+                try:
+                    oldenv = os.environ['PATH']
+                    os.environ['PATH'] = path + ';' + oldenv
+                except KeyError:
+                    oldenv = None
+            try:
+                return loadfunction(os.path.join(path, dllname))
+            except (WindowsError, OSError):
+                pass
+            finally:
+                if path and oldenv is not None:
+                    os.environ['PATH'] = oldenv
+        return None
+
+
 
     base_name = 'spatialindex_c'
     if '64' in platform.architecture()[0]:
@@ -130,10 +132,6 @@ elif os.name == 'posix':
     if 'SPATIALINDEX_C_LIBRARY' in os.environ:
         lib_name = os.environ['SPATIALINDEX_C_LIBRARY']
         rt = ctypes.CDLL(lib_name)
-    elif 'conda' in sys.version:
-        lib_path = os.path.join(sys.prefix, "lib")
-        lib_name = find_library('spatialindex_c')
-        rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
     else:
         lib_name = find_library('spatialindex_c')
         rt = ctypes.CDLL(lib_name)

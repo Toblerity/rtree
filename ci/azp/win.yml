@@ -2,7 +2,7 @@
 
 jobs:
 - job:
-  displayName: vs2017-win2016
+  displayName: Conda Win64
   pool:
     vmImage: 'vs2017-win2016'
   strategy:
