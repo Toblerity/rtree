@@ -12,7 +12,7 @@ jobs:
   steps:
   - bash: |
       DEBIAN_FRONTEND=noninteractive sudo apt-get update -y -qq
-      DEBIAN_FRONTEND=noninteractive sudo apt-get install wget libspatialindex-c3
+      DEBIAN_FRONTEND=noninteractive sudo apt-get install wget libspatialindex-c3 -y
       wget --quiet https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
       bash miniconda.sh -b -p $HOME/miniconda
       export PATH="$HOME/miniconda/bin:$PATH"
