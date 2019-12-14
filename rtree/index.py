@@ -907,13 +907,17 @@ class Index(object):
     bounds = property(get_bounds)
 
     def delete(self, id, coordinates):
-        """Deletes items from the index with the given ``'id'`` within the
-        specified coordinates.
+        """Deletes an item from the index with the given ``'id'`` and
+           coordinates given by the ``coordinates`` sequence. As the index can
+           contain multiple items with the same ID and coordinates, deletion
+           is not guaranteed to delete all items in the index with the given ID
+           and coordinates.
 
         :param id: long integer
-            A long integer that is the identifier for this index entry.  IDs
-            need not be unique to be inserted into the index, and it is up
-            to the user to ensure they are unique if this is a requirement.
+            A long integer ID for the entry, which need not be unique. The
+            index can contain multiple entries with identical IDs and
+            coordinates. Uniqueness of items should be enforced at the
+            application level by the user.
 
         :param coordinates: sequence or array
             Dimension * 2 coordinate pairs, representing the min
