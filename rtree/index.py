@@ -9,8 +9,6 @@ import pickle
 
 import sys
 
-string_types = str
-
 
 RT_Memory = 0
 RT_Disk = 1
@@ -208,7 +206,7 @@ class Index(object):
         basename = None
         storage = None
         if args:
-            if isinstance(args[0], string_types) or isinstance(args[0], bytes):
+            if isinstance(args[0], str) or isinstance(args[0], bytes):
                 # they sent in a filename
                 basename = args[0]
                 # they sent in a filename, stream
@@ -1511,7 +1509,7 @@ class Property(object):
 
 
     def set_filename(self, value):
-        if isinstance(value, string_types):
+        if isinstance(value, str):
             value = value.encode('utf-8')
         return core.rt.IndexProperty_SetFileName(self.handle, value)
 
@@ -1523,7 +1521,7 @@ class Property(object):
 
 
     def set_dat_extension(self, value):
-        if isinstance(value, string_types):
+        if isinstance(value, str):
             value = value.encode('utf-8')
         return core.rt.IndexProperty_SetFileNameExtensionDat(
             self.handle, value)
@@ -1536,7 +1534,7 @@ class Property(object):
 
 
     def set_idx_extension(self, value):
-        if isinstance(value, string_types):
+        if isinstance(value, str):
             value = value.encode('utf-8')
         return core.rt.IndexProperty_SetFileNameExtensionIdx(
             self.handle, value)
@@ -1846,7 +1844,7 @@ class RtreeContainer(Rtree):
             [34.37768294..., 26.73758537..., 49.37768294..., 41.73758537...]
         """
         if args:
-            if isinstance(args[0], string_types) \
+            if isinstance(args[0], str) \
                     or isinstance(args[0], bytes) \
                     or isinstance(args[0], ICustomStorage):
                 raise ValueError('%s supports only in-memory indexes'
