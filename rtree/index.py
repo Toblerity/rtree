@@ -1508,7 +1508,7 @@ class Property(object):
     """Reinsert factor"""
 
     def get_filename(self):
-        return core.rt.IndexProperty_GetFileName(self.handle)
+        return core.rt.IndexProperty_GetFileName(self.handle).decode()
 
 
     def set_filename(self, value):
@@ -1520,7 +1520,7 @@ class Property(object):
     """Index filename for disk storage"""
 
     def get_dat_extension(self):
-        return core.rt.IndexProperty_GetFileNameExtensionDat(self.handle)
+        return core.rt.IndexProperty_GetFileNameExtensionDat(self.handle).decode()
 
 
     def set_dat_extension(self, value):
@@ -1533,7 +1533,7 @@ class Property(object):
     """Extension for .dat file"""
 
     def get_idx_extension(self):
-        return core.rt.IndexProperty_GetFileNameExtensionIdx(self.handle)
+        return core.rt.IndexProperty_GetFileNameExtensionIdx(self.handle).decode()
 
 
     def set_idx_extension(self, value):
