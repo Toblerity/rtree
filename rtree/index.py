@@ -5,24 +5,12 @@ import pprint
 
 from . import core
 
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
+import pickle
 
 import sys
-if sys.version_info[0] == 2:
-    range = xrange
-    string_types = basestring
-elif sys.version_info[0] == 3:
-    string_types = str
 
+string_types = str
 
-def string_output(s):
-    if sys.version_info[0] == 2:
-        return s
-    elif sys.version_info[0] == 3:
-        return s.decode('UTF-8')
 
 RT_Memory = 0
 RT_Disk = 1
@@ -1519,8 +1507,8 @@ class Property(object):
     """Reinsert factor"""
 
     def get_filename(self):
-        s = core.rt.IndexProperty_GetFileName(self.handle)
-        return string_output(s)
+        return core.rt.IndexProperty_GetFileName(self.handle)
+
 
     def set_filename(self, value):
         if isinstance(value, string_types):
@@ -1531,8 +1519,8 @@ class Property(object):
     """Index filename for disk storage"""
 
     def get_dat_extension(self):
-        s = core.rt.IndexProperty_GetFileNameExtensionDat(self.handle)
-        return string_output(s)
+        return core.rt.IndexProperty_GetFileNameExtensionDat(self.handle)
+
 
     def set_dat_extension(self, value):
         if isinstance(value, string_types):
@@ -1544,8 +1532,8 @@ class Property(object):
     """Extension for .dat file"""
 
     def get_idx_extension(self):
-        s = core.rt.IndexProperty_GetFileNameExtensionIdx(self.handle)
-        return string_output(s)
+        return core.rt.IndexProperty_GetFileNameExtensionIdx(self.handle)
+
 
     def set_idx_extension(self, value):
         if isinstance(value, string_types):
