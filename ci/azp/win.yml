@@ -32,14 +32,9 @@ jobs:
       conda install --yes --quiet --name rtree python=%PYTHON_VERSION% libspatialindex=%SIDX_VERSION%
     displayName: Install Anaconda packages
 
-  - bash: |
-      source activate rtree
-      pip install flake8
-      flake8 --ignore=E501 --exclude=rtree/__init__.py rtree/
-    displayName: Flake8 linting
-
   - script: |
       call activate rtree
-      pip install pytest numpy
+      pip install flake8 pytest numpy
+      flake8 --ignore=E501 --exclude=rtree/__init__.py rtree/
       python -m pytest --doctest-modules rtree tests
     displayName: pytest
