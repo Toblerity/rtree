@@ -8,7 +8,6 @@ from . import core
 import pickle
 
 
-
 RT_Memory = 0
 RT_Disk = 1
 RT_Custom = 2
