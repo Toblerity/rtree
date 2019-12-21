@@ -14,6 +14,7 @@ jobs:
     displayName: pip install
 
   - bash: |
-      pip3 install pytest numpy
+      pip3 install flake8 pytest numpy
+      flake8 --ignore=E501 --exclude=rtree/__init__.py rtree/
       python3 -m pytest --doctest-modules rtree tests/test_*
     displayName: pytest
