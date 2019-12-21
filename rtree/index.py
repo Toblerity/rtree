@@ -7,8 +7,6 @@ from . import core
 
 import pickle
 
-import sys
-
 
 
 RT_Memory = 0
@@ -1508,7 +1506,6 @@ class Property(object):
     def get_filename(self):
         return core.rt.IndexProperty_GetFileName(self.handle).decode()
 
-
     def set_filename(self, value):
         if isinstance(value, str):
             value = value.encode('utf-8')
@@ -1519,7 +1516,6 @@ class Property(object):
 
     def get_dat_extension(self):
         return core.rt.IndexProperty_GetFileNameExtensionDat(self.handle).decode()
-
 
     def set_dat_extension(self, value):
         if isinstance(value, str):
@@ -1532,7 +1528,6 @@ class Property(object):
 
     def get_idx_extension(self):
         return core.rt.IndexProperty_GetFileNameExtensionIdx(self.handle).decode()
-
 
     def set_idx_extension(self, value):
         if isinstance(value, str):
