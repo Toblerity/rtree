@@ -32,7 +32,12 @@ jobs:
 
   - bash: |
       source activate rtree
-      pip install flake8 pytest numpy
+      pip install flake8
       flake8 --ignore=E501 --exclude=rtree/__init__.py rtree/
+    displayName: Flake8 linting
+
+  - bash: |
+      source activate rtree
+      pip install pytest numpy
       python -m pytest --doctest-modules rtree tests/test_*
     displayName: pytest

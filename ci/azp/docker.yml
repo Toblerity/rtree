@@ -30,13 +30,18 @@ jobs:
     displayName: 'Install Rtree'
 
   - bash: |
+      source activate rtree
+      pip install flake8
+      flake8 --ignore=E501 --exclude=rtree/__init__.py rtree/
+    displayName: Flake8 linting
+
+  - bash: |
       export PATH="$HOME/miniconda/bin:$PATH"
       source activate test-environment
       sudo locale-gen en_US.UTF-8
       sudo update-locale LANG=en_US.UTF-8
       export LANG="en_US.UTF-8"
       export LC_ALL="en_US.UTF-8"
-      pip install flake8 pytest numpy
-      flake8 --ignore=E501 --exclude=rtree/__init__.py rtree/
+      pip install pytest numpy
       python -m pytest --doctest-modules rtree tests/test_*
     displayName: 'Run pytest'
