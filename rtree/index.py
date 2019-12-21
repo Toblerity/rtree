@@ -5,24 +5,8 @@ import pprint
 
 from . import core
 
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
+import pickle
 
-import sys
-if sys.version_info[0] == 2:
-    range = xrange
-    string_types = basestring
-elif sys.version_info[0] == 3:
-    string_types = str
-
-
-def string_output(s):
-    if sys.version_info[0] == 2:
-        return s
-    elif sys.version_info[0] == 3:
-        return s.decode('UTF-8')
 
 RT_Memory = 0
 RT_Disk = 1
@@ -61,10 +45,12 @@ def _get_bounds(handle, bounds_fn, interleaved):
     if (dimension.value == 0):
         return None
 
-    mins = ctypes.cast(pp_mins, ctypes.POINTER(ctypes.c_double
-                                               * dimension.value))
-    maxs = ctypes.cast(pp_maxs, ctypes.POINTER(ctypes.c_double
-                                               * dimension.value))
+    mins = ctypes.cast(
+        pp_mins, ctypes.POINTER(ctypes.c_double * dimension.value)
+    )
+    maxs = ctypes.cast(
+        pp_maxs, ctypes.POINTER(ctypes.c_double * dimension.value)
+    )
 
     results = [mins.contents[i] for i in range(dimension.value)]
     results += [maxs.contents[i] for i in range(dimension.value)]
@@ -94,7 +80,7 @@ def _get_data(handle):
 class Index(object):
     """An R-Tree, MVR-Tree, or TPR-Tree indexing object"""
 
-    def __init__(self,  *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         """Creates a new index
 
         :param filename:
@@ -220,7 +206,7 @@ class Index(object):
         basename = None
         storage = None
         if args:
-            if isinstance(args[0], string_types) or isinstance(args[0], bytes):
+            if isinstance(args[0], str) or isinstance(args[0], bytes):
                 # they sent in a filename
                 basename = args[0]
                 # they sent in a filename, stream
@@ -282,7 +268,6 @@ class Index(object):
             storage.registerCallbacks(self.properties)
         else:
             self.properties.storage = RT_Memory
-
 
         ps = kwargs.get('pagesize', None)
         if ps:
@@ -386,7 +371,6 @@ class Index(object):
         # return serialized to keep it alive for the pointer.
         return size, ctypes.cast(p, ctypes.POINTER(ctypes.c_uint8)), serialized
 
-
     def set_result_limit(self, value):
         return core.rt.Index_SetResultSetOffset(self.handle, value)
 
@@ -463,7 +447,7 @@ class Index(object):
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
         # End time isn't used
-        t_start, t_end = self._get_time_doubles((time, time+1))
+        t_start, t_end = self._get_time_doubles((time, time + 1))
         data = ctypes.c_ubyte(0)
         size = 0
         if obj is not None:
@@ -528,7 +512,6 @@ class Index(object):
                                        ctypes.byref(p_num_results))
 
         return p_num_results.value
-
 
     def _countTP(self, coordinates, velocities, times):
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
@@ -777,7 +760,7 @@ class Index(object):
                         yield self.loads(data)
 
             core.rt.Index_DestroyObjResults(its, num_results)
-        except:  # need to catch all exceptions, not just rtree.
+        except Exception:  # need to catch all exceptions, not just rtree.
             core.rt.Index_DestroyObjResults(its, num_results)
             raise
 
@@ -790,7 +773,7 @@ class Index(object):
             for i in range(num_results):
                 yield items.contents[i]
             core.rt.Index_Free(its)
-        except:
+        except Exception:
             core.rt.Index_Free(its)
             raise
 
@@ -865,10 +848,9 @@ class Index(object):
                                           ctypes.byref(it),
                                           p_num_results)
 
-        return self._get_ids(it, min(num_results,p_num_results.contents.value))
+        return self._get_ids(it, min(num_results, p_num_results.contents.value))
 
-    def _nearestTP(self, coordinates, velocities, times, num_results=1,
-                  objects=False):
+    def _nearestTP(self, coordinates, velocities, times, num_results=1, objects=False):
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
         t_start, t_end = self._get_time_doubles(times)
@@ -1049,8 +1031,8 @@ class Index(object):
             # this code assumes the coords are not interleaved.
             # xmin, xmax, ymin, ymax, zmin, zmax
             for i in range(dimension):
-                mins[i] = coordinates[i*2]
-                maxs[i] = coordinates[(i*2)+1]
+                mins[i] = coordinates[i * 2]
+                maxs[i] = coordinates[(i * 2) + 1]
 
             p_mins[0] = ctypes.cast(mins, ctypes.POINTER(ctypes.c_double))
             p_maxs[0] = ctypes.cast(maxs, ctypes.POINTER(ctypes.c_double))
@@ -1144,6 +1126,7 @@ class Index(object):
 
         return output
 
+
 # An alias to preserve backward compatibility
 Rtree = Index
 
@@ -1208,8 +1191,8 @@ class Handle(object):
         try:
 
             if self._ptr is not None:
-               self._destroy(self._ptr)
-               self._ptr = None
+                self._destroy(self._ptr)
+                self._ptr = None
         except AttributeError:
             pass
 
@@ -1239,9 +1222,10 @@ class IndexHandle(Handle):
         try:
             core.rt.Index_Flush
             if self._ptr is not None:
-               core.rt.Index_Flush(self._ptr)
+                core.rt.Index_Flush(self._ptr)
         except AttributeError:
             pass
+
 
 class IndexStreamHandle(IndexHandle):
 
@@ -1519,11 +1503,10 @@ class Property(object):
     """Reinsert factor"""
 
     def get_filename(self):
-        s = core.rt.IndexProperty_GetFileName(self.handle)
-        return string_output(s)
+        return core.rt.IndexProperty_GetFileName(self.handle).decode()
 
     def set_filename(self, value):
-        if isinstance(value, string_types):
+        if isinstance(value, str):
             value = value.encode('utf-8')
         return core.rt.IndexProperty_SetFileName(self.handle, value)
 
@@ -1531,11 +1514,10 @@ class Property(object):
     """Index filename for disk storage"""
 
     def get_dat_extension(self):
-        s = core.rt.IndexProperty_GetFileNameExtensionDat(self.handle)
-        return string_output(s)
+        return core.rt.IndexProperty_GetFileNameExtensionDat(self.handle).decode()
 
     def set_dat_extension(self, value):
-        if isinstance(value, string_types):
+        if isinstance(value, str):
             value = value.encode('utf-8')
         return core.rt.IndexProperty_SetFileNameExtensionDat(
             self.handle, value)
@@ -1544,11 +1526,10 @@ class Property(object):
     """Extension for .dat file"""
 
     def get_idx_extension(self):
-        s = core.rt.IndexProperty_GetFileNameExtensionIdx(self.handle)
-        return string_output(s)
+        return core.rt.IndexProperty_GetFileNameExtensionIdx(self.handle).decode()
 
     def set_idx_extension(self, value):
-        if isinstance(value, string_types):
+        if isinstance(value, str):
             value = value.encode('utf-8')
         return core.rt.IndexProperty_SetFileNameExtensionIdx(
             self.handle, value)
@@ -1858,7 +1839,7 @@ class RtreeContainer(Rtree):
             [34.37768294..., 26.73758537..., 49.37768294..., 41.73758537...]
         """
         if args:
-            if isinstance(args[0], string_types) \
+            if isinstance(args[0], str) \
                     or isinstance(args[0], bytes) \
                     or isinstance(args[0], ICustomStorage):
                 raise ValueError('%s supports only in-memory indexes'
@@ -1978,11 +1959,11 @@ class RtreeContainer(Rtree):
             49.3776829412, 41.7375853734])]
 
         """
-        if bbox == False:
+        if bbox is False:
             for id in super(RtreeContainer,
                             self).intersection(coordinates, bbox):
                 yield self._objects[id][1]
-        elif bbox == True:
+        elif bbox is True:
             for value in super(RtreeContainer,
                                self).intersection(coordinates, bbox):
                 value.object = self._objects[value.id][1]
@@ -1992,7 +1973,7 @@ class RtreeContainer(Rtree):
             raise ValueError(
                 "valid values for the bbox argument are True and False")
 
-    def nearest(self, coordinates, num_results = 1, bbox=False):
+    def nearest(self, coordinates, num_results=1, bbox=False):
         """Returns the ``k``-nearest objects to the given coordinates
         in increasing distance order.
 
@@ -2026,11 +2007,11 @@ class RtreeContainer(Rtree):
             >>> idx.insert(object(), (34.37, 26.73, 49.37, 41.73))
             >>> hits = idx.nearest((0, 0, 10, 10), 3, bbox=True)
         """
-        if bbox == False:
+        if bbox is False:
             for id in super(RtreeContainer,
                             self).nearest(coordinates, num_results, bbox):
                 yield self._objects[id][1]
-        elif bbox == True:
+        elif bbox is True:
             for value in super(RtreeContainer,
                                self).nearest(coordinates, num_results, bbox):
                 value.object = self._objects[value.id][1]

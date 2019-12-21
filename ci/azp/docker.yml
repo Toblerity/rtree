@@ -36,6 +36,7 @@ jobs:
       sudo update-locale LANG=en_US.UTF-8
       export LANG="en_US.UTF-8"
       export LC_ALL="en_US.UTF-8"
-      pip install pytest numpy
+      pip install flake8 pytest numpy
+      flake8 --ignore=E501 --exclude=rtree/__init__.py rtree/
       python -m pytest --doctest-modules rtree tests/test_*
-    displayName: 'Run pytest'
+    displayName: Lint with Flake8 and run unit tests
