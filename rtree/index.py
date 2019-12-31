@@ -284,6 +284,12 @@ class Index(object):
                 for item in stream:
                     self.insert(*item)
 
+    def size(self):
+        return self.count(self.bounds)
+
+    def __repr__(self):
+        return f'rtree.index.Index(bounds={self.bounds}, size={self.size()})'
+
     def __getstate__(self):
         state = self.__dict__.copy()
         del state["handle"]
