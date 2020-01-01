@@ -291,7 +291,7 @@ class Index(object):
             return 0
 
     def __repr__(self):
-        return f'rtree.index.Index(bounds={self.bounds}, size={self.get_size()})'
+        return 'rtree.index.Index(bounds={}, size={})'.format(self.bounds, self.get_size())
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -1863,7 +1863,7 @@ class RtreeContainer(Rtree):
             return 0
 
     def __repr__(self):
-        return f'rtree.index.RtreeContainer(bounds={self.bounds}, size={self.get_size()})'
+        return 'rtree.index.RtreeContainer(bounds={}, size={})'.format(self.bounds, self.get_size())
 
     def __contains__(self, obj):
         return id(obj) in self._objects
