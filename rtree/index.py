@@ -147,7 +147,7 @@ class Index(object):
 
             >>> idx = index.Index(properties=p)
             >>> idx  # doctest: +ELLIPSIS
-            <rtree.index.Index object at 0x...>
+            rtree.index.Index(bounds=[1.7976931348623157e+308, 1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308], size=0)
 
         Insert an item into the index::
 
@@ -283,6 +283,15 @@ class Index(object):
             if stream:  # Bulk insert not supported, so add one by one
                 for item in stream:
                     self.insert(*item)
+
+    def get_size(self):
+        try:
+            return self.count(self.bounds)
+        except core.RTreeError:
+            return 0
+
+    def __repr__(self):
+        return 'rtree.index.Index(bounds={}, size={})'.format(self.bounds, self.get_size())
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -1821,7 +1830,7 @@ class RtreeContainer(Rtree):
 
             >>> idx = index.RtreeContainer(properties=p)
             >>> idx  # doctest: +ELLIPSIS
-            <rtree.index.RtreeContainer object at 0x...>
+            rtree.index.RtreeContainer(bounds=[1.7976931348623157e+308, 1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308], size=0)
 
         Insert an item into the index::
 
@@ -1846,6 +1855,15 @@ class RtreeContainer(Rtree):
                                  % self.__class__)
         self._objects = {}
         return super(RtreeContainer, self).__init__(*args, **kwargs)
+
+    def get_size(self):
+        try:
+            return self.count(self.bounds)
+        except core.RTreeError:
+            return 0
+
+    def __repr__(self):
+        return 'rtree.index.RtreeContainer(bounds={}, size={})'.format(self.bounds, self.get_size())
 
     def __contains__(self, obj):
         return id(obj) in self._objects
