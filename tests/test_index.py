@@ -340,6 +340,38 @@ class IndexNearest(IndexTestCase):
             idx.add(i, (start, 1, stop, 1))
         hits = sorted(idx.nearest((13, 0, 20, 2), 3))
         self.assertEqual(hits, [3, 4, 5])
+    
+    def test_nearest_equidistant(self):
+        """Test that if records are equidistant, both are returned."""
+        point = (0, 0)
+        small_box = (-10, -10, 10, 10)
+        large_box = (-50, -50, 50, 50)
+
+        idx = index.Index()
+        idx.insert(0, small_box)
+        idx.insert(1, large_box)
+        self.assertEqual(list(idx.nearest(point, 2)), [0, 1])
+        self.assertEqual(list(idx.nearest(point, 1)), [0, 1])
+
+        idx.insert(2, (0, 0))
+        self.assertEqual(list(idx.nearest(point, 2)), [0, 1, 2])
+        self.assertEqual(list(idx.nearest(point, 1)), [0, 1, 2])
+
+        idx = index.Index()
+        idx.insert(0, small_box)
+        idx.insert(1, large_box)
+        idx.insert(2, (50, 50)) # point on top right vertex of large_box
+        point = (51, 51) # right outside of large_box
+        self.assertEqual(list(idx.nearest(point, 2)), [1, 2])
+        self.assertEqual(list(idx.nearest(point, 1)), [1, 2])
+
+        idx = index.Index()
+        idx.insert(0, small_box)
+        idx.insert(1, large_box)
+        idx.insert(2, (51, 51)) # point right outside on top right vertex of large_box
+        point = (51, 52) # shifted 1 unit up from the point above
+        self.assertEqual(list(idx.nearest(point, 2)), [2, 1])
+        self.assertEqual(list(idx.nearest(point, 1)), [2])
 
 
     def test_nearest_object(self):
