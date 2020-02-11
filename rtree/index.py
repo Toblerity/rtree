@@ -846,6 +846,12 @@ class Index(object):
             return self._nearest_obj(coordinates, num_results, objects)
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
 
+        # p_num_results is an input and output for C++ lib
+        # as an input it says "get n closest neighbors"
+        # but if multiple neighbors are at the same distance, both will be returned
+        # so the number of returned neighbors may be > p_num_results
+        # thus p_num_results.contents.value gets set as an output by the C++ lib
+        #  to indicate the actual number of results for _get_ids to use
         p_num_results = ctypes.pointer(ctypes.c_uint64(num_results))
 
         it = ctypes.pointer(ctypes.c_int64())
@@ -857,7 +863,7 @@ class Index(object):
                                           ctypes.byref(it),
                                           p_num_results)
 
-        return self._get_ids(it, min(num_results, p_num_results.contents.value))
+        return self._get_ids(it, p_num_results.contents.value)
 
     def _nearestTP(self, coordinates, velocities, times, num_results=1, objects=False):
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
