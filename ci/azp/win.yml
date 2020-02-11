@@ -29,7 +29,7 @@ jobs:
 
   - script: |
       call activate rtree
-      conda install --yes --quiet --name rtree python=%PYTHON_VERSION% libspatialindex=%SIDX_VERSION%
+      conda install --yes --quiet --name rtree -c conda-forge python=%PYTHON_VERSION% libspatialindex=%SIDX_VERSION%
     displayName: Install Anaconda packages
 
   - script: |
