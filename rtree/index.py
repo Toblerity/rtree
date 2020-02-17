@@ -147,7 +147,11 @@ class Index(object):
 
             >>> idx = index.Index(properties=p)
             >>> idx  # doctest: +ELLIPSIS
-            rtree.index.Index(bounds=[1.7976931348623157e+308, 1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308], size=0)
+            rtree.index.Index(bounds=[1.7976931348623157e+308,
+            ...                       1.7976931348623157e+308,
+            ...                       -1.7976931348623157e+308,
+            ...                       -1.7976931348623157e+308],
+            ...                       size=0)
 
         Insert an item into the index::
 
@@ -291,7 +295,8 @@ class Index(object):
             return 0
 
     def __repr__(self):
-        return 'rtree.index.Index(bounds={}, size={})'.format(self.bounds, self.get_size())
+        return 'rtree.index.Index(bounds={}, size={})'.format(self.bounds,
+                                                              self.get_size())
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -848,10 +853,12 @@ class Index(object):
 
         # p_num_results is an input and output for C++ lib
         # as an input it says "get n closest neighbors"
-        # but if multiple neighbors are at the same distance, both will be returned
+        # but if multiple neighbors are at the same distance, both
+        # will be returned
         # so the number of returned neighbors may be > p_num_results
-        # thus p_num_results.contents.value gets set as an output by the C++ lib
-        #  to indicate the actual number of results for _get_ids to use
+        # thus p_num_results.contents.value gets set as an output by the
+        # C++ lib to indicate the actual number of results for
+        # _get_ids to use
         p_num_results = ctypes.pointer(ctypes.c_uint64(num_results))
 
         it = ctypes.pointer(ctypes.c_int64())
@@ -865,7 +872,12 @@ class Index(object):
 
         return self._get_ids(it, p_num_results.contents.value)
 
-    def _nearestTP(self, coordinates, velocities, times, num_results=1, objects=False):
+    def _nearestTP(self,
+                   coordinates,
+                   velocities,
+                   times,
+                   num_results=1,
+                   objects=False):
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
         t_start, t_end = self._get_time_doubles(times)
@@ -1529,7 +1541,8 @@ class Property(object):
     """Index filename for disk storage"""
 
     def get_dat_extension(self):
-        return core.rt.IndexProperty_GetFileNameExtensionDat(self.handle).decode()
+        ext = core.rt.IndexProperty_GetFileNameExtensionDat(self.handle)
+        return ext.decode()
 
     def set_dat_extension(self, value):
         if isinstance(value, str):
@@ -1541,7 +1554,8 @@ class Property(object):
     """Extension for .dat file"""
 
     def get_idx_extension(self):
-        return core.rt.IndexProperty_GetFileNameExtensionIdx(self.handle).decode()
+        ext = core.rt.IndexProperty_GetFileNameExtensionIdx(self.handle)
+        return ext.decode()
 
     def set_idx_extension(self, value):
         if isinstance(value, str):
@@ -1836,7 +1850,11 @@ class RtreeContainer(Rtree):
 
             >>> idx = index.RtreeContainer(properties=p)
             >>> idx  # doctest: +ELLIPSIS
-            rtree.index.RtreeContainer(bounds=[1.7976931348623157e+308, 1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308], size=0)
+            rtree.index.RtreeContainer(bounds=[1.7976931348623157e+308,
+            ...                        1.7976931348623157e+308,
+            ...                        -1.7976931348623157e+308,
+            ...                        -1.7976931348623157e+308],
+            ...                        size=0)
 
         Insert an item into the index::
 
@@ -1869,7 +1887,8 @@ class RtreeContainer(Rtree):
             return 0
 
     def __repr__(self):
-        return 'rtree.index.RtreeContainer(bounds={}, size={})'.format(self.bounds, self.get_size())
+        m = 'rtree.index.RtreeContainer(bounds={}, size={})'
+        return m.format(self.bounds, self.get_size())
 
     def __contains__(self, obj):
         return id(obj) in self._objects

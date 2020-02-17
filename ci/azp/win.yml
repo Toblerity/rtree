@@ -35,6 +35,6 @@ jobs:
   - script: |
       call activate rtree
       pip install flake8 pytest numpy
-      flake8 --ignore=E501 --exclude=rtree/__init__.py rtree/
+      flake8 rtree/
       python -m pytest --doctest-modules rtree tests
     displayName: Lint with Flake8 and run unit tests
