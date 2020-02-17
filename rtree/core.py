@@ -117,9 +117,6 @@ if os.name == 'nt':
     if 'SPATIALINDEX_C_LIBRARY' in os.environ:
         lib_path, lib_name = os.path.split(os.environ['SPATIALINDEX_C_LIBRARY'])
         rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
-    elif 'conda' in sys.version:
-        lib_path = os.path.join(sys.prefix, "Library", "bin")
-        rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
     else:
         rt = _load_library(lib_name, ctypes.cdll.LoadLibrary)
     if not rt:
