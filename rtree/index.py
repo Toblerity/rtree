@@ -147,11 +147,7 @@ class Index(object):
 
             >>> idx = index.Index(properties=p)
             >>> idx  # doctest: +ELLIPSIS
-            rtree.index.Index(bounds=[1.7976931348623157e+308,
-            ...                       1.7976931348623157e+308,
-            ...                       -1.7976931348623157e+308,
-            ...                       -1.7976931348623157e+308],
-            ...                       size=0)
+            rtree.index.Index(bounds=[1.7976931348623157e+308, 1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308], size=0) # noqa: E501
 
         Insert an item into the index::
 
@@ -1850,11 +1846,7 @@ class RtreeContainer(Rtree):
 
             >>> idx = index.RtreeContainer(properties=p)
             >>> idx  # doctest: +ELLIPSIS
-            rtree.index.RtreeContainer(bounds=[1.7976931348623157e+308,
-            ...                        1.7976931348623157e+308,
-            ...                        -1.7976931348623157e+308,
-            ...                        -1.7976931348623157e+308],
-            ...                        size=0)
+            rtree.index.RtreeContainer(bounds=[1.7976931348623157e+308, 1.7976931348623157e+308, -1.7976931348623157e+308, -1.7976931348623157e+308], size=0) # noqa: E501
 
         Insert an item into the index::
 
