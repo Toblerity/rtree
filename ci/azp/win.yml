@@ -34,6 +34,7 @@ jobs:
 
   - script: |
       call activate rtree
+      set CONDA_DLL_SEARCH_MODIFICATION_ENABLE=1
       pip install flake8 pytest numpy
       flake8 --ignore=E501 --exclude=rtree/__init__.py rtree/
       python -m pytest --doctest-modules rtree tests
