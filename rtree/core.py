@@ -81,7 +81,7 @@ if os.name == 'nt':
 
     def _load_library(dllname, loadfunction, dllpaths=('', )):
         """Load a DLL via ctypes load function. Return None on failure.
-        Try loading the DLL from the current package's directory first,
+        Try loading the DLL from the current package directory first,
         then from the Windows DLL search path.
         """
         try:
