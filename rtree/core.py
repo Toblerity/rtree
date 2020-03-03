@@ -81,11 +81,11 @@ if os.name == 'nt':
 
     def _load_library(dllname, loadfunction, dllpaths=('', )):
         """Load a DLL via ctypes load function. Return None on failure.
-        Try loading the DLL from the current package directory first,
+        Try loading the DLL from the current package's lib directory first,
         then from the Windows DLL search path.
         """
         try:
-            dllpaths = (os.path.abspath(os.path.dirname(__file__)),
+            dllpaths = (os.path.abspath(os.path.join(os.path.dirname(__file__), "lib")),
                         ) + dllpaths
         except NameError:
             pass  # no __file__ attribute on PyPy and some frozen distributions
@@ -122,7 +122,8 @@ if os.name == 'nt':
         lib_path = os.path.join(sys.prefix, "Library", "bin")
         rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
     else:
-        rt = _load_library(lib_name, ctypes.cdll.LoadLibrary)
+        lib_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "lib"))
+        rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
     import sys
     sys.stderr.write('path: %s\n' % (rt))
     if not rt:
@@ -134,8 +135,13 @@ elif os.name == 'posix':
         lib_name = os.environ['SPATIALINDEX_C_LIBRARY']
         rt = ctypes.CDLL(lib_name)
     else:
-        lib_name = find_library('spatialindex_c')
-        rt = ctypes.CDLL(lib_name)
+        lib_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "lib"))
+        # HACK: We need to be inside the library folder to load the library.
+        old_dir = os.getcwd()
+        os.chdir(lib_path)
+        rt = ctypes.cdll.LoadLibrary("libspatialindex_c.so")
+        # Switch back to the original working directory
+        os.chdir(old_dir)
 
     if not rt:
         raise OSError("Could not load libspatialindex_c library")

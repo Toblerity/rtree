@@ -5,6 +5,15 @@ import os
 
 import itertools as it
 
+try:
+    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+    class bdist_wheel(_bdist_wheel):
+        def finalize_options(self):
+            _bdist_wheel.finalize_options(self)
+            self.root_is_pure = False
+except ImportError:
+    bdist_wheel = None
+
 # Get text from README.txt
 with open('docs/source/README.txt', 'r') as fp:
     readme_text = fp.read()
@@ -28,6 +37,8 @@ setup(
     url   = 'https://github.com/Toblerity/rtree',
     long_description = readme_text,
     packages      = ['rtree'],
+    include_package_data=True,
+    package_data={"rtree": ["lib/*", "include/**/*", "include/**/**/*"]},
     install_requires = ['setuptools'],
     extras_require = extras_require,
     tests_require = extras_require['test'],
@@ -44,4 +55,5 @@ setup(
       'Topic :: Scientific/Engineering :: GIS',
       'Topic :: Database',
       ],
+    cmdclass={'bdist_wheel': bdist_wheel}
 )
