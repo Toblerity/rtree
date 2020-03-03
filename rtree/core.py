@@ -81,11 +81,11 @@ if os.name == 'nt':
 
     def _load_library(dllname, loadfunction, dllpaths=('', )):
         """Load a DLL via ctypes load function. Return None on failure.
-        Try loading the DLL from the current package's lib directory first,
+        Try loading the DLL from the current package's directory first,
         then from the Windows DLL search path.
         """
         try:
-            dllpaths = (os.path.abspath(os.path.join(os.path.dirname(__file__), "lib")),
+            dllpaths = (os.path.abspath(os.path.dirname(__file__)),
                         ) + dllpaths
         except NameError:
             pass  # no __file__ attribute on PyPy and some frozen distributions
@@ -122,8 +122,7 @@ if os.name == 'nt':
         lib_path = os.path.join(sys.prefix, "Library", "bin")
         rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
     else:
-        lib_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "lib"))
-        rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
+        rt = _load_library(lib_name, ctypes.cdll.LoadLibrary)
     import sys
     sys.stderr.write('path: %s\n' % (rt))
     if not rt:
