@@ -21,19 +21,18 @@ jobs:
       shell: bash -l {0}
       run: |
           sudo apt install libspatialindex-c4v5 python3-pip
+          python3 -m pip install --upgrade pip
+          python3 -m pip install setuptools numpy flake8 pytest
 
-    - name: Install
+    - name: Build
       shell: bash -l {0}
       run: |
-        python3 -m pip install setuptools numpy pip --upgrade
         python3 -m pip install -e .
     - name: Lint with flake8
       shell: bash -l {0}
       run: |
-        python3 -m pip install flake8
         flake8 rtree/
     - name: Test with pytest
       shell: bash -l {0}
       run: |
-        python3 -m pip install pytest
         python3 -m pytest --doctest-modules rtree tests
