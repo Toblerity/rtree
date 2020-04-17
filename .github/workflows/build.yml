@@ -1,4 +1,4 @@
-name: Conda
+name: Build
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   conda:
-    name: ${{ matrix.python-version }} - ${{ matrix.os }}
+    name: Conda ${{ matrix.python-version }} - ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
     strategy:
