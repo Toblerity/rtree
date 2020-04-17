@@ -25,15 +25,15 @@ jobs:
     - name: Install
       shell: bash -l {0}
       run: |
-        pip3 install setuptools numpy pip --upgrade
-        pip3 install -e .
+        python3 -m pip install setuptools numpy pip --upgrade
+        python3 -m pip install -e .
     - name: Lint with flake8
       shell: bash -l {0}
       run: |
-        pip3 install flake8
+        python3 -m pip install flake8
         flake8 rtree/
     - name: Test with pytest
       shell: bash -l {0}
       run: |
-        pip install pytest
-        python -m pytest --doctest-modules rtree tests
+        python3 -m pip install pytest
+        python3 -m pytest --doctest-modules rtree tests
