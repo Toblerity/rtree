@@ -45,7 +45,7 @@ jobs:
         python -m pytest --doctest-modules rtree tests
 
   ubuntu:
-    name: ${{ matrix.os }}
+    name: Ubuntu ${{ matrix.os }}
 
     runs-on: ubuntu-16.04
     strategy:
@@ -75,3 +75,40 @@ jobs:
       shell: bash -l {0}
       run: |
         python3 -m pytest --doctest-modules rtree tests
+
+  docs:
+    name: Docs
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: docker://osgeo/proj-docs
+    - name: Print versions
+      shell: bash -l {0}
+      run: |
+          python3 --version
+          sphinx-build --version
+    - name: Lint .rst files
+      shell: bash -l {0}
+      run: |
+        if find . -name '*.rst' | xargs grep -P '\t'; then echo 'Tabs are bad, please use four spaces in .rst files.'; false; fi
+      working-directory: ./docs
+    - name: Doxygen
+      shell: bash -l {0}
+      run: |
+        make doxygen
+      working-directory: ./docs
+    - name: HTML
+      shell: bash -l {0}
+      run: |
+        make html
+      working-directory: ./docs
+    - name: PDF
+      shell: bash -l {0}
+      run: |
+        make latexpdf
+      working-directory: ./docs
+
