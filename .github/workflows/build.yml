@@ -99,6 +99,8 @@ jobs:
     - name: Doxygen
       shell: bash -l {0}
       run: |
+        ls
+        less Makefile
         make doxygen
       working-directory: ./docs
     - name: HTML
