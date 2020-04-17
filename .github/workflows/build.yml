@@ -82,10 +82,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
+    container: osgeo/proj-docs
 
     steps:
     - uses: actions/checkout@v2
-    - uses: docker://osgeo/proj-docs
     - name: Print versions
       shell: bash -l {0}
       run: |
