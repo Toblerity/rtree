@@ -25,7 +25,7 @@ jobs:
     - name: Install
       shell: bash -l {0}
       run: |
-        pip3 install setuptools numpy
+        pip3 install setuptools numpy pip --upgrade
         pip3 install -e .
     - name: Lint with flake8
       shell: bash -l {0}
