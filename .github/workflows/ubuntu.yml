@@ -31,6 +31,7 @@ jobs:
     - name: Lint with flake8
       shell: bash -l {0}
       run: |
+        export PATH=$PATH:/home/runner/.local/bin
         flake8 rtree/
     - name: Test with pytest
       shell: bash -l {0}
