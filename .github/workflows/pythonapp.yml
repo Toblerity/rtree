@@ -7,6 +7,8 @@ on:
 
 jobs:
   build:
+    name: Conda ${{ matrix.python-version }} - ${{ matrix.os }}
+
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
