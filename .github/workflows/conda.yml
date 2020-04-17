@@ -1,4 +1,4 @@
-name: Rtree
+name: Conda
 
 on:
   pull_request:
@@ -6,8 +6,8 @@ on:
     - '*'
 
 jobs:
-  build:
-    name: Conda ${{ matrix.python-version }} - ${{ matrix.os }}
+  conda:
+    name: ${{ matrix.python-version }} - ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
     strategy:
