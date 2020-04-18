@@ -77,7 +77,7 @@ jobs:
         python3 -m pytest --doctest-modules rtree tests
 
 
-  wheel:
+  linux-wheel:
     name: Linux Wheels
 
     runs-on: ubuntu-latest
@@ -91,6 +91,34 @@ jobs:
       run: |
           docker run -v $(pwd):/src quay.io/pypa/manylinux1_x86_64 /src/build-wheel.sh
 
+  windows-wheel:
+    name: Windows Wheels
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ['windows-latest']
+        python-version: ['3.8']
+        sidx-version: ['1.9.3']
+      fail-fast: true
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: goanpeca/setup-miniconda@v1.1.2
+      with:
+        channels: conda-forge
+        auto-update-conda: true
+        python-version: ${{ matrix.python-version }}
+    - name: Setup
+      shell: bash -l {0}
+      run: |
+          conda install -c conda-forge compilers -y
+          pip install cmake ninja
+
+    - name: build
+      shell: cmd /C CALL "{0}"
+      run: |
+        .\build-wheel.bat ${{ matrix.sidx-version }}
 
   docs:
     name: Docs
