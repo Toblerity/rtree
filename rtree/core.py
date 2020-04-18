@@ -148,12 +148,12 @@ elif os.name == 'posix':
             # Switch back to the original working directory
             os.chdir(old_dir)
             if not rt:
-                raise FileNotFoundError(f'{full_path} not loaded')
+                raise FileNotFoundError("%s not loaded" % full_path)
         except FileNotFoundError:
             lib_name = find_library('spatialindex_c')
             rt = ctypes.CDLL(lib_name)
             if not rt:
-                raise FileNotFoundError(f'{lib_name} not loaded')
+                raise FileNotFoundError("%s not loaded" % full_path)
 
     if not rt:
         raise OSError("Could not load libspatialindex_c library")
