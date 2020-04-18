@@ -138,20 +138,22 @@ elif os.name == 'posix':
             # try loading libspatialindex from the wheel location
             # inside the package
 
-            lib_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "lib"))
+            lib_path = os.path.abspath(os.path.join( \
+                       os.path.dirname(__file__), "lib"))
             old_dir = os.getcwd()
             os.chdir(lib_path)
-            full_path = os.path.join(lib_path,"libspatialindex_c.so")
+            full_path = os.path.join(lib_path, "libspatialindex_c.so")
             rt = ctypes.cdll.LoadLibrary(full_path)
 
             # Switch back to the original working directory
             os.chdir(old_dir)
-            if not rt: raise FileNotFoundError(f'{full_path} not loaded')
+            if not rt:
+                raise FileNotFoundError(f'{full_path} not loaded')
         except FileNotFoundError:
-#
             lib_name = find_library('spatialindex_c')
             rt = ctypes.CDLL(lib_name)
-            if not rt: raise FileNotFoundError(f'{lib_name} not loaded')
+            if not rt:
+                raise FileNotFoundError(f'{lib_name} not loaded')
 
     if not rt:
         raise OSError("Could not load libspatialindex_c library")
