@@ -138,7 +138,7 @@ elif os.name == 'posix':
             # try loading libspatialindex from the wheel location
             # inside the package
 
-            lib_path = os.path.abspath(os.path.join( \
+            lib_path = os.path.abspath(os.path.join(
                        os.path.dirname(__file__), "lib"))
             old_dir = os.getcwd()
             os.chdir(lib_path)

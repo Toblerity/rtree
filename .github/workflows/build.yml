@@ -65,7 +65,7 @@ jobs:
     - name: Build
       shell: bash -l {0}
       run: |
-        python3 -m pip install -e .
+        python3 -m pip install --user .
     - name: Lint with flake8
       shell: bash -l {0}
       run: |
@@ -89,7 +89,7 @@ jobs:
     - name: Build
       shell: bash -l {0}
       run: |
-          docker run -v $(pwd):/src quay.io/pypa/manylinux2014_x86_64 /src/python-wheel-build.sh /src/build-wheel.sh
+          docker run -v $(pwd):/src quay.io/pypa/manylinux1_x86_64 /src/build-wheel.sh
 
 
   docs:
