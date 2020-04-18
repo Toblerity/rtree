@@ -118,7 +118,7 @@ jobs:
     - name: build
       shell: cmd /C CALL "{0}"
       run: |
-        .\build-wheel.bat ${{ matrix.sidx-version }}
+        .\build-wheel.bat ${{ matrix.sidx-version }}
 
   docs:
     name: Docs
