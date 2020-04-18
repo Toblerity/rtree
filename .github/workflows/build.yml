@@ -83,14 +83,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
-    container:  quay.io/pypa/manylinux1_x86_64
 
     steps:
     - uses: actions/checkout@v2
     - name: Build
       shell: bash -l {0}
       run: |
-          ./build-wheel.sh
+          docker run -v $(pwd):/src quay.io/pypa/manylinux2014_x86_64 /src/python-wheel-build.sh /src/build-wheel.sh
 
 
   docs:
