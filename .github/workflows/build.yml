@@ -76,6 +76,23 @@ jobs:
       run: |
         python3 -m pytest --doctest-modules rtree tests
 
+
+  wheel:
+    name: Linux Wheels
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+    container:  quay.io/pypa/manylinux1_x86_64
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      shell: bash -l {0}
+      run: |
+          ./build-wheel.sh
+
+
   docs:
     name: Docs
 
