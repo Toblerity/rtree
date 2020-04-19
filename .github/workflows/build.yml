@@ -91,11 +91,10 @@ jobs:
       run: |
           docker run -v $(pwd):/src quay.io/pypa/manylinux1_x86_64 /src/build-wheel.sh
 
-    - name: Collect wheels
-        uses: actions/upload-artifact@v1
-        with:
-          name: manylinux-wheel
-          path: dist
+    - uses: actions/upload-artifact@v1
+      with:
+        name: manylinux-wheel
+        path: dist
 
   windows-wheel:
     name: Win64 ${{ matrix.python-version }} Wheel
@@ -126,11 +125,10 @@ jobs:
       run: |
         .\build-wheel.bat ${{ matrix.sidx-version }}
 
-    - name: Collect wheels
-        uses: actions/upload-artifact@v1
-        with:
-          name: win64-${{matrix.python-version}}-wheel
-          path: dist
+    - uses: actions/upload-artifact@v1
+      with:
+        name: win64-${{matrix.python-version}}-wheel
+        path: dist
 
   docs:
     name: Docs
@@ -180,26 +178,26 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 setup.py sdist
 
-    - name: Linux wheel
-        uses: actions/upload-artifact@v1
-        with:
-          name: manylinux-wheel
-          path: dist
+    - uses: actions/upload-artifact@v1
+      name: Linux wheel
+      with:
+        name: manylinux-wheel
+        path: dist
 
-    - name: Win64-3.6
-        uses: actions/upload-artifact@v1
-        with:
-          name: win64-3.6-wheel
-          path: dist
+    - uses: actions/upload-artifact@v1
+      name: Win64 3.6 wheel
+      with:
+        name: win64-3.6-wheel
+        path: dist
 
-    - name: Win64-3.7
-        uses: actions/upload-artifact@v1
-        with:
-          name: win64-3.7-wheel
-          path: dist
+    - uses: actions/upload-artifact@v1
+      name: Win64 3.7 wheel
+      with:
+        name: win64-3.7-wheel
+        path: dist
 
-    - name: Win64-3.8
-        uses: actions/upload-artifact@v1
-        with:
-          name: win64-3.8-wheel
-          path: dist
+    - uses: actions/upload-artifact@v1
+      name: Win64 3.8 wheel
+      with:
+        name: win64-3.8-wheel
+        path: dist
