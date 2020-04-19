@@ -21,4 +21,8 @@ ninja
 popd
 cd
 mkdir rtree\lib
+mkdir rtree\include
 copy ".\libspatialindex\libspatialindex-%SIDX_VERSION%\build\bin\*.dll" .\rtree\lib
+copy ".\libspatialindex\libspatialindex-%SIDX_VERSION%\build\include\*" .\rtree\include
+
+python setup.py bdist_wheel
