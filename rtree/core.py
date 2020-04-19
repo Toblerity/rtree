@@ -119,11 +119,13 @@ if os.name == 'nt':
         lib_path, lib_name = \
             os.path.split(os.environ['SPATIALINDEX_C_LIBRARY'])
         rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
-    if not rt: # try wheel location
+    # try wheel location
+    if not rt:
         lib_path = os.path.abspath(os.path.join(
                        os.path.dirname(__file__), "lib"))
         rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
-    if not rt: # try conda location
+    # try conda location
+    if not rt:
         if 'conda' in sys.version:
             lib_path = os.path.join(sys.prefix, "Library", "bin")
             rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
