@@ -171,8 +171,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      shell: bash -l {0}
     - name: Source
+      shell: bash -l {0}
       run: |
           sudo apt install libspatialindex-c4v5 python3-pip
           python3 -m pip install --upgrade pip
