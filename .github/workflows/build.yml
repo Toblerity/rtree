@@ -78,7 +78,7 @@ jobs:
 
 
   linux-wheel:
-    name: Linux Wheels
+    name: ManyLinux Wheel
 
     runs-on: ubuntu-latest
     strategy:
@@ -92,7 +92,7 @@ jobs:
           docker run -v $(pwd):/src quay.io/pypa/manylinux1_x86_64 /src/build-wheel.sh
 
   windows-wheel:
-    name: Windows Wheels
+    name: Win64 ${{ matrix.python-version }} Wheel
 
     runs-on: ${{ matrix.os }}
     strategy:
