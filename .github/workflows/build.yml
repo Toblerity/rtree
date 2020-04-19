@@ -78,7 +78,7 @@ jobs:
 
 
   linux-wheel:
-    name: ManyLinux Wheel
+    name: manylinux Wheel
 
     runs-on: ubuntu-latest
     strategy:
@@ -179,6 +179,7 @@ jobs:
           sudo apt install libspatialindex-c4v5 python3-pip
           python3 -m pip install --upgrade pip
           python3 -m pip install setuptools numpy flake8 pytest
+          export PATH=$PATH:/home/runner/.local/bin
           python3 setup.py sdist
 
     - uses: actions/upload-artifact@v1
