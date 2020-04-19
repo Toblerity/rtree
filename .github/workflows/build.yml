@@ -165,6 +165,8 @@ jobs:
   collect-artifacts:
     name: Package and push release
 
+    needs: [windows-wheel, linux-wheel, conda, ubuntu]
+
     runs-on: 'ubuntu-latest'
     strategy:
       fail-fast: true
@@ -176,6 +178,7 @@ jobs:
       run: |
           sudo apt install libspatialindex-c4v5 python3-pip
           python3 -m pip install --upgrade pip
+          python3 -m pip install setuptools numpy flake8 pytest
           python3 setup.py sdist
 
     - uses: actions/upload-artifact@v1
