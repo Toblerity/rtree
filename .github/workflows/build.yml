@@ -4,7 +4,9 @@ on:
   pull_request:
     branches:
     - '*'
-
+  release:
+    types:
+      - published
 jobs:
   conda:
     name: Conda ${{ matrix.python-version }} - ${{ matrix.os }}
@@ -182,26 +184,35 @@ jobs:
           export PATH=$PATH:/home/runner/.local/bin
           python3 setup.py sdist
 
-    - uses: actions/upload-artifact@v1
+    - uses: actions/download-artifact@v1
       name: Linux wheel
       with:
         name: manylinux-wheel
         path: dist
 
-    - uses: actions/upload-artifact@v1
+    - uses: actions/download-artifact@v1
       name: Win64 3.6 wheel
       with:
         name: win64-3.6-wheel
         path: dist
 
-    - uses: actions/upload-artifact@v1
+    - uses: actions/download-artifact@v1
       name: Win64 3.7 wheel
       with:
         name: win64-3.7-wheel
         path: dist
 
-    - uses: actions/upload-artifact@v1
+    - uses: actions/download-artifact@v1
       name: Win64 3.8 wheel
       with:
         name: win64-3.8-wheel
         path: dist
+
+    - name: Publish package
+        if: github.event_name == 'release' && github.event.action == 'published'
+
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.pypi_token }}
+          packages_dir: ./dist
