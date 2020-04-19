@@ -1,4 +1,5 @@
 
+conda activate test
 set SIDX_VERSION=%1
 REM conda install -c conda-forge compilers -y
 pip install cmake ninja
