@@ -26,3 +26,4 @@ copy ".\libspatialindex\libspatialindex-%SIDX_VERSION%\build\bin\*.dll" .\rtree\
 copy ".\libspatialindex\libspatialindex-%SIDX_VERSION%\include\*" .\rtree\include
 
 python setup.py bdist_wheel
+popd

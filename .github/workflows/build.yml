@@ -85,22 +85,30 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-root: ['cp36-cp36m','cp37-cp37m','cp38-cp38']
+        python-version: ['3.6','3.7','3.8']
 
     steps:
     - uses: actions/checkout@v2
     - name: Build
       shell: bash -l {0}
       run: |
-          docker run -v $(pwd):/src quay.io/pypa/manylinux1_x86_64 /src/ci/build-wheel-linux.sh ${{ matrix.python-root }}
+          docker run -v $(pwd):/src quay.io/pypa/manylinux1_x86_64 /src/ci/build-wheel-linux.sh ${{ matrix.python-version }}
+
+    - name: Setup Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Display Python version
+      run: python -c "import sys; print(sys.version)"
     - name: Test
       shell: bash -l {0}
       run: |
-          ./ci/test-wheel-linux.sh ${{ matrix.python-root }}
+          ./ci/test-wheel-linux.sh ${{ matrix.python-version }}
 
     - uses: actions/upload-artifact@v1
       with:
-        name: manylinux-${{ matrix.python-root }}-whl
+        name: manylinux-${{ matrix.python-version }}-whl
         path: wheelhouse
 
   windows-wheel:
@@ -165,7 +173,7 @@ jobs:
     - name: Setup
       shell: bash -l {0}
       run: |
-          pip install cmake ninja
+          python -m pip install cmake ninja
 
     - name: build
       shell: bash -l {0}
