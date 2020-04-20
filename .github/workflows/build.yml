@@ -80,23 +80,29 @@ jobs:
 
 
   linux-wheel:
-    name: manylinux Wheel
+    name: manylinux Wheel ${{ matrix.python-root }}
 
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      matrix:
+        os: ['windows-latest']
+        python-root: ['cp36-cp36m','cp37-cp37m','cp38-cp38']
 
     steps:
     - uses: actions/checkout@v2
     - name: Build
       shell: bash -l {0}
       run: |
-          docker run -v $(pwd):/src quay.io/pypa/manylinux1_x86_64 /src/build-wheel.sh
+          docker run -v $(pwd):/src quay.io/pypa/manylinux1_x86_64 /src/ci/build-wheel-linux-.sh ${{ matrix.python-root }}
+    - name: Test
+      shell: bash -l {0}
+      run: |
+          ./test-wheel-linux.sh ${{ matrix.python-root }}
 
     - uses: actions/upload-artifact@v1
       with:
-        name: manylinux-wheel
-        path: dist
+        name: manylinux-${{ matrix.python-root }}-whl
+        path: wheelhouse
 
   windows-wheel:
     name: Win64 ${{ matrix.python-version }} Wheel
@@ -127,10 +133,56 @@ jobs:
       run: |
         .\build-wheel.bat ${{ matrix.sidx-version }}
 
+    - name: test
+      shell: cmd /C CALL "{0}"
+      run: |
+        .\test-wheel.bat
+
     - uses: actions/upload-artifact@v1
       with:
-        name: win64-${{matrix.python-version}}-wheel
+        name: win64-${{matrix.python-version}}-whl
         path: dist
+
+  osx-wheel:
+    name: OSX ${{ matrix.python-version }} Wheel
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ['mac-latest']
+        python-version: ['3.6','3.7','3.8']
+        sidx-version: ['1.9.3']
+      fail-fast: true
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: goanpeca/setup-miniconda@v1.1.2
+      with:
+        channels: conda-forge
+        auto-update-conda: true
+        python-version: ${{ matrix.python-version }}
+    - name: Setup
+      shell: bash -l {0}
+      run: |
+          conda install -c conda-forge compilers -y
+          pip install cmake ninja
+
+    - name: build
+      shell: bash -l {0}
+      run: |
+        ./ci/build-wheel-osx.sh ${{ matrix.python-version }}
+
+    - name: test
+      shell: bash -l {0}
+      run: |
+        ./ci/test-wheel-osx.sh
+
+    - uses: actions/upload-artifact@v1
+      with:
+        name: osx-${{matrix.python-version}}-whl
+        path: wheels
+
+
 
   docs:
     name: Docs
@@ -167,7 +219,7 @@ jobs:
   collect-artifacts:
     name: Package and push release
 
-    needs: [windows-wheel, linux-wheel, conda, ubuntu]
+    needs: [windows-wheel, linux-wheel, osx-wheel, conda, ubuntu]
 
     runs-on: 'ubuntu-latest'
     strategy:
@@ -185,9 +237,21 @@ jobs:
             python3 setup.py sdist
 
       - uses: actions/download-artifact@v1
-        name: Linux wheel
+        name: Linux 3.6 wheel
         with:
-          name: manylinux-wheel
+          name: manylinux-cp36-cp36m-whl
+          path: dist
+
+      - uses: actions/download-artifact@v1
+        name: Linux 3.7 wheel
+        with:
+          name: manylinux-cp37-cp37m-whl
+          path: dist
+
+      - uses: actions/download-artifact@v1
+        name: Linux 3.8 wheel
+        with:
+          name: manylinux-cp38-cp38-whl
           path: dist
 
       - uses: actions/download-artifact@v1
