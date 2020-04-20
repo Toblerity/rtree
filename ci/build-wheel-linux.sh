@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #/opt/python/cp38-cp38
-PYTHONROOT="/opt/python/%1"
+PYTHONROOT="/opt/python/$1"
 $PYTHONROOT/bin/python -m pip install cmake
 
 git clone https://github.com/libspatialindex/libspatialindex.git
@@ -27,6 +27,5 @@ $PYTHONROOT/bin/python setup.py bdist_wheel
 
 for f in dist/*.whl
 do
-
     auditwheel repair $f
 done;

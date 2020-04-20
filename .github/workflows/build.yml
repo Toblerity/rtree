@@ -149,21 +149,15 @@ jobs:
     strategy:
       matrix:
         os: ['macos-latest']
-        python-version: ['3.6','3.7','3.8']
-        sidx-version: ['1.9.3']
+        python-version: ['36','37','38']
       fail-fast: true
 
     steps:
     - uses: actions/checkout@v2
-    - uses: goanpeca/setup-miniconda@v1.1.2
-      with:
-        channels: conda-forge
-        auto-update-conda: true
-        python-version: ${{ matrix.python-version }}
+
     - name: Setup
       shell: bash -l {0}
       run: |
-          conda install -c conda-forge compilers -y
           pip install cmake ninja
 
     - name: build
@@ -180,7 +174,6 @@ jobs:
       with:
         name: osx-${{matrix.python-version}}-whl
         path: wheels
-
 
 
   docs:
