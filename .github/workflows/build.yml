@@ -130,12 +130,12 @@ jobs:
     - name: build
       shell: cmd /C CALL "{0}"
       run: |
-        .\ci\build-wheel.bat ${{ matrix.sidx-version }}
+        call .\ci\build-wheel.bat ${{ matrix.sidx-version }}
 
     - name: test
       shell: cmd /C CALL "{0}"
       run: |
-        .\ci\test-wheel.bat
+        call .\ci\test-wheel.bat
 
     - uses: actions/upload-artifact@v1
       with:
