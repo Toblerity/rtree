@@ -1,9 +1,9 @@
 #!/bin/bash
 
-PYTHON="$1"
-PYPREFIX= $($PYTHON -c "import sys; print('\n'.join(sys.prefix))")
-$PYTHON -m pip install cmake
-$PYTHON -m pip install delocate
+
+PYPREFIX= $(python -c "import sys; print('\n'.join(sys.prefix))")
+python -m pip install cmake
+python -m pip install delocate
 
 PREFIX=$($pwd)
 git clone https://github.com/libspatialindex/libspatialindex.git
@@ -22,6 +22,6 @@ mkdir -p rtree/include
 cp -r $PREFIX/libspatialindex/lib/libspatialindex* rtree/lib
 cp -r $PREFIX/include/spatialindex/* rtree/include
 
-$PYTHON setup.py bdist_wheel
+python setup.py bdist_wheel
 
 delocate-wheel -w wheels -v dist/*.whl

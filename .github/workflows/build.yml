@@ -96,7 +96,7 @@ jobs:
     - name: Test
       shell: bash -l {0}
       run: |
-          ./src/test-wheel-linux.sh ${{ matrix.python-root }}
+          ./ci/test-wheel-linux.sh ${{ matrix.python-root }}
 
     - uses: actions/upload-artifact@v1
       with:
@@ -149,11 +149,15 @@ jobs:
     strategy:
       matrix:
         os: ['macos-latest']
-        python-version: ['36','37','38']
+        python-version: ['3.6','3.7','3.8']
       fail-fast: true
 
     steps:
     - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
 
     - name: Setup
       shell: bash -l {0}
