@@ -85,7 +85,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: ['windows-latest']
         python-root: ['cp36-cp36m','cp37-cp37m','cp38-cp38']
 
     steps:
@@ -93,11 +92,11 @@ jobs:
     - name: Build
       shell: bash -l {0}
       run: |
-          docker run -v $(pwd):/src quay.io/pypa/manylinux1_x86_64 /src/ci/build-wheel-linux-.sh ${{ matrix.python-root }}
+          docker run -v $(pwd):/src quay.io/pypa/manylinux1_x86_64 /src/ci/build-wheel-linux.sh ${{ matrix.python-root }}
     - name: Test
       shell: bash -l {0}
       run: |
-          ./test-wheel-linux.sh ${{ matrix.python-root }}
+          ./src/test-wheel-linux.sh ${{ matrix.python-root }}
 
     - uses: actions/upload-artifact@v1
       with:
@@ -131,12 +130,12 @@ jobs:
     - name: build
       shell: cmd /C CALL "{0}"
       run: |
-        .\build-wheel.bat ${{ matrix.sidx-version }}
+        .\ci\build-wheel.bat ${{ matrix.sidx-version }}
 
     - name: test
       shell: cmd /C CALL "{0}"
       run: |
-        .\test-wheel.bat
+        .\ci\test-wheel.bat
 
     - uses: actions/upload-artifact@v1
       with:
@@ -149,7 +148,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ['mac-latest']
+        os: ['macos-latest']
         python-version: ['3.6','3.7','3.8']
         sidx-version: ['1.9.3']
       fail-fast: true
