@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-PYPREFIX= $(python -c "import sys; print('\n'.join(sys.prefix))")
+PYPREFIX=$(python -c "import sys; print('\n'.join(sys.prefix))")
 python -m pip install cmake
 python -m pip install delocate
 

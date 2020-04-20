@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PYTHONROOT="/opt/python/%1"
+PYTHONROOT="/opt/python/$1"
 
 
 $PYTHONROOT/bin/python -m pip install pytest numpy
