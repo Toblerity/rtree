@@ -114,17 +114,24 @@ if os.name == 'nt':
         arch = '32'
 
     lib_name = '%s-%s.dll' % (base_name, arch)
+    rt = None
     if 'SPATIALINDEX_C_LIBRARY' in os.environ:
         lib_path, lib_name = \
             os.path.split(os.environ['SPATIALINDEX_C_LIBRARY'])
         rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
-    elif 'conda' in sys.version:
-        lib_path = os.path.join(sys.prefix, "Library", "bin")
+    # try wheel location
+    if not rt:
+        lib_path = os.path.abspath(os.path.join(
+                       os.path.dirname(__file__), "lib"))
         rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
-    else:
+    # try conda location
+    if not rt:
+        if 'conda' in sys.version:
+            lib_path = os.path.join(sys.prefix, "Library", "bin")
+            rt = _load_library(lib_name, ctypes.cdll.LoadLibrary, (lib_path,))
+    if not rt:
         rt = _load_library(lib_name, ctypes.cdll.LoadLibrary)
-    import sys
-    sys.stderr.write('path: %s\n' % (rt))
+
     if not rt:
         raise OSError("could not find or load %s" % lib_name)
 
@@ -134,8 +141,26 @@ elif os.name == 'posix':
         lib_name = os.environ['SPATIALINDEX_C_LIBRARY']
         rt = ctypes.CDLL(lib_name)
     else:
-        lib_name = find_library('spatialindex_c')
-        rt = ctypes.CDLL(lib_name)
+        try:
+            # try loading libspatialindex from the wheel location
+            # inside the package
+
+            lib_path = os.path.abspath(os.path.join(
+                       os.path.dirname(__file__), "lib"))
+            old_dir = os.getcwd()
+            os.chdir(lib_path)
+            full_path = os.path.join(lib_path, "libspatialindex_c.so")
+            rt = ctypes.cdll.LoadLibrary(full_path)
+
+            # Switch back to the original working directory
+            os.chdir(old_dir)
+            if not rt:
+                raise FileNotFoundError("%s not loaded" % full_path)
+        except FileNotFoundError:
+            lib_name = find_library('spatialindex_c')
+            rt = ctypes.CDLL(lib_name)
+            if not rt:
+                raise FileNotFoundError("%s not loaded" % full_path)
 
     if not rt:
         raise OSError("Could not load libspatialindex_c library")

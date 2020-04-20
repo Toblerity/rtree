@@ -1,0 +1,286 @@
+name: Build
+
+on:
+  pull_request:
+    branches:
+    - '*'
+  release:
+    types:
+      - published
+jobs:
+  conda:
+    name: Conda ${{ matrix.python-version }} - ${{ matrix.os }}
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
+        python-version: ['3.8']
+        sidx-version: ['1.8.5','1.9.3']
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: goanpeca/setup-miniconda@v1.1.2
+      with:
+        channels: conda-forge
+        auto-update-conda: true
+        python-version: ${{ matrix.python-version }}
+    - name: Setup
+      shell: bash -l {0}
+      run: |
+          conda install -c conda-forge numpy libspatialindex=${{ matrix.sidx-version }} -y
+
+    - name: Install
+      shell: bash -l {0}
+      run: |
+        pip install -e .
+    - name: Lint with flake8
+      shell: bash -l {0}
+      run: |
+        pip install flake8
+        flake8 rtree/
+    - name: Test with pytest
+      shell: bash -l {0}
+      run: |
+        pip install pytest
+        python -m pytest --doctest-modules rtree tests
+
+  ubuntu:
+    name: Ubuntu ${{ matrix.os }}
+
+    runs-on: ubuntu-16.04
+    strategy:
+      fail-fast: true
+      matrix:
+        os: ['ubuntu-16.04', 'ubuntu-18.04']
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup
+      shell: bash -l {0}
+      run: |
+          sudo apt install libspatialindex-c4v5 python3-pip
+          python3 -m pip install --upgrade pip
+          python3 -m pip install setuptools numpy flake8 pytest
+
+    - name: Build
+      shell: bash -l {0}
+      run: |
+        python3 -m pip install --user .
+    - name: Lint with flake8
+      shell: bash -l {0}
+      run: |
+        export PATH=$PATH:/home/runner/.local/bin
+        flake8 rtree/
+    - name: Test with pytest
+      shell: bash -l {0}
+      run: |
+        python3 -m pytest --doctest-modules rtree tests
+
+
+        #  linux-wheel:
+        #    name: manylinux Wheel ${{ matrix.python-root }}
+        #
+        #    runs-on: ubuntu-latest
+        #    strategy:
+        #      matrix:
+        #        python-version: ['3.6','3.7','3.8']
+        #
+        #    steps:
+        #    - uses: actions/checkout@v2
+        #    - name: Build
+        #      shell: bash -l {0}
+        #      run: |
+        #          docker run -v $(pwd):/src quay.io/pypa/manylinux1_x86_64 /src/ci/build-wheel-linux.sh ${{ matrix.python-version }}
+        #
+        #    - name: Setup Python
+        #      uses: actions/setup-python@v1
+        #      with:
+        #        python-version: ${{ matrix.python-version }}
+        #
+        #    - name: Display Python version
+        #      run: python -c "import sys; print(sys.version)"
+        #    - name: Test
+        #      shell: bash -l {0}
+        #      run: |
+        #          ./ci/test-wheel-linux.sh ${{ matrix.python-version }}
+        #
+        #    - uses: actions/upload-artifact@v1
+        #      with:
+        #        name: manylinux-${{ matrix.python-version }}-whl
+        #        path: wheelhouse
+        #
+        #  windows-wheel:
+        #    name: Win64 ${{ matrix.python-version }} Wheel
+        #
+        #    runs-on: ${{ matrix.os }}
+        #    strategy:
+        #      matrix:
+        #        os: ['windows-latest']
+        #        python-version: ['3.6','3.7','3.8']
+        #        sidx-version: ['1.9.3']
+        #      fail-fast: true
+        #
+        #    steps:
+        #    - uses: actions/checkout@v2
+        #    - uses: goanpeca/setup-miniconda@v1.1.2
+        #      with:
+        #        channels: conda-forge
+        #        auto-update-conda: true
+        #        python-version: ${{ matrix.python-version }}
+        #    - name: Setup
+        #      shell: bash -l {0}
+        #      run: |
+        #          conda install -c conda-forge compilers -y
+        #          pip install cmake ninja
+        #
+        #    - name: build
+        #      shell: cmd /C CALL "{0}"
+        #      run: |
+        #        call .\ci\build-wheel.bat ${{ matrix.sidx-version }}
+        #
+        #    - name: test
+        #      shell: cmd /C CALL "{0}"
+        #      run: |
+        #        call .\ci\test-wheel.bat
+        #
+        #    - uses: actions/upload-artifact@v1
+        #      with:
+        #        name: win64-${{matrix.python-version}}-whl
+        #        path: dist
+        #
+        #  osx-wheel:
+        #    name: OSX ${{ matrix.python-version }} Wheel
+        #
+        #    runs-on: ${{ matrix.os }}
+        #    strategy:
+        #      matrix:
+        #        os: ['macos-latest']
+        #        python-version: [3.6, 3.7, 3.8]
+        #      fail-fast: true
+        #
+        #    steps:
+        #    - uses: actions/checkout@v2
+        #    - name: Setup Python
+        #      uses: actions/setup-python@v1
+        #      with:
+        #        python-version: ${{ matrix.python-version }}
+        #
+        #    - name: Display Python version
+        #      run: python -c "import sys; print(sys.version)"
+        #
+        #    - name: Setup
+        #      run: |
+        #          python -m pip install cmake ninja
+        #
+        #    - name: build
+        #      run: |
+        #        ./ci/build-wheel-osx.sh ${{ matrix.python-version }}
+        #
+        #    - name: test
+        #      run: |
+        #        ./ci/test-wheel-osx.sh
+        #
+        #    - uses: actions/upload-artifact@v1
+        #      with:
+        #        name: osx-${{matrix.python-version}}-whl
+        #        path: wheels
+        #
+
+  docs:
+    name: Docs
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+    container: osgeo/proj-docs
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Print versions
+      shell: bash -l {0}
+      run: |
+          python3 --version
+          sphinx-build --version
+    - name: Lint .rst files
+      shell: bash -l {0}
+      run: |
+        if find . -name '*.rst' | xargs grep -P '\t'; then echo 'Tabs are bad, please use four spaces in .rst files.'; false; fi
+      working-directory: ./docs
+    - name: HTML
+      shell: bash -l {0}
+      run: |
+        make html
+      working-directory: ./docs
+    - name: PDF
+      shell: bash -l {0}
+      run: |
+        make latexpdf
+      working-directory: ./docs
+
+
+  collect-artifacts:
+    name: Package and push release
+
+    #needs: [windows-wheel, linux-wheel, osx-wheel, conda, ubuntu]
+    needs: [conda, ubuntu]
+
+    runs-on: 'ubuntu-latest'
+    strategy:
+      fail-fast: true
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Source
+        shell: bash -l {0}
+        run: |
+            sudo apt install libspatialindex-c4v5 python3-pip
+            python3 -m pip install --upgrade pip
+            python3 -m pip install setuptools numpy flake8 pytest wheel
+            export PATH=$PATH:/home/runner/.local/bin
+            python3 setup.py sdist
+
+            #      - uses: actions/download-artifact@v1
+            #        name: Linux 3.6 wheel
+            #        with:
+            #          name: manylinux-cp36-cp36m-whl
+            #          path: dist
+            #
+            #      - uses: actions/download-artifact@v1
+            #        name: Linux 3.7 wheel
+            #        with:
+            #          name: manylinux-cp37-cp37m-whl
+            #          path: dist
+            #
+            #      - uses: actions/download-artifact@v1
+            #        name: Linux 3.8 wheel
+            #        with:
+            #          name: manylinux-cp38-cp38-whl
+            #          path: dist
+            #
+            #      - uses: actions/download-artifact@v1
+            #        name: Win64 3.6 wheel
+            #        with:
+            #          name: win64-3.6-wheel
+            #          path: dist
+            #
+            #      - uses: actions/download-artifact@v1
+            #        name: Win64 3.7 wheel
+            #        with:
+            #          name: win64-3.7-wheel
+            #          path: dist
+            #
+            #      - uses: actions/download-artifact@v1
+            #        name: Win64 3.8 wheel
+            #        with:
+            #          name: win64-3.8-wheel
+            #          path: dist
+
+      - uses: pypa/gh-action-pypi-publish@master
+        name: Publish package
+        if: github.event_name == 'release' && github.event.action == 'published'
+        with:
+          user: __token__
+          password: ${{ secrets.pypi_token }}
+          packages_dir: ./dist

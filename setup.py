@@ -2,7 +2,16 @@
 import os
 
 from setuptools import setup
+from setuptools.dist import Distribution
+from setuptools.command.install import install
 import itertools as it
+
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+class bdist_wheel(_bdist_wheel):
+    def finalize_options(self):
+        _bdist_wheel.finalize_options(self)
+        self.root_is_pure = False
+
 
 # Get text from README.txt
 with open('docs/source/README.txt', 'r') as fp:
@@ -13,11 +22,18 @@ with open('rtree/__init__.py', 'r') as fp:
     # get and exec just the line which looks like "__version__ = '0.9.4'"
     exec(next(line for line in fp if '__version__' in line))
 
-extras_require = {
-    'test': ['pytest>=3', 'pytest-cov', 'numpy']
-}
 
-extras_require['all'] = list(set(it.chain(*extras_require.values())))
+# Tested with wheel v0.29.0
+class BinaryDistribution(Distribution):
+    """Distribution which always forces a binary package with platform name"""
+    def has_ext_modules(foo):
+        return True
+
+class InstallPlatlib(install):
+    def finalize_options(self):
+        install.finalize_options(self)
+        if self.distribution.has_ext_modules():
+            self.install_lib = self.install_platlib
 
 setup(
     name='Rtree',
@@ -32,10 +48,11 @@ setup(
     url='https://github.com/Toblerity/rtree',
     long_description=readme_text,
     packages=['rtree'],
-    install_requires=['setuptools'],
-    extras_require=extras_require,
-    tests_require=extras_require['test'],
+    package_data={"rtree": ["lib/*", "include/**/*", "include/**/**/*" ]},
     zip_safe=False,
+    include_package_data = True,
+    distclass = BinaryDistribution,
+    cmdclass={'bdist_wheel': bdist_wheel,'install': InstallPlatlib},
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
