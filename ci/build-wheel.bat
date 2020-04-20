@@ -2,7 +2,13 @@
 call conda activate test
 set SIDX_VERSION=%1
 REM conda install -c conda-forge compilers -y
-pip install cmake ninja
+REM
+cd
+cd ..
+
+where python
+python -c "import sys; print(sys.version)"
+python -m pip install cmake ninja
 python -c "from urllib.request import urlretrieve; urlretrieve('https://github.com/libspatialindex/libspatialindex/archive/%SIDX_VERSION%.zip', 'libspatialindex.zip')"
 where python
 python -m "zipfile" -e libspatialindex.zip libspatialindex

@@ -171,17 +171,14 @@ jobs:
       run: python -c "import sys; print(sys.version)"
 
     - name: Setup
-      shell: bash -l {0}
       run: |
           python -m pip install cmake ninja
 
     - name: build
-      shell: bash -l {0}
       run: |
         ./ci/build-wheel-osx.sh ${{ matrix.python-version }}
 
     - name: test
-      shell: bash -l {0}
       run: |
         ./ci/test-wheel-osx.sh
 

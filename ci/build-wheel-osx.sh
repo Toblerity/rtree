@@ -2,6 +2,7 @@
 
 
 PYPREFIX=$(python -c "import sys; print('\n'.join(sys.prefix))")
+python -c "import sys; print(sys.version)"
 python -m pip install cmake
 python -m pip install delocate
 
