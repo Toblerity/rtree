@@ -38,7 +38,10 @@ cp -r /usr/lib/libspatialindex* /src/rtree/lib
 cp -r /usr/local/lib/libcrypt*.so* /src/rtree/lib
 cp -r /usr/include/spatialindex/* /src/rtree/include
 
+
+
 $PYTHONROOT/bin/python setup.py bdist_wheel
+
 
 for f in dist/*.whl
 do
