@@ -7,7 +7,7 @@ SHA256=63a03bfb26aa65cf0159f925f6c3491b6ef79bc0e3db5a631d96772d6541187e
 
 
 rm $VERSION.zip || true
-wget https://github.com/libspatialindex/libspatialindex/archive/$VERSION.zip
+curl -L -O https://github.com/libspatialindex/libspatialindex/archive/$VERSION.zip
 
 # check the file hash
 echo "${SHA256} ${VERSION}.zip" | sha256sum --check
