@@ -28,7 +28,7 @@ jobs:
     - name: Install Visual C++ for Python 2.7
       if: startsWith(matrix.os, 'windows')
       run: |
-        choco install vcpython27 -f -y
+        choco install vcpython27 wget -f -y
     - name: Build wheel
       run: |
         python -m cibuildwheel --output-dir wheelhouse
