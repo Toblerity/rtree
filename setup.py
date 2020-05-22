@@ -87,7 +87,6 @@ setup(
     maintainer_email='howard@hobu.co',
     url='https://github.com/Toblerity/rtree',
     long_description=readme_text,
-    long_description_content_type='text/markdown',
     packages=['rtree'],
     package_data={"rtree": ["lib/*", "include/**/*", "include/**/**/*" ]},
     zip_safe=False,
