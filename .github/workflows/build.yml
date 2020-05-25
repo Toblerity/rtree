@@ -71,11 +71,6 @@ jobs:
       run: |
         git clone https://github.com/libspatialindex/libspatialindex
         python3 -m pip install --user .
-        cd rtree/
-        ls /home/runner/.local/lib/python3.5/site-packages/rtree
-        ls /home/runner/.local/lib/python3.5/site-packages/rtree/lib
-        python3 -c "import rtree; print(rtree.__path__); import rtree.index;"
-        cd ..
     - name: Lint with flake8
       shell: bash -l {0}
       run: |
@@ -84,8 +79,10 @@ jobs:
     - name: Test with pytest
       shell: bash -l {0}
       run: |
-        python3 -m pytest --doctest-modules rtree tests
-
+        mkdir empty
+        cd empty
+        python3 -m pytest --doctest-modules ../rtree ../tests
+        cd ..
 
         #  linux-wheel:
         #    name: manylinux Wheel ${{ matrix.python-root }}
