@@ -147,9 +147,12 @@ elif os.name == 'posix':
 
             lib_path = os.path.abspath(os.path.join(
                        os.path.dirname(__file__), "lib"))
+            plat_lib_ext = {"darwin": "dylib", "win32": "dll", "msys": "dll"}
+            # Get the platform specific library extension or fall back on .so
+            lib_ext = plat_lib_ext.get(sys.platform, "so")
             old_dir = os.getcwd()
             os.chdir(lib_path)
-            full_path = os.path.join(lib_path, "libspatialindex_c.so")
+            full_path = os.path.join(lib_path, "libspatialindex_c." + lib_ext)
             rt = ctypes.cdll.LoadLibrary(full_path)
 
             # Switch back to the original working directory
