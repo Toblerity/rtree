@@ -35,7 +35,7 @@ jobs:
       shell: bash -l {0}
       run: |
         git clone https://github.com/libspatialindex/libspatialindex
-        pip install -e .
+        pip install .
     - name: Lint with flake8
       shell: bash -l {0}
       run: |
