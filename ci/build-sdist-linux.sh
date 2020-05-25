@@ -21,5 +21,5 @@ echo "PYTHONROOT: " $PYTHONROOT
 $PYTHONROOT/bin/python -m pip install cmake
 # Clone libspatialindex
 git clone https://github.com/libspatialindex/libspatialindex.git
-# Build the wheel
-$PYTHONROOT/bin/python setup.py bdist_wheel
+# Build the source distribution
+$PYTHONROOT/bin/python setup.py sdist
