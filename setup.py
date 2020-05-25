@@ -49,9 +49,6 @@ class cmake_build(build_ext):
 
         build_args = ['--config', 'Release']
 
-        # Assuming Makefiles
-        build_args += ['--', '-j2']
-
         env = os.environ.copy()
         env['CXXFLAGS'] = '{}'.format(env.get('CXXFLAGS', ''))
         if not os.path.exists(self.build_temp):
