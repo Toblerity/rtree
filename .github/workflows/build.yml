@@ -30,11 +30,10 @@ jobs:
       shell: bash -l {0}
       run: |
           conda install -c conda-forge numpy -y
-
+          git clone https://github.com/libspatialindex/libspatialindex
     - name: Install
       shell: bash -l {0}
       run: |
-        git clone https://github.com/libspatialindex/libspatialindex
         pip install .
     - name: Lint with flake8
       shell: bash -l {0}
@@ -48,9 +47,8 @@ jobs:
         mkdir empty
         cd empty
         RTREE_PATH=$(python3 -c "import rtree; print(rtree.__path__[0])")
-        echo "oy"
-        echo $RTREE_PATH
-        echo "oy"
+        ls $RTREE_PATH
+        ls $RTREE_PATH/lib
         python -m pytest --doctest-modules $RTREE_PATH ../tests
 
   ubuntu:
@@ -70,11 +68,11 @@ jobs:
           sudo apt install python3-pip
           python3 -m pip install --upgrade pip
           python3 -m pip install setuptools numpy flake8 pytest
+          git clone https://github.com/libspatialindex/libspatialindex
 
     - name: Build
       shell: bash -l {0}
       run: |
-        git clone https://github.com/libspatialindex/libspatialindex
         python3 -m pip install --user .
     - name: Lint with flake8
       shell: bash -l {0}
@@ -87,9 +85,6 @@ jobs:
         mkdir empty
         cd empty
         RTREE_PATH=$(python3 -c "import rtree; print(rtree.__path__[0])")
-        echo "oy"
-        echo $RTREE_PATH
-        echo "oy"
         python3 -m pytest --doctest-modules $RTREE_PATH ../tests
         cd ..
 
