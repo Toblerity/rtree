@@ -36,6 +36,7 @@ jobs:
       run: |
         git clone https://github.com/libspatialindex/libspatialindex
         pip install .
+        python -c "import rtree; print(rtree.__path__); import rtree.index;"
     - name: Lint with flake8
       shell: bash -l {0}
       run: |
@@ -70,6 +71,7 @@ jobs:
       run: |
         git clone https://github.com/libspatialindex/libspatialindex
         python3 -m pip install --user .
+        python -c "import rtree; print(rtree.__path__); import rtree.index;"
     - name: Lint with flake8
       shell: bash -l {0}
       run: |
