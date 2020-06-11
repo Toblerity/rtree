@@ -121,7 +121,7 @@ Rtree also supports inserting any object you can pickle into the index (called
 a clustered index in `libspatialindex`_ parlance). The following inserts the
 picklable object ``42`` into the index with the given id::
 
-  >>> index.insert(id=id, bounds=(left, bottom, right, top), obj=42)
+  >>> idx.insert(id=id, bounds=(left, bottom, right, top), obj=42)
 
 You can then return a list of objects by giving the ``objects=True`` flag
 to intersection::
