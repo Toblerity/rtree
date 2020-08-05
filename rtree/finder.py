@@ -5,8 +5,6 @@ import ctypes
 
 from ctypes.util import find_library
 
-from .exceptions import RTreeError
-
 
 def load():
 
@@ -103,7 +101,7 @@ def load():
             raise OSError("Could not load libspatialindex_c library")
 
     else:
-        raise RTreeError('Unsupported OS "%s"' % os.name)
+        raise OSError("Could not load libspatialindex_c library")
 
     if full_path is not None and os.path.exists(full_path):
         final = full_path
@@ -111,6 +109,7 @@ def load():
         final = lib_path
     else:
         try:
+            # will throw an exception including the path :cry:
             rt['heyyy']
         except BaseException as E:
             # for the love of god, this is the only way I've found

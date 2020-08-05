@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import os
+import sys
 
 from setuptools import setup
 from setuptools.dist import Distribution
 from setuptools.command.install import install
-import itertools as it
 
 from wheel.bdist_wheel import bdist_wheel  as _bdist_wheel
 class bdist_wheel(_bdist_wheel):
@@ -23,6 +23,37 @@ with open('rtree/__init__.py', 'r') as fp:
     exec(next(line for line in fp if '__version__' in line))
 
 
+def shared_path():
+    """
+    Get the location of the libspatialindex shared library.
+
+    Returns
+    ---------
+    rt_path : str
+      Location of `libspatialindex_c.so.4`
+    """
+
+    # the location of `finder.py`, which has the logic to load
+    # the shared library and also has no imports outside of stdlib
+    path = os.path.abspath(
+        os.path.join(os.path.split(__file__)[0], 'rtree/finder.py'))
+
+    # load the module from the path on Python 2 or 3
+    if sys.version_info.major >= 3:
+        # python >= 3.5
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("finder", path)
+        finder = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(finder)
+    else:
+        # python 2
+        import imp
+        finder = imp.load_source('finder', path)
+    # actually load the shared module to get it's location
+    _, rt_path = finder.load()
+
+    return rt_path
+    
 # Tested with wheel v0.29.0
 class BinaryDistribution(Distribution):
     """Distribution which always forces a binary package with platform name"""
@@ -35,8 +66,10 @@ class InstallPlatlib(install):
         if self.distribution.has_ext_modules():
             self.install_lib = self.install_platlib
 
-        from rtree import core
-        source = core._rt_path
+        # now copy over libspatialindex
+        # get the location of the shared library on the filesystem
+        source = shared_path()
+        # copy the shared library into the build directory
         target = os.path.join(self.build_lib, 'rtree', os.path.split(source)[1])
         self.copy_file(source, target)
 
