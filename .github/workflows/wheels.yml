@@ -7,9 +7,8 @@ jobs:
     name: Build wheel on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
-      # pypy (Python with a JIT) builds don't work due to numpy issue 
-      CIBW_SKIP: pp*
       CIBW_TEST_REQUIRES: pytest
+      CIBW_TEST_COMMAND: pytest {project}/tests
       CIBW_BEFORE_BUILD_LINUX: "pip install cmake; bash {project}/ci/install_libspatialindex.bash"
       CIBW_BEFORE_BUILD_MACOS: "bash {project}/ci/install_libspatialindex.bash"
     strategy:
