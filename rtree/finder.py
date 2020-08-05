@@ -1,3 +1,9 @@
+"""
+finder.py
+------------
+
+Locate `libspatialindex` shared library by any means necessary.
+"""
 import os
 import sys
 import platform
@@ -90,13 +96,12 @@ def load():
                 # Switch back to the original working directory
                 os.chdir(old_dir)
                 if not rt:
-                    raise FileNotFoundError("%s not loaded" % full_path)
-            except FileNotFoundError:
+                    raise OSError("%s not loaded" % full_path)
+            except:
                 lib_name = find_library('spatialindex_c')
                 rt = ctypes.CDLL(lib_name)
                 if not rt:
-                    raise FileNotFoundError("%s not loaded" % full_path)
-
+                    raise OSError("%s not loaded" % full_path)
         if not rt:
             raise OSError("Could not load libspatialindex_c library")
 
