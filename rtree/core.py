@@ -1,10 +1,8 @@
-import os
-import sys
-import platform
 import ctypes
 
 from . import finder
 from .exceptions import RTreeError
+
 
 def check_return(result, func, cargs):
     "Error checking for Error calls"
@@ -71,6 +69,7 @@ def free_error_msg_ptr(result, func, cargs):
     p = ctypes.cast(result, ctypes.POINTER(ctypes.c_void_p))
     rt.Index_Free(p)
     return retvalue
+
 
 # load the shared library by looking in likely places
 rt, _rt_path = finder.load()

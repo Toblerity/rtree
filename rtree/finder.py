@@ -26,7 +26,8 @@ def load():
                 dllpaths = (os.path.abspath(os.path.dirname(__file__)),
                             ) + dllpaths
             except NameError:
-                pass  # no __file__ attribute on PyPy and some frozen distributions
+                # no __file__ attribute on PyPy and some frozen distributions
+                pass
             for path in dllpaths:
                 if path:
                     # temporarily add the path to the PATH environment variable
@@ -77,7 +78,6 @@ def load():
             raise OSError("could not find or load %s" % lib_name)
 
     elif os.name == 'posix':
-
         if 'SPATIALINDEX_C_LIBRARY' in os.environ:
             lib_name = os.environ['SPATIALINDEX_C_LIBRARY']
 
@@ -97,7 +97,7 @@ def load():
                 os.chdir(old_dir)
                 if not rt:
                     raise OSError("%s not loaded" % full_path)
-            except:
+            except BaseException:
                 lib_name = find_library('spatialindex_c')
                 rt = ctypes.CDLL(lib_name)
                 if not rt:
