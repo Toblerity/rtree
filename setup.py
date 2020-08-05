@@ -6,7 +6,7 @@ from setuptools.dist import Distribution
 from setuptools.command.install import install
 import itertools as it
 
-from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+from wheel.bdist_wheel import bdist_wheel  as _bdist_wheel
 class bdist_wheel(_bdist_wheel):
     def finalize_options(self):
         _bdist_wheel.finalize_options(self)
@@ -34,6 +34,11 @@ class InstallPlatlib(install):
         install.finalize_options(self)
         if self.distribution.has_ext_modules():
             self.install_lib = self.install_platlib
+
+        from rtree import core
+        source = core._rt_path
+        target = os.path.join(self.build_lib, 'rtree', os.path.split(source)[1])
+        self.copy_file(source, target)
 
 setup(
     name='Rtree',
