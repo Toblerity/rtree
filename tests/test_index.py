@@ -315,8 +315,10 @@ class IndexSerialization(unittest.TestCase):
         leaves = idx.leaves()
         expected = [(0, [2, 92, 51, 55, 26, 95, 7, 81, 38, 22, 58, 89, 91, 83, 98, 37, 70, 31, 49, 34, 11, 6, 13, 3, 23, 57, 9, 96, 84, 36, 5, 45, 77, 78, 44, 12, 42, 73, 93, 41, 71, 17, 39, 54, 88, 72, 97, 60, 62, 48, 19, 25, 76, 59, 66, 64, 79, 94, 40, 32, 46, 47, 15, 68, 10, 0, 80, 56, 50, 30], [-186.673789279, -96.7177218184, 172.392784956, 45.4856075292]), (2, [61, 74, 29, 99, 16, 43, 35, 33, 27, 63, 18, 90, 8, 53, 82, 21, 65, 24, 4, 1, 75, 67, 86, 52, 28, 85, 87, 14, 69, 20], [-174.739939684, 32.6596016791, 184.761387556, 96.6043699778])]
 
-        self.assertEqual(leaves, expected)
-
+        # go through the traversal and see if everything is close
+        assert all(all(np.allclose(a, b) for a, b in zip(L, E))
+                   for L, E in zip(leaves, expected))
+        
         hits = sorted(list(idx.intersection((0, 60, 0, 60), objects = True)))
         self.assertTrue(len(hits), 10)
         self.assertEqual(hits[0].object, 42)
