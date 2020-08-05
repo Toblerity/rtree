@@ -1,3 +1,4 @@
+import sys
 import unittest
 import ctypes
 import rtree
@@ -249,7 +250,8 @@ class IndexSerialization(unittest.TestCase):
 
     def test_unicode_filenames(self):
         """Unicode filenames work as expected"""
-
+        if sys.version_info.major < 3:
+            return
         tname = tempfile.mktemp()
         filename = tname + u'gilename\u4500abc'
         idx = index.Index(filename)
