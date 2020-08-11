@@ -7,6 +7,7 @@ jobs:
     name: Build wheel on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
+      CIBW_SKIP: cp27m
       CIBW_TEST_REQUIRES: pytest numpy
       CIBW_TEST_COMMAND: pytest {project}/tests
       CIBW_BEFORE_BUILD_LINUX: "pip install cmake; bash {project}/ci/install_libspatialindex.bash"
