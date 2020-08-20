@@ -113,13 +113,9 @@ def load():
     elif lib_path is not None and os.path.exists(lib_path):
         final = lib_path
     else:
-        try:
-            # will throw an exception including the path :cry:
-            rt['heyyy']
-        except BaseException as E:
-            # for the love of god, this is the only way I've found
-            # to extract the shared library path easily
-            exc = str(E)
-            final = os.path.abspath(exc.split(':', 1)[0])
+        # try looking relative to ctypes import
+        final = os.path.abspath(
+            os.path.join(
+                os.path.split(ctypes.__file__)[0], '../..', rt._name))
 
     return rt, final
