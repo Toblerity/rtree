@@ -18,9 +18,16 @@ cd libspatialindex-${VERSION}
 
 mkdir build
 cd build
-cmake ..
-make -j 4
-make install
+
+# we're using bash on all platforms but the 
+if [[ $1 == "windows-latest" ]]; then
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+    ninja
+else
+    cmake ..
+    make -j 4
+    make install
+fi;
 
 cd ../..
 rm -rf "libspatialindex-${VERSION}"
