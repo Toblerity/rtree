@@ -12,6 +12,7 @@ jobs:
       CIBW_TEST_COMMAND: pytest {project}/tests
       CIBW_BEFORE_BUILD_LINUX: "pip install cmake; bash {project}/ci/install_libspatialindex.bash"
       CIBW_BEFORE_BUILD_MACOS: "bash {project}/ci/install_libspatialindex.bash"
+      CIBW_BEFORE_BUILD_WINDOWS: "bash {project}/ci/install_libspatialindex.bash"
     strategy:
       matrix:
         os: [ubuntu-18.04, windows-latest, macos-latest]
