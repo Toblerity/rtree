@@ -12,7 +12,7 @@ import ctypes
 from ctypes.util import find_library
 
 
-def load():
+def load(return_path=False):
 
     full_path, lib_path, lib_name = None, None, None
     if os.name == 'nt':
@@ -108,6 +108,9 @@ def load():
     else:
         raise OSError("Could not load libspatialindex_c library")
 
+    if not return_path:
+        return rt
+
     if full_path is not None and os.path.exists(full_path):
         final = full_path
     elif lib_path is not None and os.path.exists(lib_path):
@@ -117,7 +120,6 @@ def load():
         final = os.path.abspath(
             os.path.join(
                 os.path.split(ctypes.__file__)[0], '../..', rt._name))
-
     if not os.path.isfile(final):
         try:
             # will throw an exception including the path

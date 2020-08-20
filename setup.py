@@ -6,11 +6,7 @@ from setuptools import setup
 from setuptools.dist import Distribution
 from setuptools.command.install import install
 
-from wheel.bdist_wheel import bdist_wheel  as _bdist_wheel
-class bdist_wheel(_bdist_wheel):
-    def finalize_options(self):
-        _bdist_wheel.finalize_options(self)
-        self.root_is_pure = False
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 
 # Get text from README.txt
@@ -37,7 +33,6 @@ def shared_path():
     # the shared library and also has no imports outside of stdlib
     path = os.path.abspath(
         os.path.join(os.path.split(__file__)[0], 'rtree/finder.py'))
-
     # load the module from the path on Python 2 or 3
     if sys.version_info.major >= 3:
         # python >= 3.5
@@ -50,28 +45,40 @@ def shared_path():
         import imp
         finder = imp.load_source('finder', path)
     # actually load the shared module to get it's location
-    _, rt_path = finder.load()
-
+    rt_path = finder.load(return_path=True)[1]
     return rt_path
-    
-# Tested with wheel v0.29.0
+
+
+class bdist_wheel(_bdist_wheel):
+    def finalize_options(self):
+        _bdist_wheel.finalize_options(self)
+        self.root_is_pure = False
+
+
 class BinaryDistribution(Distribution):
     """Distribution which always forces a binary package with platform name"""
     def has_ext_modules(foo):
         return True
+
 
 class InstallPlatlib(install):
     def finalize_options(self):
         install.finalize_options(self)
         if self.distribution.has_ext_modules():
             self.install_lib = self.install_platlib
-
         # now copy over libspatialindex
         # get the location of the shared library on the filesystem
         source = shared_path()
-        # copy the shared library into the build directory
-        target = os.path.join(self.build_lib, 'rtree', os.path.split(source)[1])
-        self.copy_file(source, target)
+
+        # only try to copy file if we found it successfully
+        if os.path.exists(source):
+            # copy the shared library into the build directory
+            target = os.path.join(
+                self.build_lib,
+                'rtree',
+                os.path.split(source)[1])
+            self.copy_file(source, target)
+
 
 setup(
     name='Rtree',
@@ -86,11 +93,11 @@ setup(
     url='https://github.com/Toblerity/rtree',
     long_description=readme_text,
     packages=['rtree'],
-    package_data={"rtree": ["lib/*", "include/**/*", "include/**/**/*" ]},
+    package_data={"rtree": ["lib/*", "include/**/*", "include/**/**/*"]},
     zip_safe=False,
-    include_package_data = True,
-    distclass = BinaryDistribution,
-    cmdclass={'bdist_wheel': bdist_wheel,'install': InstallPlatlib},
+    include_package_data=True,
+    distclass=BinaryDistribution,
+    cmdclass={'bdist_wheel': bdist_wheel, 'install': InstallPlatlib},
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
