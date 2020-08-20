@@ -118,4 +118,14 @@ def load():
             os.path.join(
                 os.path.split(ctypes.__file__)[0], '../..', rt._name))
 
+    if not os.path.isfile(final):
+        try:
+            # will throw an exception including the path
+            rt['dummyproperty']
+        except BaseException as E:
+            # for the love of god, this is the only way I've found
+            # to extract the shared library path easily
+            exc = str(E)
+            final = os.path.abspath(exc.split(':', 1)[0])
+
     return rt, final
