@@ -78,7 +78,7 @@ class InstallPlatlib(install):
                 'rtree')
             if not os.path.isdir(target_dir):
                 # make build directory if it doesn't exist yet
-                os.makedirs(os.path.split(target)[0])
+                os.makedirs(target_dir)
             # copy the source file to the target directory
             target = os.path.join(
                 target_dir, os.path.split(source)[1])
