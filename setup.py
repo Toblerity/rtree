@@ -73,13 +73,15 @@ class InstallPlatlib(install):
         # only try to copy file if we found it successfully
         if os.path.exists(source):
             # where we're putting the shared library in the build directory
-            target = os.path.join(
+            target_dir = os.path.join(
                 self.build_lib,
-                'rtree',
-                os.path.split(source)[1])
-            # make build directory if it doesn't exist yet
-            os.makedirs(os.path.split(target)[0])
+                'rtree')
+            if not os.path.isdir(target_dir):
+                # make build directory if it doesn't exist yet
+                os.makedirs(os.path.split(target)[0])
             # copy the source file to the target directory
+            target = os.path.join(
+                target_dir, os.path.split(source)[1])
             self.copy_file(source, target)
 
 
