@@ -7,7 +7,7 @@ jobs:
     name: Build wheel on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
-      CIBW_SKIP: pp*
+      CIBW_SKIP: pp* cp27*
       CIBW_TEST_REQUIRES: pytest numpy
       CIBW_TEST_COMMAND: pytest {project}/tests
       CIBW_BEFORE_BUILD_LINUX: "pip install cmake; bash {project}/ci/install_libspatialindex.bash"
@@ -31,7 +31,7 @@ jobs:
         # provides sha256sum
         brew install coreutils
     - name: Install Visual C++ for Python 2.7
-      if: startsWith(matrix.os, 'windows')
+      if: false #startsWith(matrix.os, 'windows')
       run: |
         choco install vcpython27 -f -y
     - name: Build wheels
