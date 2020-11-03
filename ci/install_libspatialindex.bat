@@ -12,5 +12,8 @@ cd libspatialindex-1.9.3
 mkdir build
 cd build
 
+set CC=cl.exe
+set CXX=cl.exe
+
 cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
 ninja
