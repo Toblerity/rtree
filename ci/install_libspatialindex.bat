@@ -9,6 +9,8 @@ curl -L -O https://github.com/libspatialindex/libspatialindex/archive/1.9.3.zip
 unzip 1.9.3.zip
 cd libspatialindex-1.9.3
 
-cmake -DCMAKE_BUILD_TYPE=Release .
-make
-make install
+mkdir build
+cd build
+
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+ninja
