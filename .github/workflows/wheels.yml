@@ -31,9 +31,9 @@ jobs:
         # provides sha256sum
         brew install coreutils
     - name: Install Visual C++ for Python 2.7
-      if: false #startsWith(matrix.os, 'windows')
+      if: startsWith(matrix.os, 'windows')
       run: |
-        choco install vcpython27 -f -y
+        choco install vcpython27 llvm -f -y
     - name: Build wheels
       run: |
         python -m cibuildwheel --output-dir wheelhouse
