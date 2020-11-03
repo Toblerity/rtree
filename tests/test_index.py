@@ -38,7 +38,6 @@ class IndexTestCase(unittest.TestCase):
         assert next(rtree_test.intersection([1, 1, 1, 2, 2, 2])) == 1564
 
 
-
 class IndexVersion(unittest.TestCase):
 
     def test_libsidx_version(self):

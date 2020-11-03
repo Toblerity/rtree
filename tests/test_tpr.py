@@ -8,15 +8,15 @@ import rtree
 
 
 class Object(namedtuple("Object", (
-        "id", "time",  "x", "y", "x_vel", "y_vel", "update_time",
+        "id", "time", "x", "y", "x_vel", "y_vel", "update_time",
         "out_of_bounds"))):
     __slots__ = ()
 
     def getX(self, t):
-        return self.x + self.x_vel*(t - self.time)
+        return self.x + self.x_vel * (t - self.time)
 
     def getY(self, t):
-        return self.y + self.y_vel*(t - self.time)
+        return self.y + self.y_vel * (t - self.time)
 
     def getXY(self, t):
         return self.getX(t), self.getY(t)
@@ -43,7 +43,7 @@ def data_generator(
         queries_per_time_step=5, min_query_extent=0.05, max_query_extent=0.1,
         horizon=20, min_query_interval=2, max_query_interval=10, agility=0.01,
         min_speed=0.0025, max_speed=0.0166, min_x=0, min_y=0, max_x=1, max_y=1,
-        ):
+):
 
     def create_object(id_, time, x=None, y=None):
         # Create object with random or defined x, y and random velocity
@@ -53,11 +53,11 @@ def data_generator(
             y = np.random.uniform(min_y, max_y)
         speed = np.random.uniform(min_speed, max_speed)
         angle = np.random.uniform(-np.pi, np.pi)
-        x_vel, y_vel = speed*np.cos(angle), speed*np.sin(angle)
+        x_vel, y_vel = speed * np.cos(angle), speed * np.sin(angle)
 
         # Set update time for when out of bounds, or max interval
         for dt in range(1, max_update_interval + 1):
-            if not (0 < x + x_vel*dt < max_x and 0 < y + y_vel*dt < max_y):
+            if not (0 < x + x_vel * dt < max_x and 0 < y + y_vel * dt < max_y):
                 out_of_bounds = True
                 update_time = time + dt
                 break
@@ -113,10 +113,10 @@ def data_generator(
             y = np.random.uniform(min_y, max_y)
             dx = np.random.uniform(min_query_extent, max_query_extent)
             dy = np.random.uniform(min_query_extent, max_query_extent)
-            dt = np.random.randint(min_query_interval, max_query_interval+1)
+            dt = np.random.randint(min_query_interval, max_query_interval + 1)
             t = np.random.randint(t_now, t_now + horizon - dt)
 
-            yield "QUERY", t_now, QueryObject(t, t+dt, x, y, dx, dy)
+            yield "QUERY", t_now, QueryObject(t, t + dt, x, y, dx, dy)
 
 
 def intersects(x1, y1, x2, y2, x, y, dx, dy):
@@ -125,15 +125,17 @@ def intersects(x1, y1, x2, y2, x, y, dx, dy):
     # Implementation of https://stackoverflow.com/a/293052
 
     # Check if line points not both more/less than max/min for each axis
-    if (x1 > x+dx and x2 > x+dx) or (x1 < x-dx and x2 < x-dx) \
-            or (y1 > y+dy and y2 > y+dy) or (y1 < y-dy and y2 < y-dy):
+    if (x1 > x + dx and x2 > x + dx) or (x1 < x - dx and x2 < x - dx) \
+            or (y1 > y + dy and y2 > y + dy) or (y1 < y - dy and y2 < y - dy):
         return False
 
     # Check on which side (+ve, -ve) of the line the rectangle corners are,
     # returning True if any corner is on a different side.
-    calcs = ((y2-y1)*rect_x + (x1-x2)*rect_y + (x2*y1 - x1*y2)
-             for rect_x, rect_y in (
-                 (x-dx, y-dy), (x+dx, y-dy), (x-dx, y+dy), (x+dx, y+dy)))
+    calcs = ((y2 - y1) * rect_x + (x1 - x2) * rect_y + (x2 * y1 - x1 * y2)
+             for rect_x, rect_y in ((x - dx, y - dy),
+                                    (x + dx, y - dy),
+                                    (x - dx, y + dy),
+                                    (x + dx, y + dy)))
     sign = np.sign(next(calcs))  # First corner (bottom left)
     return any(np.sign(calc) != sign for calc in calcs)  # Check remaining 3
 
