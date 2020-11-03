@@ -20,7 +20,7 @@ class IndexTestCase(unittest.TestCase):
         for i, coords in enumerate(self.boxes15):
             self.idx.add(i, coords)
 
-    def boxes15_stream(interleaved=True):
+    def boxes15_stream(self, interleaved=True):
         boxes15 = np.genfromtxt('boxes_15x15.data')
         for i, (minx, miny, maxx, maxy) in enumerate(boxes15):
 
@@ -28,6 +28,15 @@ class IndexTestCase(unittest.TestCase):
                 yield (i, (minx, miny, maxx, maxy), 42)
             else:
                 yield (i, (minx, maxx, miny, maxy), 42)
+
+    def stream_basic(self):
+        # some versions of libspatialindex screw up indexes on stream loading
+        # so do a very simple index check
+        rtree_test = rtree.index.Index(
+            [(1564, [0, 0, 0, 10, 10, 10], None)],
+            properties=rtree.index.Property(dimension=3))
+        assert next(rtree_test.intersection([1, 1, 1, 2, 2, 2])) == 1564
+
 
 
 class IndexVersion(unittest.TestCase):

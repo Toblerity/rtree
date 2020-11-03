@@ -12,5 +12,8 @@ cd libspatialindex-1.9.3
 mkdir build
 cd build
 
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
-ninja
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make
+make insta
+
+// ninja
