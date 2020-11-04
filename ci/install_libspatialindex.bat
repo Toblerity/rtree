@@ -10,8 +10,8 @@ cd libspatialindex-1.9.3
 mkdir build
 cd build
 
-set CC=Clang
-set CXX=Clang
+set CC=C:\msys64\mingw64\bin\clang.exe
+set CXX=C:\msys64\mingw64\bin\clang.exe
 
 cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
 ninja
