@@ -4,7 +4,7 @@ python -c "import sys; print(sys.version)"
 curl -L -O https://github.com/libspatialindex/libspatialindex/archive/1.9.3.zip
 
 unzip 1.9.3.zip
-cp CMakeLists.txt libspatialindex-1.9.3
+cp %~dp0\CMakeLists.txt libspatialindex-1.9.3\CMakeLists.txt
 cd libspatialindex-1.9.3
 
 mkdir build
