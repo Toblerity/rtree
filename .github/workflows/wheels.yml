@@ -37,11 +37,10 @@ jobs:
         CXX: C:\msys64\mingw64\bin\clang.exe
       run: |
         choco install ninja -f -y
-        ci\install_libspatialindex.bat
         mkdir include
         mkdir lib
-        cp ci\build\*.dll lib
-        mv ci\build\* include
+        cd ci
+        install_libspatialindex.bat
     - name: Build wheels
       run: |
         python -m cibuildwheel --output-dir wheelhouse
