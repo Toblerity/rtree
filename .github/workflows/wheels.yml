@@ -36,7 +36,7 @@ jobs:
         CC: C:\msys64\mingw64\bin\clang.exe
         CXX: C:\msys64\mingw64\bin\clang.exe
       run: |
-        choco install ninja -f -y 
+        choco install ninja -f -y
         ci\install_libspatialindex.bat
         mkdir include
         mkdir lib
