@@ -37,8 +37,6 @@ jobs:
         CXX: C:\msys64\mingw64\bin\clang.exe
       run: |
         choco install ninja -f -y
-        mkdir include
-        mkdir lib
         cd ci
         install_libspatialindex.bat
     - name: Build wheels
