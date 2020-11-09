@@ -70,10 +70,15 @@ class cmake_build(build_ext):
         # ... setuptools is an enigma monkey patched on a mystery
         if not os.path.exists(dest_path):
             os.makedirs(dest_path, exist_ok=True)
+
+        release_path = os.path.join(source_path, "Release")
+        if os.path.exists(release_path):
+            source_path = release_path
         self.copy_tree(source_path, dest_path)
 
+
 setup(
-    name='Rtree',
+    name='Rtree-linux',
     version=__version__,
     description='R-Tree spatial index for Python GIS',
     license='MIT',
