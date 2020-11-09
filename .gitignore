@@ -1,4 +1,4 @@
-Rtree.egg-info/
+*.egg-info/
 *.pyc
 docs/build
 build/
