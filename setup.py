@@ -78,7 +78,7 @@ class cmake_build(build_ext):
 
 
 setup(
-    name='Rtree-linux',
+    name='Rtree',
     version=__version__,
     description='R-Tree spatial index for Python GIS',
     license='MIT',
