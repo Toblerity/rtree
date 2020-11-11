@@ -61,7 +61,7 @@ def load(return_path=False):
                           _cwd,
                           os.path.join(_cwd, 'lib'),
                           os.path.join(sys.prefix, "Library", "bin"),
-                          ('', )]
+                          '']
             # run through our list of candidate locations
             rt, full_path = _load_library(
                 lib_name, ctypes.cdll.LoadLibrary, candidates)
