@@ -25,11 +25,11 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH}
 # Make string comparison in cmake behave like you'd expect
 cmake_policy(SET CMP0054 NEW) 
 
-#if (WIN32)
-#    if(${CMAKE_VERSION} VERSION_GREATER "3.14.5")
-#      cmake_policy(SET CMP0092 NEW) # don't put /w3 in flags
-#    endif()
-#endif()
+if (WIN32)
+    if(${CMAKE_VERSION} VERSION_GREATER "3.14.5")
+      cmake_policy(SET CMP0092 NEW) # don't put /w3 in flags
+    endif()
+endif()
 
 if (APPLE)
 	set(CMAKE_MACOSX_RPATH ON)
@@ -93,7 +93,7 @@ INCLUDE (CheckIncludeFiles)
 #------------------------------------------------------------------------------
 
 # note we default to RelWithDebInfo mode if not set
-if(NOT MSVC_IDE AND NOT CMAKE_BUILD_TYPE)
+if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
     "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel" FORCE)
 endif()
