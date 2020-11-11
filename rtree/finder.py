@@ -46,13 +46,13 @@ def load(return_path=False):
             return None, None
 
         if '64' in platform.architecture()[0]:
-            archs = ('64', '32')
+            arches = ('64', '32')
         else:
-            archs = ('32', '64')
+            arches = ('32', '64')
 
         rt = None
         for arch in arches:
-            lib_name = 'spatialindex_c-{}.dll'.format(base_name, arch)
+            lib_name = 'spatialindex_c-{}.dll'.format(arch)
             # generate a bunch of candidate locations where the
             # libspatialindex DLL *might* be hanging out
             candidates = [os.environ.get('SPATIALINDEX_C_LIBRARY', None),
