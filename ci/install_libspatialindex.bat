@@ -13,8 +13,9 @@ cd build
 cmake -D CMAKE_BUILD_TYPE=Release ..
 
 "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\amd64\MSBuild.exe" spatialindex.sln
+copy bin\Debug\*.dll %~dp0\..\rtree\
 
-
+"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe" spatialindex.sln
 copy bin\Debug\*.dll %~dp0\..\rtree\
 
 dir %~dp0\..\rtree\

@@ -42,6 +42,8 @@ def load(return_path=False):
                 except (WindowsError, OSError) as E:
                     print(E)
                     pass
+                except BaseException as E:
+                    print('rtree.finder unexpected error: {}'.format(str(E)))
                 finally:
                     if path and oldenv is not None:
                         os.environ['PATH'] = oldenv
