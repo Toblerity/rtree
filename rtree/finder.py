@@ -20,8 +20,9 @@ def load(return_path=False):
 
     full_path, lib_path, lib_name = None, None, None
     if os.name == 'nt':
-        def _load_library(dllname, loadfunction, dllpaths=('', )):
-            """Load a DLL via ctypes load function. Return None on failure.
+        def _load_library(dllname, loadfunction, dllpaths):
+            """
+            Load a DLL via ctypes load function. Return None on failure.
             Try loading the DLL from the current package directory first,
             then from the Windows DLL search path.
             """
@@ -38,7 +39,8 @@ def load(return_path=False):
                 try:
                     return loadfunction(os.path.join(
                         path, dllname)), os.path.join(path, dllname)
-                except (WindowsError, OSError):
+                except (WindowsError, OSError) as E:
+                    print(E)
                     pass
                 finally:
                     if path and oldenv is not None:
@@ -58,19 +60,16 @@ def load(return_path=False):
             candidates = [os.environ.get('SPATIALINDEX_C_LIBRARY', None),
                           _cwd,
                           os.path.join(_cwd, 'lib'),
-                          os.path.join(sys.prefix, "Library", "bin")]
+                          os.path.join(sys.prefix, "Library", "bin"),
+                          ('', )]
             # run through our list of candidate locations
             rt, full_path = _load_library(
                 lib_name, ctypes.cdll.LoadLibrary, candidates)
-            if not rt:
-                # try a bare call for funsies
-                rt, full_path = _load_library(
-                    lib_name, ctypes.cdll.LoadLibrary)
             if rt:
                 break
 
         if not rt:
-            raise OSError("could not find or load %s" % lib_name)
+            raise OSError("could not find or load {}".format(lib_name))
 
     elif os.name == 'posix':
         if 'SPATIALINDEX_C_LIBRARY' in os.environ:
