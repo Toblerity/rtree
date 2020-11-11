@@ -62,12 +62,12 @@ def load(return_path=False):
             # run through our list of candidate locations
             rt, full_path = _load_library(
                 lib_name, ctypes.cdll.LoadLibrary, candidates)
-            if rt is not None:
+            if rt:
                 break
 
         if not rt:
             # try a bare call for funsies
-            rt = _load_library(lib_name, ctypes.cdll.LoadLibrary)
+            rt, full_path = _load_library(lib_name, ctypes.cdll.LoadLibrary)
 
         if not rt:
             raise OSError("could not find or load %s" % lib_name)
@@ -115,6 +115,7 @@ def load(return_path=False):
         final = os.path.abspath(
             os.path.join(
                 os.path.split(ctypes.__file__)[0], '../..', rt._name))
+
     if not os.path.isfile(final):
         try:
             # will throw an exception including the path
