@@ -62,12 +62,12 @@ def load(return_path=False):
             # run through our list of candidate locations
             rt, full_path = _load_library(
                 lib_name, ctypes.cdll.LoadLibrary, candidates)
+            if not rt:
+                # try a bare call for funsies
+                rt, full_path = _load_library(
+                    lib_name, ctypes.cdll.LoadLibrary)
             if rt:
                 break
-
-        if not rt:
-            # try a bare call for funsies
-            rt, full_path = _load_library(lib_name, ctypes.cdll.LoadLibrary)
 
         if not rt:
             raise OSError("could not find or load %s" % lib_name)
