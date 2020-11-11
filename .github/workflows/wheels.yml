@@ -31,14 +31,8 @@ jobs:
         brew install coreutils
     - name: Run Windows Preinstall Build
       if: startsWith(matrix.os, 'windows')
-      #vcpython27
-      env:
-        CC: C:\msys64\mingw64\bin\clang.exe
-        CXX: C:\msys64\mingw64\bin\clang.exe
       run: |
-        choco install ninja -f -y
-        mkdir lib
-        mkdir include
+        choco install vcpython27 -f -y
         ci\install_libspatialindex.bat
     - name: Build wheels
       run: |
