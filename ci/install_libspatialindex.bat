@@ -11,6 +11,8 @@ mkdir build
 cd build
 
 cmake -G Ninja -D CMAKE_BUILD_TYPE=Release ..
+
+((Get-Content -path build.ninja -Raw) -replace '/wd4068',' ') | Set-Content -Path build.ninja
 ninja
 
 
