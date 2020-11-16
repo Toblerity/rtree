@@ -73,7 +73,11 @@ if(WIN32)
   endif()
 endif()
 
-
+if (CMAKE_BUILD_TYPE EQUAL "Release32")
+  set( SIDX_LIB_NAME "spatialindex-32"  )
+  set( SIDX_C_LIB_NAME "spatialindex_c-32"  )
+endif()
+	      
 set(CMAKE_INCLUDE_DIRECTORIES_PROJECT_BEFORE ON)
 
 include (CheckFunctionExists)

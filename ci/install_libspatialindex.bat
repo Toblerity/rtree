@@ -16,7 +16,7 @@ cmake -D CMAKE_SIZEOF_VOID_P=8 -D CMAKE_BUILD_TYPE=Release ..
 copy bin\Debug\*.dll %~dp0\..\rtree\
 
 rm -rf *
-cmake -D CMAKE_SIZEOF_VOID_P=4 -D CMAKE_BUILD_TYPE=Release ..
+cmake -D CMAKE_BUILD_TYPE=Release32 ..
 
 "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe" spatialindex.sln
 copy bin\Debug\*.dll %~dp0\..\rtree\
