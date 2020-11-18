@@ -70,14 +70,13 @@ if(WIN32)
 		set( SIDX_LIB_NAME "spatialindex-32"  )
 		set( SIDX_C_LIB_NAME "spatialindex_c-32"  )
 	endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-  endif()
+      endif()
+      if (SIDX_FORCE_32)
+	set( SIDX_LIB_NAME "spatialindex-32"  )
+	set( SIDX_C_LIB_NAME "spatialindex_c-32"  )
+      endif()
 endif()
-
-if (CMAKE_BUILD_TYPE EQUAL "Release32")
-  set( SIDX_LIB_NAME "spatialindex-32"  )
-  set( SIDX_C_LIB_NAME "spatialindex_c-32"  )
-endif()
-	      
+ 
 set(CMAKE_INCLUDE_DIRECTORIES_PROJECT_BEFORE ON)
 
 include (CheckFunctionExists)
