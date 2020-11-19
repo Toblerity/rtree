@@ -67,7 +67,8 @@ def load(return_path=False):
             arch = '64'
         else:
             arch = '32'
-            lib_name = 'spatialindex_c-{}.dll'.format(arch)
+
+        lib_name = 'spatialindex_c-{}.dll'.format(arch)
         # generate a bunch of candidate locations where the
         # libspatialindex DLL *might* be hanging out
         candidates = [os.environ.get('SPATIALINDEX_C_LIBRARY', None),
