@@ -1,13 +1,15 @@
 from collections import namedtuple, defaultdict
 from math import ceil
 
+import unittest
 import numpy as np
-import pytest
+
 
 import rtree
+from rtree.index import Index, Property, RT_TPRTree
 
 
-class Object(namedtuple("Object", (
+class Cartesian(namedtuple("Cartesian", (
         "id", "time", "x", "y", "x_vel", "y_vel", "update_time",
         "out_of_bounds"))):
     __slots__ = ()
@@ -27,7 +29,7 @@ class Object(namedtuple("Object", (
                 self.time if t_now is None else (self.time, t_now))
 
 
-class QueryObject(namedtuple("QueryObject", (
+class QueryCartesian(namedtuple("QueryCartesian", (
         "start_time", "end_time", "x", "y", "dx", "dy"))):
     __slots__ = ()
 
@@ -65,8 +67,8 @@ def data_generator(
             out_of_bounds = False
             update_time = time + max_update_interval
 
-        return Object(id_, time, x, y, x_vel, y_vel, update_time,
-                      out_of_bounds)
+        return Cartesian(id_, time, x, y, x_vel, y_vel, update_time,
+                         out_of_bounds)
 
     objects = list()
     objects_to_update = defaultdict(set)
@@ -116,7 +118,7 @@ def data_generator(
             dt = np.random.randint(min_query_interval, max_query_interval + 1)
             t = np.random.randint(t_now, t_now + horizon - dt)
 
-            yield "QUERY", t_now, QueryObject(t, t + dt, x, y, dx, dy)
+            yield "QUERY", t_now, QueryCartesian(t, t + dt, x, y, dx, dy)
 
 
 def intersects(x1, y1, x2, y2, x, y, dx, dy):
@@ -140,46 +142,35 @@ def intersects(x1, y1, x2, y2, x, y, dx, dy):
     return any(np.sign(calc) != sign for calc in calcs)  # Check remaining 3
 
 
-@pytest.fixture(scope="function")
-def tpr_tree(request):
-    # Create tree
-    from rtree.index import Index, Property, RT_TPRTree
-    return Index(properties=Property(type=RT_TPRTree))
+class TPRTests(unittest.TestCase):
 
+    def test_tpr(self):
+        # Cartesians list for brute force
+        objects = dict()
 
-@pytest.fixture(scope="function")
-def simulation():
-    return data_generator()
+        tpr_tree = Index(properties=Property(type=RT_TPRTree))
 
+        for operation, t_now, object_ in data_generator():
+            if operation == "INSERT":
+                tpr_tree.insert(object_.id, object_.get_coordinates())
+                objects[object_.id] = object_
+            elif operation == "DELETE":
+                tpr_tree.delete(object_.id, object_.get_coordinates(t_now))
+                del objects[object_.id]
+            elif operation == "QUERY":
+                tree_intersect = set(
+                    tpr_tree.intersection(object_.get_coordinates()))
 
-@pytest.mark.skipif(
-    not hasattr(rtree.core.rt, 'Index_InsertTPData'),
-    reason="Requires TPR-Tree support in libspatialindex")
-def test_tpr(tpr_tree, simulation):
-    # Objects list for brute force
-    objects = dict()
+                # Brute intersect
+                brute_intersect = set()
+                for tree_object in objects.values():
+                    x_low, y_low = tree_object.getXY(object_.start_time)
+                    x_high, y_high = tree_object.getXY(object_.end_time)
 
-    for operation, t_now, object_ in simulation:
-        if operation == "INSERT":
-            tpr_tree.insert(object_.id, object_.get_coordinates())
-            objects[object_.id] = object_
-        elif operation == "DELETE":
-            tpr_tree.delete(object_.id, object_.get_coordinates(t_now))
-            del objects[object_.id]
-        elif operation == "QUERY":
-            tree_intersect = set(
-                tpr_tree.intersection(object_.get_coordinates()))
+                    if intersects(
+                            x_low, y_low, x_high, y_high,  # Line
+                            object_.x, object_.y, object_.dx, object_.dy):  # Rect
+                        brute_intersect.add(tree_object.id)
 
-            # Brute intersect
-            brute_intersect = set()
-            for tree_object in objects.values():
-                x_low, y_low = tree_object.getXY(object_.start_time)
-                x_high, y_high = tree_object.getXY(object_.end_time)
-
-                if intersects(
-                        x_low, y_low, x_high, y_high,  # Line
-                        object_.x, object_.y, object_.dx, object_.dy):  # Rect
-                    brute_intersect.add(tree_object.id)
-
-            # Tree should match brute force approach
-            assert tree_intersect == brute_intersect
+                # Tree should match brute force approach
+                assert tree_intersect == brute_intersect
