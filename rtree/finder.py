@@ -17,7 +17,21 @@ _cwd = os.path.abspath(os.path.expanduser(
 
 
 def load(return_path=False):
+    """
+    Load the `libspatialindex` shared library.
 
+    Parameters
+    ----------
+    return_path : bool
+      Return location of shared library
+
+    Returns
+    -----------
+    rt : ctypes object
+      Loaded shared library
+    path : str
+      If requested return location of shared library
+    """
     full_path, lib_path, lib_name = None, None, None
     if os.name == 'nt':
         def _load_library(dllname, loadfunction, dllpaths):
@@ -50,25 +64,20 @@ def load(return_path=False):
             return None, None
 
         if '64' in platform.architecture()[0]:
-            arches = ('64', '32')
+            arch = '64'
         else:
-            arches = ('32', '64')
-
-        rt = None
-        for arch in arches:
+            arch = '32'
             lib_name = 'spatialindex_c-{}.dll'.format(arch)
-            # generate a bunch of candidate locations where the
-            # libspatialindex DLL *might* be hanging out
-            candidates = [os.environ.get('SPATIALINDEX_C_LIBRARY', None),
-                          _cwd,
-                          os.path.join(_cwd, 'lib'),
-                          os.path.join(sys.prefix, "Library", "bin"),
-                          '']
-            # run through our list of candidate locations
-            rt, full_path = _load_library(
-                lib_name, ctypes.cdll.LoadLibrary, candidates)
-            if rt:
-                break
+        # generate a bunch of candidate locations where the
+        # libspatialindex DLL *might* be hanging out
+        candidates = [os.environ.get('SPATIALINDEX_C_LIBRARY', None),
+                      _cwd,
+                      os.path.join(_cwd, 'lib'),
+                      os.path.join(sys.prefix, "Library", "bin"),
+                      '']
+        # run through our list of candidate locations
+        rt, full_path = _load_library(
+            lib_name, ctypes.cdll.LoadLibrary, candidates)
 
         if not rt:
             raise OSError("could not find or load {}".format(lib_name))
