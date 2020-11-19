@@ -54,8 +54,6 @@ class bdist_wheel(_bdist_wheel):
         _bdist_wheel.finalize_options(self)
         self.root_is_pure = False
 
-        from IPython import embed
-        embed()
 
 class BinaryDistribution(Distribution):
     """Distribution which always forces a binary package with platform name"""
