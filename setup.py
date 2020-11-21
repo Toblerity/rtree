@@ -18,35 +18,8 @@ with open('rtree/__init__.py', 'r') as fp:
     # get and exec just the line which looks like "__version__ = '0.9.4'"
     exec(next(line for line in fp if '__version__' in line))
 
-
-def shared_path():
-    """
-    Get the location of the libspatialindex shared library.
-
-    Returns
-    ---------
-    rt_path : str
-      Location of `libspatialindex_c.so.4`
-    """
-
-    # the location of `finder.py`, which has the logic to load
-    # the shared library and also has no imports outside of stdlib
-    path = os.path.abspath(
-        os.path.join(os.path.split(__file__)[0], 'rtree/finder.py'))
-    # load the module from the path on Python 2 or 3
-    if sys.version_info.major >= 3:
-        # python >= 3.5
-        import importlib.util
-        spec = importlib.util.spec_from_file_location("finder", path)
-        finder = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(finder)
-    else:
-        # python 2
-        import imp
-        finder = imp.load_source('finder', path)
-    # actually load the shared module to get it's location
-    rt_path = finder.load(return_path=True)[1]
-    return rt_path
+# current working directory of this setup.py file
+_cwd = os.path.abspath(os.path.split(__file__)[0])
 
 
 class bdist_wheel(_bdist_wheel):
@@ -63,26 +36,36 @@ class BinaryDistribution(Distribution):
 
 class InstallPlatlib(install):
     def finalize_options(self):
+        # use for checking extension types
+        from fnmatch import fnmatch
+
         install.finalize_options(self)
         if self.distribution.has_ext_modules():
             self.install_lib = self.install_platlib
         # now copy over libspatialindex
         # get the location of the shared library on the filesystem
-        source = shared_path()
 
-        # only try to copy file if we found it successfully
-        if os.path.exists(source):
-            # where we're putting the shared library in the build directory
-            target_dir = os.path.join(
-                self.build_lib,
-                'rtree')
+        # where we're putting the shared library in the build directory
+        target_dir = os.path.join(self.build_lib, 'rtree')
+        # where are we checking for shared libraries
+        source_dir = os.path.join(_cwd, 'rtree')
+
+        # what patterns represent shared libraries
+        patterns = {'*.so*', '*.dylib', '*.dll'}
+
+        for file_name in os.listdir(source_dir):
+            check = file_name.lower()
+            if not any(fnmatch(check, p) for p in patterns):
+                continue
+
+            # make build directory if it doesn't exist yet
             if not os.path.isdir(target_dir):
-                # make build directory if it doesn't exist yet
                 os.makedirs(target_dir)
+
             # copy the source file to the target directory
-            target = os.path.join(
-                target_dir, os.path.split(source)[1])
-            self.copy_file(source, target)
+            self.copy_file(
+                os.path.join(source_dir, file_name),
+                os.path.join(target_dir, file_name))
 
 
 setup(
@@ -98,7 +81,7 @@ setup(
     url='https://github.com/Toblerity/rtree',
     long_description=readme_text,
     packages=['rtree'],
-    package_data={"rtree": ["lib/*", "include/**/*", "include/**/**/*"]},
+    package_data={"rtree": ['*.so*', '*.dll', '*.dylib']},
     zip_safe=False,
     include_package_data=True,
     distclass=BinaryDistribution,
