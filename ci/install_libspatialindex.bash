@@ -5,6 +5,10 @@ set -xe
 VERSION=1.9.3
 SHA256=63a03bfb26aa65cf0159f925f6c3491b6ef79bc0e3db5a631d96772d6541187e
 
+# where to copy resulting files
+# this has to be run before `cd`-ing anywhere
+TARGET=`dirname "$(readlink -f "$0")"`/../rtree/
+
 
 rm $VERSION.zip || true
 curl -L -O https://github.com/libspatialindex/libspatialindex/archive/$VERSION.zip
@@ -23,7 +27,8 @@ cmake ..
 make -j 4
 
 # copy built libraries relative to path of this script
-cp bin/* `dirname "$(readlink -f "$0")"`/../rtree/
+# -d means copy links as links rather than duplicate files
+cp -d bin/* $TARGET
 
 cd ../..
 rm -rf "libspatialindex-${VERSION}"

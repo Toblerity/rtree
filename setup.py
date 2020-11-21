@@ -58,6 +58,9 @@ class InstallPlatlib(install):
             if not any(fnmatch(check, p) for p in patterns):
                 continue
 
+            if not os.path.isfile(os.path.join(source_dir, file_name)):
+                continue
+
             # make build directory if it doesn't exist yet
             if not os.path.isdir(target_dir):
                 os.makedirs(target_dir)
