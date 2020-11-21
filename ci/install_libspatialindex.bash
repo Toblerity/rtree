@@ -21,7 +21,9 @@ cd build
 
 cmake ..
 make -j 4
-make install
+
+# copy built libraries
+cp bin/* ../../../rtree/
 
 cd ../..
 rm -rf "libspatialindex-${VERSION}"
