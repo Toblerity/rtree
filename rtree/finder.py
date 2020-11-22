@@ -5,8 +5,8 @@ finder.py
 Locate `libspatialindex` shared library by any means necessary.
 """
 import os
-import platform
 import ctypes
+import platform
 from ctypes.util import find_library
 
 # the current working directory of this file
@@ -65,17 +65,27 @@ def load():
         # libspatialindex_c.so *might* be hanging out
         _candidates.append(find_library('spatialindex_c'))
 
+        # posix includes both mac and linux
+        # use the extension for the specific platform
+        if platform.system() == 'Darwin':
+            # macos shared libraries are `.dylib`
+            extension = 'dylib'
+        else:
+            # linux shared libraries are `.so`
+            extension = 'so'
+
         # get the starting working directory
         cwd = os.getcwd()
         for cand in _candidates:
             if cand is None:
                 continue
             elif os.path.isdir(cand):
-                # if our candidate is a directory use best gurss
+                # if our candidate is a directory use best guess
                 path = cand
-                target = os.path.join(cand, "libspatialindex_c.so")
+                target = os.path.join(
+                    cand, "libspatialindex_c.{}".format(extension))
             elif os.path.isfile(cand):
-                # if it's a straight file use that
+                # if candidate is just a file use that
                 path = os.path.split(cand)[0]
                 target = cand
             else:
