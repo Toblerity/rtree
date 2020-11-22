@@ -70,9 +70,12 @@ def load():
         if platform.system() == 'Darwin':
             # macos shared libraries are `.dylib`
             extension = 'dylib'
+            # set the magic search path for referenced libraries here
+            dyld = os.environ.get('DYLD_LIBRARY_PATH', '').strip().rstrip(':')
         else:
             # linux shared libraries are `.so`
             extension = 'so'
+            dyld = None
 
         # get the starting working directory
         cwd = os.getcwd()
@@ -94,6 +97,11 @@ def load():
             try:
                 # move to the location we're checking
                 os.chdir(path)
+
+                if dyld is not None:
+                    # on mac add our candidate to the search path
+                    os.environ['DYLD_LIBRARY_PATH'] = ':'.join([dyld, path])
+
                 # try loading the target file candidate
                 rt = ctypes.cdll.LoadLibrary(target)
                 if rt is not None:
