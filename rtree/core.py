@@ -72,7 +72,7 @@ def free_error_msg_ptr(result, func, cargs):
 
 
 # load the shared library by looking in likely places
-rt = finder.load(return_path=False)
+rt = finder.load()
 
 rt.Error_GetLastErrorNum.restype = ctypes.c_int
 
