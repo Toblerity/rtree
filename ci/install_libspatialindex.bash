@@ -11,7 +11,8 @@ SHA256=63a03bfb26aa65cf0159f925f6c3491b6ef79bc0e3db5a631d96772d6541187e
 if [ -z "$1" ]; then
     # target is empty string so copy relative to this file
     # note that this does not work on macos for unknowable reasons
-    TARGET=`dirname "$(readlink -f "$0")"`/../rtree/lib/
+    echo "you must pass the target copy location!"
+    exit
 else
     # target is the passed argment
     TARGET=$1
