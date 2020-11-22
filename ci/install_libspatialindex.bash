@@ -28,7 +28,12 @@ make -j 4
 
 # copy built libraries relative to path of this script
 # -d means copy links as links rather than duplicate files
-cp -d bin/* $TARGET
+if [ "$(uname)" == "Darwin" ]; then
+    cp bin/* $TARGET
+else
+    cp -d bin/* $TARGET
+fi
+
 
 cd ../..
 rm -rf "libspatialindex-${VERSION}"
