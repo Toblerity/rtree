@@ -16,7 +16,7 @@ jobs:
       CIBW_BEFORE_BUILD_MACOS: "pip install cmake; bash {project}/ci/install_libspatialindex.bash"
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-python@v1

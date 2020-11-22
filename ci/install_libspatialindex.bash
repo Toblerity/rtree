@@ -7,7 +7,10 @@ SHA256=63a03bfb26aa65cf0159f925f6c3491b6ef79bc0e3db5a631d96772d6541187e
 
 # where to copy resulting files
 # this has to be run before `cd`-ing anywhere
-TARGET=`dirname "$(readlink -f "$0")"`/../rtree/
+TARGET=`dirname "$(readlink -f "$0")"`/../rtree/lib
+
+# make directory for shared libraries if it doesn't exist
+mkdir -p $TARGET
 
 
 rm $VERSION.zip || true
@@ -28,6 +31,7 @@ make -j 4
 
 # copy built libraries relative to path of this script
 # -d means copy links as links rather than duplicate files
+# macos uses "bsd cp" and needs special handling
 if [ "$(uname)" == "Darwin" ]; then
     cp bin/* $TARGET
 else

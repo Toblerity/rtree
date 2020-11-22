@@ -36,6 +36,12 @@ class BinaryDistribution(Distribution):
 
 class InstallPlatlib(install):
     def finalize_options(self):
+        """
+        Copy the shared libraries into the wheel. Note that this
+        will *only* check in `rtree/lib` rather than anywhere on
+        the system so if you are building a wheel you *must* copy or
+        symlink the `.so`/`.dll`/`.dylib` files into `rtree/lib`.
+        """
         # use for checking extension types
         from fnmatch import fnmatch
 
@@ -46,18 +52,22 @@ class InstallPlatlib(install):
         # get the location of the shared library on the filesystem
 
         # where we're putting the shared library in the build directory
-        target_dir = os.path.join(self.build_lib, 'rtree')
+        target_dir = os.path.join(self.build_lib, 'rtree', 'lib')
         # where are we checking for shared libraries
-        source_dir = os.path.join(_cwd, 'rtree')
+        source_dir = os.path.join(_cwd, 'rtree', 'lib')
 
         # what patterns represent shared libraries
-        patterns = {'*.so*', '*.dylib', '*.dll'}
+        patterns = {'*.so', '*.dylib', '*.dll'}
 
         for file_name in os.listdir(source_dir):
+            # make sure file name is lower case
             check = file_name.lower()
+            # use filename pattern matching to see if it is
+            # a shared library format file
             if not any(fnmatch(check, p) for p in patterns):
                 continue
 
+            # if the source isn't a file skip it
             if not os.path.isfile(os.path.join(source_dir, file_name)):
                 continue
 
@@ -84,7 +94,7 @@ setup(
     url='https://github.com/Toblerity/rtree',
     long_description=readme_text,
     packages=['rtree'],
-    package_data={"rtree": ['*.so*', '*.dll', '*.dylib']},
+    package_data={"rtree": ['lib']},
     zip_safe=False,
     include_package_data=True,
     distclass=BinaryDistribution,
