@@ -17,8 +17,8 @@ _cwd = os.path.abspath(os.path.expanduser(
 # libspatialindex shared library *might* be hanging out
 _candidates = [
     os.environ.get('SPATIALINDEX_C_LIBRARY', None),
-    _cwd,
     os.path.join(_cwd, 'lib'),
+    _cwd,
     '']
 
 
@@ -93,7 +93,6 @@ def load():
             try:
                 # move to the location we're checking
                 os.chdir(path)
-                os.environ['DYLD_FALLBACK_LIBRARY_PATH'] = path
                 # try loading the target file candidate
                 rt = ctypes.cdll.LoadLibrary(target)
                 if rt is not None:
@@ -102,5 +101,14 @@ def load():
                 print('rtree.finder unexpected error: {}'.format(str(E)))
             finally:
                 os.chdir(cwd)
+
+            try:
+                os.environ['DYLD_FALLBACK_LIBRARY_PATH'] = path
+                lib_name = find_library('spatialindex_c')
+                rt = ctypes.CDLL(lib_name)
+                if rt is None:
+                    return rt
+            except BaseException as E:
+                print('rtree.finder unexpected error: {}'.format(str(E)))
 
     raise OSError("Could not load libspatialindex_c library")
