@@ -17,6 +17,8 @@ gentarget() {
   cd "$OURPWD"
   echo $arr
 }
+# note that we're doing this convoluted thing to get
+# an absolute path so mac doesn't yell at us
 TARGET=`gentarget`
 
 rm $VERSION.zip || true
@@ -39,12 +41,14 @@ make -j 4
 # -d means copy links as links rather than duplicate files
 # macos uses "bsd cp" and needs special handling
 if [ "$(uname)" == "Darwin" ]; then
-    cp bin/libspatialindex.dylib $TARGET
-    cp bin/libspatialindex_c.dylib $TARGET
+    #cp bin/libspatialindex.dylib $TARGET
+    #cp bin/libspatialindex_c.dylib $TARGET
+    cp bin/*.dylib $TARGET
 else
     cp -d bin/* $TARGET
 fi
 
+ls $TARGET
 
 cd ../..
 rm -rf "libspatialindex-${VERSION}"

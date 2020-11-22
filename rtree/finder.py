@@ -91,17 +91,15 @@ def load():
             else:
                 continue
 
-            # chage the working directory to our shared library candidate
-            # location
-            os.chdir(path)
             try:
+                # move to the location we're checking
+                os.chdir(path)
                 # try loading the target file candidate
                 rt = ctypes.cdll.LoadLibrary(target)
                 if rt is not None:
                     return rt
             except BaseException as E:
                 print('rtree.finder unexpected error: {}'.format(str(E)))
-
             finally:
                 os.chdir(cwd)
 
