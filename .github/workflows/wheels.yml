@@ -12,8 +12,7 @@ jobs:
       CIBW_TEST_COMMAND: pytest -v {project}/tests
       # we are copying the shared libraries ourselves so skip magical copy
       CIBW_REPAIR_WHEEL_COMMAND: ""
-      CIBW_BEFORE_BUILD_LINUX: "pip install cmake; bash {project}/ci/install_libspatialindex.bash {project}/rtree/lib"
-      CIBW_BEFORE_BUILD_MACOS: "pip install cmake; bash {project}/ci/install_libspatialindex.bash {project}/rtree/lib"
+      CIBW_BEFORE_BUILD_LINUX: "pip install cmake; bash {project}/ci/install_libspatialindex.bash"
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
@@ -26,11 +25,13 @@ jobs:
     - name: Install cibuildwheel
       run: |
         python -m pip install cibuildwheel==1.6.4
-    - name: Install Homebrew Packages
+    - name: Run MacOS Preinstall Build
       if: startsWith(matrix.os, 'macos')
       run: |
         # provides sha256sum
         brew install coreutils
+        pip install cmake
+        bash ci/install_libspatialindex.bash
     - name: Run Windows Preinstall Build
       if: startsWith(matrix.os, 'windows')
       run: |
