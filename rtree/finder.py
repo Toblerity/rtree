@@ -69,10 +69,10 @@ def load():
         # use the extension for the specific platform
         if platform.system() == 'Darwin':
             # macos shared libraries are `.dylib`
-            extension = '6.dylib'
+            lib_name = "libspatialindex_c.dylib"
         else:
             # linux shared libraries are `.so`
-            extension = 'so'
+            lib_name = 'libspatialindex_c.so'
 
         # get the starting working directory
         cwd = os.getcwd()
@@ -82,8 +82,7 @@ def load():
             elif os.path.isdir(cand):
                 # if our candidate is a directory use best guess
                 path = cand
-                target = os.path.join(
-                    cand, "libspatialindex_c.{}".format(extension))
+                target = os.path.join(cand, lib_name)
             elif os.path.isfile(cand):
                 # if candidate is just a file use that
                 path = os.path.split(cand)[0]
@@ -94,6 +93,7 @@ def load():
             try:
                 # move to the location we're checking
                 os.chdir(path)
+                os.environ['DYLD_FALLBACK_LIBRARY_PATH'] = path
                 # try loading the target file candidate
                 rt = ctypes.cdll.LoadLibrary(target)
                 if rt is not None:
