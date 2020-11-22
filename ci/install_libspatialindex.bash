@@ -5,22 +5,19 @@ set -xe
 VERSION=1.9.3
 SHA256=63a03bfb26aa65cf0159f925f6c3491b6ef79bc0e3db5a631d96772d6541187e
 
+
 # where to copy resulting files
 # this has to be run before `cd`-ing anywhere
-# if the script has been passed a target location use it
-if [ -z "$1" ]; then
-    # target is empty string so copy relative to this file
-    # note that this does not work on macos for unknowable reasons
-    echo "you must pass the target copy location!"
-    exit
-else
-    # target is the passed argment
-    TARGET=$1
-fi
-
-# make directory for shared libraries if it doesn't exist
-mkdir -p $TARGET
-
+gentarget() {
+  OURPWD=$PWD
+  cd "$(dirname "$0")"
+  mkdir -p ../rtree/lib
+  cd ../rtree/lib
+  arr=$(pwd)
+  cd "$OURPWD"
+  echo $arr
+}
+TARGET=`gentarget`
 
 rm $VERSION.zip || true
 curl -L -O https://github.com/libspatialindex/libspatialindex/archive/$VERSION.zip
