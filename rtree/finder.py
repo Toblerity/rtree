@@ -69,7 +69,7 @@ def load():
         # use the extension for the specific platform
         if platform.system() == 'Darwin':
             # macos shared libraries are `.dylib`
-            lib_name = "libspatialindex_c.a"
+            lib_name = "libspatialindex_c.dylib"
         else:
             # linux shared libraries are `.so`
             lib_name = 'libspatialindex_c.so'
