@@ -59,5 +59,3 @@ fi
 
 ls $TARGET
 
-cd ../..
-rm -rf "libspatialindex-${VERSION}"
