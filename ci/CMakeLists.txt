@@ -32,7 +32,7 @@ if (WIN32)
 endif()
 
 if (APPLE)
-	set(CMAKE_MACOSX_RPATH OFF)
+	set(CMAKE_MACOSX_RPATH ON)
 endif (APPLE)
 
 #------------------------------------------------------------------------------
