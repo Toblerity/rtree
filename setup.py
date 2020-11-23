@@ -57,7 +57,10 @@ class InstallPlatlib(install):
         source_dir = os.path.join(_cwd, 'rtree', 'lib')
 
         # what patterns represent shared libraries
-        patterns = {'*.so', '*.dylib', '*.dll'}
+        patterns = {'*.so',
+                    'libspatialindex.dylib',
+                    'libspatialindex_c.dylib',
+                    '*.dll'}
 
         for file_name in os.listdir(source_dir):
             # make sure file name is lower case
