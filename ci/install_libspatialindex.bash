@@ -55,9 +55,7 @@ make -j 4
 # -d means copy links as links rather than duplicate files
 # macos uses "bsd cp" and needs special handling
 if [ "$(uname)" == "Darwin" ]; then
-    #cp bin/libspatialindex.dylib $TARGET
-    #cp bin/libspatialindex_c.dylib $TARGET
-    cp bin/*.dylib $TARGET
+    cp bin/* $TARGET
 else
     cp -d bin/* $TARGET
 fi
