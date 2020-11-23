@@ -35,7 +35,7 @@ mkdir build
 cd build
 
 if [ "$(uname)" == "Darwin" ]; then
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-static" ..
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-static" ..
 else
     cmake -DCMAKE_BUILD_TYPE=Release ..
 fi
