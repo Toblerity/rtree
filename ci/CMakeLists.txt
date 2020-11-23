@@ -32,7 +32,7 @@ if (WIN32)
 endif()
 
 if (APPLE)
-	set(CMAKE_MACOSX_RPATH ON)
+	set(CMAKE_MACOSX_RPATH OFF)
 endif (APPLE)
 
 #------------------------------------------------------------------------------
@@ -122,15 +122,12 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${SIDX_BUILD_OUTPUT_DIRECTORY})
 if(NOT WIN32)
   # Recommended C++ compilation flags
   set(SIDX_COMMON_CXX_FLAGS
-    "-pedantic -Wall -Wpointer-arith -Wcast-align -Wcast-qual  -Wredundant-decls -Wno-long-long")
+    "-pedantic -Wall -Wpointer-arith -Wcast-align -Wcast-qual  -Wredundant-decls -Wno-long-long -Wl --no-undefined")
 endif(NOT WIN32)
 
 if (APPLE)
   set(SO_EXT dylib)
   set(CMAKE_FIND_FRAMEWORK "LAST")
-  SET(BUILD_SHARED_LIBS OFF)
-  SET(CMAKE_EXE_LINKER_FLAGS "-static")
-  
 elseif(WIN32)
   set(SO_EXT dll)
 else()

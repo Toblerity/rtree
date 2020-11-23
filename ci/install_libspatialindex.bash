@@ -43,12 +43,9 @@ cd libspatialindex-${VERSION}
 mkdir build
 cd build
 
-if [ "$(uname)" == "Darwin" ]; then
-    cp "${SL}/CMakeLists.txt" ..
-    cmake -DCMAKE_BUILD_TYPE=Release ..
-else
-    cmake -DCMAKE_BUILD_TYPE=Release ..
-fi
+cp "${SL}/CMakeLists.txt" ..
+
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j 4
 
 # copy built libraries relative to path of this script

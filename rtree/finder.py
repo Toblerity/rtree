@@ -90,6 +90,9 @@ def load():
             else:
                 continue
 
+            if not os.path.exists(target):
+                continue
+            
             try:
                 # move to the location we're checking
                 os.chdir(path)
@@ -98,17 +101,9 @@ def load():
                 if rt is not None:
                     return rt
             except BaseException as E:
-                print('rtree.finder unexpected error: {}'.format(str(E)))
+                print('rtree.finder ({}) unexpected error: {}'.format(
+                    target, str(E)))
             finally:
                 os.chdir(cwd)
-
-            try:
-                os.environ['DYLD_FALLBACK_LIBRARY_PATH'] = path
-                lib_name = find_library('spatialindex_c')
-                rt = ctypes.CDLL(lib_name)
-                if rt is None:
-                    return rt
-            except BaseException as E:
-                print('rtree.finder unexpected error: {}'.format(str(E)))
 
     raise OSError("Could not load libspatialindex_c library")
