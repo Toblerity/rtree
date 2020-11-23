@@ -10,10 +10,10 @@ jobs:
       CIBW_SKIP: pp* cp27* *-win32
       CIBW_TEST_REQUIRES: pytest numpy
       CIBW_TEST_COMMAND: pytest -v {project}/tests
-      CIBW_TEST_COMMAND_MACOS: ""
       # we are copying the shared libraries ourselves so skip magical copy
       CIBW_REPAIR_WHEEL_COMMAND_LINUX: ""
       CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
+      CIBW_REPAIR_WHEEL_COMMAND_MACOS: "delocate-listdeps {wheel} && delocate-wheel --lib-sdir lib --require-archs x86_64 -w {dest_dir} {wheel}"
       CIBW_BEFORE_BUILD_LINUX: "pip install cmake; bash {project}/ci/install_libspatialindex.bash"
     strategy:
       matrix:
