@@ -45,7 +45,7 @@ cd build
 
 if [ "$(uname)" == "Darwin" ]; then
     cp "${SL}/CMakeLists.txt" ..
-    cmake -DCMAKE_BUILD_TYPE=Release -DFORCE_STATIC ..
+    cmake -DCMAKE_BUILD_TYPE=Release ..
 else
     cmake -DCMAKE_BUILD_TYPE=Release ..
 fi
