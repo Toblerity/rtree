@@ -17,9 +17,18 @@ gentarget() {
   cd "$OURPWD"
   echo $arr
 }
+
+scriptloc() {
+  OURPWD=$PWD
+  cd "$(dirname "$0")"
+  arr=$(pwd)
+  cd "$OURPWD"
+  echo $arr
+}
 # note that we're doing this convoluted thing to get
 # an absolute path so mac doesn't yell at us
 TARGET=`gentarget`
+SL=`scriptloc`
 
 rm $VERSION.zip || true
 curl -L -O https://github.com/libspatialindex/libspatialindex/archive/$VERSION.zip
@@ -35,7 +44,8 @@ mkdir build
 cd build
 
 if [ "$(uname)" == "Darwin" ]; then
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-static" ..
+    cp "${SL}/CMakeLists.txt" ..
+    cmake -DCMAKE_BUILD_TYPE=Release -DFORCE_STATIC ..
 else
     cmake -DCMAKE_BUILD_TYPE=Release ..
 fi
