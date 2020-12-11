@@ -13,7 +13,7 @@ jobs:
       # we are copying the shared libraries ourselves so skip magical copy
       CIBW_REPAIR_WHEEL_COMMAND_LINUX: ""
       CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
-      CIBW_REPAIR_WHEEL_COMMAND_MACOS: "delocate-listdeps {wheel} && delocate-wheel --lib-sdir lib --require-archs x86_64"
+      CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
       CIBW_BEFORE_BUILD_LINUX: "pip install cmake; bash {project}/ci/install_libspatialindex.bash"
     strategy:
       matrix:
