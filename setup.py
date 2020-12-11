@@ -58,8 +58,7 @@ class InstallPlatlib(install):
 
         # what patterns represent shared libraries
         patterns = {'*.so',
-                    'libspatialindex.dylib',
-                    'libspatialindex_c.dylib',
+                    'libspatialindex*dylib',
                     '*.dll'}
 
         for file_name in os.listdir(source_dir):
