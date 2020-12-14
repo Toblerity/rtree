@@ -5,6 +5,7 @@ finder.py
 Locate `libspatialindex` shared library by any means necessary.
 """
 import os
+import sys
 import ctypes
 import platform
 from ctypes.util import find_library
