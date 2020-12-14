@@ -89,6 +89,7 @@ jobs:
     - name: Run libspatialindex build
       run: |
         pip3 install cmake
+        apt-get update -y
         apt-get install -y -qq curl
         bash ci/install_libspatialindex.bash
         pip3 install --user .
