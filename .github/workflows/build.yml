@@ -80,7 +80,6 @@ jobs:
 
   docs:
     name: Docs
-
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
@@ -90,6 +89,7 @@ jobs:
     - name: Run libspatialindex build
       run: |
         pip3 install cmake
+        apt-get install -y -qq curl
         bash ci/install_libspatialindex.bash
         pip3 install --user .
     - name: Print versions
