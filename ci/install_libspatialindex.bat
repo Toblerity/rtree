@@ -20,3 +20,4 @@ copy bin\Debug\*.dll %~dp0\..\rtree\lib
 dir %~dp0\..\rtree\
 dir %~dp0\..\rtree\lib
 
+rmdir /Q /S %~dp0\..\rtree\lib

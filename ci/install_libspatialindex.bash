@@ -62,4 +62,5 @@ else
 fi
 
 ls $TARGET
-
+# make sure hardcoded library paths aren't hiding issues
+rm -rf bin

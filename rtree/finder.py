@@ -92,7 +92,7 @@ def load():
 
             if not os.path.exists(target):
                 continue
-            
+
             try:
                 # move to the location we're checking
                 os.chdir(path)
