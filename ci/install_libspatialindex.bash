@@ -52,6 +52,9 @@ make -j 4
 # -d means copy links as links rather than duplicate files
 # macos uses "bsd cp" and needs special handling
 if [ "$(uname)" == "Darwin" ]; then
+    # change the rpath in the dylib to point to the same directory
+    install_name_tool -change @rpath/libspatialindex.6.dylib @loader_path/libspatialindex.dylib bin/libspatialindex_c.dylib
+    # copy the dylib files to the target director
     cp bin/libspatialindex.dylib $TARGET
     cp bin/libspatialindex_c.dylib $TARGET
 else
