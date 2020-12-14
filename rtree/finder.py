@@ -61,9 +61,6 @@ def load():
         raise OSError("could not find or load {}".format(lib_name))
 
     elif os.name == 'posix':
-        # generate a bunch of candidate locations where the
-        # libspatialindex_c.so *might* be hanging out
-        _candidates.append(find_library('spatialindex_c'))
 
         # posix includes both mac and linux
         # use the extension for the specific platform
@@ -105,5 +102,14 @@ def load():
                     target, str(E)))
             finally:
                 os.chdir(cwd)
+
+    try:
+        # try loading library using LD path search
+        rt = ctypes.cdll.LoadLibrary(
+            find_library('spatialindex_c'))
+        if rt is not None:
+            return rt
+    except BaseException:
+        pass
 
     raise OSError("Could not load libspatialindex_c library")

@@ -16,8 +16,8 @@ cmake -D CMAKE_BUILD_TYPE=Release ..
 
 mkdir %~dp0\..\rtree\lib
 copy bin\Debug\*.dll %~dp0\..\rtree\lib
+rmdir /Q /S bin
 
 dir %~dp0\..\rtree\
 dir %~dp0\..\rtree\lib
 
-rmdir /Q /S %~dp0\..\rtree\lib

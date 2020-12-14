@@ -61,6 +61,12 @@ class InstallPlatlib(install):
                     'libspatialindex*dylib',
                     '*.dll'}
 
+        if not os.path.isdir(source_dir):
+            # no copying of binary parts to library
+            # this is so `pip install .` works even
+            # if `rtree/lib` isn't populated
+            return
+
         for file_name in os.listdir(source_dir):
             # make sure file name is lower case
             check = file_name.lower()
