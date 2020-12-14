@@ -85,9 +85,13 @@ jobs:
     strategy:
       fail-fast: true
     container: osgeo/proj-docs
-
     steps:
     - uses: actions/checkout@v2
+    - name: Run libspatialindex build
+      run: |
+        pip install cmake
+        bash ci/install_libspatialindex.bash
+        pip3 install --user .
     - name: Print versions
       shell: bash -l {0}
       run: |
