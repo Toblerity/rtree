@@ -12,6 +12,7 @@ jobs:
       CIBW_TEST_COMMAND: "cd {project}/tests; pytest -v"
       # we are copying the shared libraries ourselves so skip magical copy
       CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
+      CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
       CIBW_BEFORE_BUILD_LINUX: "pip install cmake; bash {project}/ci/install_libspatialindex.bash"
     strategy:
       matrix:
