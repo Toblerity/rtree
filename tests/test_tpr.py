@@ -1,22 +1,23 @@
 from collections import namedtuple, defaultdict
 from math import ceil
 
+import unittest
 import numpy as np
-import pytest
 
-import rtree
+import os
+from rtree.index import Index, Property, RT_TPRTree
 
 
-class Object(namedtuple("Object", (
-        "id", "time",  "x", "y", "x_vel", "y_vel", "update_time",
+class Cartesian(namedtuple("Cartesian", (
+        "id", "time", "x", "y", "x_vel", "y_vel", "update_time",
         "out_of_bounds"))):
     __slots__ = ()
 
     def getX(self, t):
-        return self.x + self.x_vel*(t - self.time)
+        return self.x + self.x_vel * (t - self.time)
 
     def getY(self, t):
-        return self.y + self.y_vel*(t - self.time)
+        return self.y + self.y_vel * (t - self.time)
 
     def getXY(self, t):
         return self.getX(t), self.getY(t)
@@ -27,7 +28,7 @@ class Object(namedtuple("Object", (
                 self.time if t_now is None else (self.time, t_now))
 
 
-class QueryObject(namedtuple("QueryObject", (
+class QueryCartesian(namedtuple("QueryCartesian", (
         "start_time", "end_time", "x", "y", "dx", "dy"))):
     __slots__ = ()
 
@@ -39,11 +40,11 @@ class QueryObject(namedtuple("QueryObject", (
 
 
 def data_generator(
-        dataset_size=1000, simulation_length=100, max_update_interval=20,
+        dataset_size=100, simulation_length=10, max_update_interval=20,
         queries_per_time_step=5, min_query_extent=0.05, max_query_extent=0.1,
         horizon=20, min_query_interval=2, max_query_interval=10, agility=0.01,
         min_speed=0.0025, max_speed=0.0166, min_x=0, min_y=0, max_x=1, max_y=1,
-        ):
+):
 
     def create_object(id_, time, x=None, y=None):
         # Create object with random or defined x, y and random velocity
@@ -53,11 +54,11 @@ def data_generator(
             y = np.random.uniform(min_y, max_y)
         speed = np.random.uniform(min_speed, max_speed)
         angle = np.random.uniform(-np.pi, np.pi)
-        x_vel, y_vel = speed*np.cos(angle), speed*np.sin(angle)
+        x_vel, y_vel = speed * np.cos(angle), speed * np.sin(angle)
 
         # Set update time for when out of bounds, or max interval
         for dt in range(1, max_update_interval + 1):
-            if not (0 < x + x_vel*dt < max_x and 0 < y + y_vel*dt < max_y):
+            if not (0 < x + x_vel * dt < max_x and 0 < y + y_vel * dt < max_y):
                 out_of_bounds = True
                 update_time = time + dt
                 break
@@ -65,8 +66,8 @@ def data_generator(
             out_of_bounds = False
             update_time = time + max_update_interval
 
-        return Object(id_, time, x, y, x_vel, y_vel, update_time,
-                      out_of_bounds)
+        return Cartesian(id_, time, x, y, x_vel, y_vel, update_time,
+                         out_of_bounds)
 
     objects = list()
     objects_to_update = defaultdict(set)
@@ -113,10 +114,10 @@ def data_generator(
             y = np.random.uniform(min_y, max_y)
             dx = np.random.uniform(min_query_extent, max_query_extent)
             dy = np.random.uniform(min_query_extent, max_query_extent)
-            dt = np.random.randint(min_query_interval, max_query_interval+1)
+            dt = np.random.randint(min_query_interval, max_query_interval + 1)
             t = np.random.randint(t_now, t_now + horizon - dt)
 
-            yield "QUERY", t_now, QueryObject(t, t+dt, x, y, dx, dy)
+            yield "QUERY", t_now, QueryCartesian(t, t + dt, x, y, dx, dy)
 
 
 def intersects(x1, y1, x2, y2, x, y, dx, dy):
@@ -125,59 +126,53 @@ def intersects(x1, y1, x2, y2, x, y, dx, dy):
     # Implementation of https://stackoverflow.com/a/293052
 
     # Check if line points not both more/less than max/min for each axis
-    if (x1 > x+dx and x2 > x+dx) or (x1 < x-dx and x2 < x-dx) \
-            or (y1 > y+dy and y2 > y+dy) or (y1 < y-dy and y2 < y-dy):
+    if (x1 > x + dx and x2 > x + dx) or (x1 < x - dx and x2 < x - dx) \
+            or (y1 > y + dy and y2 > y + dy) or (y1 < y - dy and y2 < y - dy):
         return False
 
     # Check on which side (+ve, -ve) of the line the rectangle corners are,
     # returning True if any corner is on a different side.
-    calcs = ((y2-y1)*rect_x + (x1-x2)*rect_y + (x2*y1 - x1*y2)
-             for rect_x, rect_y in (
-                 (x-dx, y-dy), (x+dx, y-dy), (x-dx, y+dy), (x+dx, y+dy)))
+    calcs = ((y2 - y1) * rect_x + (x1 - x2) * rect_y + (x2 * y1 - x1 * y2)
+             for rect_x, rect_y in ((x - dx, y - dy),
+                                    (x + dx, y - dy),
+                                    (x - dx, y + dy),
+                                    (x + dx, y + dy)))
     sign = np.sign(next(calcs))  # First corner (bottom left)
     return any(np.sign(calc) != sign for calc in calcs)  # Check remaining 3
 
 
-@pytest.fixture(scope="function")
-def tpr_tree(request):
-    # Create tree
-    from rtree.index import Index, Property, RT_TPRTree
-    return Index(properties=Property(type=RT_TPRTree))
+class TPRTests(unittest.TestCase):
 
+    def test_tpr(self):
+        # TODO : this freezes forever on some windows cloud builds
+        if os.name == 'nt':
+            return
 
-@pytest.fixture(scope="function")
-def simulation():
-    return data_generator()
+        # Cartesians list for brute force
+        objects = dict()
+        tpr_tree = Index(properties=Property(type=RT_TPRTree))
 
+        for operation, t_now, object_ in data_generator():
+            if operation == "INSERT":
+                tpr_tree.insert(object_.id, object_.get_coordinates())
+                objects[object_.id] = object_
+            elif operation == "DELETE":
+                tpr_tree.delete(object_.id, object_.get_coordinates(t_now))
+                del objects[object_.id]
+            elif operation == "QUERY":
+                tree_intersect = set(
+                    tpr_tree.intersection(object_.get_coordinates()))
 
-@pytest.mark.skipif(
-    not hasattr(rtree.core.rt, 'Index_InsertTPData'),
-    reason="Requires TPR-Tree support in libspatialindex")
-def test_tpr(tpr_tree, simulation):
-    # Objects list for brute force
-    objects = dict()
+                # Brute intersect
+                brute_intersect = set()
+                for tree_object in objects.values():
+                    x_low, y_low = tree_object.getXY(object_.start_time)
+                    x_high, y_high = tree_object.getXY(object_.end_time)
 
-    for operation, t_now, object_ in simulation:
-        if operation == "INSERT":
-            tpr_tree.insert(object_.id, object_.get_coordinates())
-            objects[object_.id] = object_
-        elif operation == "DELETE":
-            tpr_tree.delete(object_.id, object_.get_coordinates(t_now))
-            del objects[object_.id]
-        elif operation == "QUERY":
-            tree_intersect = set(
-                tpr_tree.intersection(object_.get_coordinates()))
+                    if intersects(
+                            x_low, y_low, x_high, y_high,  # Line
+                            object_.x, object_.y, object_.dx, object_.dy):  # Rect
+                        brute_intersect.add(tree_object.id)
 
-            # Brute intersect
-            brute_intersect = set()
-            for tree_object in objects.values():
-                x_low, y_low = tree_object.getXY(object_.start_time)
-                x_high, y_high = tree_object.getXY(object_.end_time)
-
-                if intersects(
-                        x_low, y_low, x_high, y_high,  # Line
-                        object_.x, object_.y, object_.dx, object_.dy):  # Rect
-                    brute_intersect.add(tree_object.id)
-
-            # Tree should match brute force approach
-            assert tree_intersect == brute_intersect
+                # Tree should match brute force approach
+                assert tree_intersect == brute_intersect

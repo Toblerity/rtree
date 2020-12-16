@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from liblas import file
+import sys
 from rtree import index
 
 import ogr
@@ -28,8 +30,6 @@ def quick_create_layer_def(lyr, field_list):
 
         field_defn.Destroy()
 
-
-import sys
 
 shape_drv = ogr.GetDriverByName('ESRI Shapefile')
 
@@ -71,7 +71,6 @@ leaves = idx.leaves()
 # leaves[0] == (0L, [2L, 92L, 51L, 55L, 26L], [-132.41727847799999,
 # -96.717721818399994, -132.41727847799999, -96.717721818399994])
 
-from liblas import file
 f = file.File(sys.argv[1])
 
 
@@ -79,7 +78,7 @@ def area(minx, miny, maxx, maxy):
     width = abs(maxx - minx)
     height = abs(maxy - miny)
 
-    return width*height
+    return width * height
 
 
 def get_bounds(leaf_ids, lasfile, block_id):
@@ -123,6 +122,7 @@ def make_feature(lyr, geom, id, count):
     feature.SetField('COUNT', count)
     result = lyr.CreateFeature(feature)
     del result
+
 
 t = 0
 for leaf in leaves:
