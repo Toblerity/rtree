@@ -152,7 +152,7 @@ jobs:
         python -m cibuildwheel --output-dir wheelhouse
     - uses: actions/upload-artifact@v2
       with:
-        name: {{ matrix.os }}-whl
+        name: ${{ matrix.os }}-whl
         path: wheelhouse/*.whl
 
   collect-artifacts:
