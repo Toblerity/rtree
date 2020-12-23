@@ -1,7 +1,5 @@
 python -c "import sys; print(sys.version)"
 
-REM A simple script to install libspatialindex from a Github Release
-REM curl -L https://github.com/libspatialindex/libspatialindex/archive/1.9.3.zip  | python -c "import zipfile,sys,io;data=io.StringIO(sys.stdin.read());zipfile.ZipFile(data).extractall('.')" 
 set SIDX_VERSION=1.9.3
 
 curl -OL "https://github.com/libspatialindex/libspatialindex/archive/%SIDX_VERSION%.zip" 
@@ -14,6 +12,8 @@ cd libspatialindex-%SIDX_VERSION%
 
 mkdir build
 cd build
+
+pip install ninja
 
 cmake -D CMAKE_BUILD_TYPE=Release -G Ninja ..
 
