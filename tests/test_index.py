@@ -143,7 +143,6 @@ class IndexProperties(IndexTestCase):
 
 class TestPickling(unittest.TestCase):
 
-    @unittest.expectedFailure
     def test_index(self):
         idx = rtree.index.Index()
         idx.insert(0, [0, 1, 2, 3], 4)
@@ -153,7 +152,7 @@ class TestPickling(unittest.TestCase):
                          unpickled.properties.as_dict())
         self.assertEqual(idx.interleaved, unpickled.interleaved)
         self.assertEqual(idx.get_size(), unpickled.get_size())
-        self.assertAlmostEqual(idx.bounds, unpickled.bounds)
+        self.assertEqual(idx.bounds, unpickled.bounds)
         a = next(idx.intersection(idx.bounds, objects=True))
         b = next(unpickled.intersection(unpickled.bounds, objects=True))
         self.assertEqual(a.id, b.id)

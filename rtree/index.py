@@ -299,13 +299,18 @@ class Index(object):
                                                               self.get_size())
 
     def __getstate__(self):
-        state = self.__dict__.copy()
-        del state["handle"]
-        return state
+        attrs = self.__dict__.copy()
+        del attrs["handle"]
+        entries = self.intersection(self.bounds, objects=True)
+        entries = [(item.id, item.bbox, item.object) for item in entries]
+        return attrs, entries
 
     def __setstate__(self, state):
-        self.__dict__.update(state)
+        attrs, entries = state
+        self.__dict__.update(attrs)
         self.handle = IndexHandle(self.properties.handle)
+        for item in entries:
+            self.insert(*item)
 
     def dumps(self, obj):
         return pickle.dumps(obj)
