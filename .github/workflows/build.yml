@@ -127,23 +127,14 @@ jobs:
         os: [windows-latest, ubuntu-latest, macos-latest]
     steps:
     - uses: actions/checkout@v1
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v2
       name: Install Python
       with:
         python-version: '3.7'
     - name: Install cibuildwheel
       run: |
         python --version
-        python -m pip install cibuildwheel==1.6.4
-    - name: Run MacOS Preinstall Build
-      if: startsWith(matrix.os, 'macos')
-      run: |
-        # provides sha256sum
-        brew install coreutils
-        python -m pip install cmake
-        bash ci/install_libspatialindex.bash
-    - name: Set up 3.x Python for Mac
-      uses: actions/setup-python@v2
+        python -m pip install cibuildwheel
       with:
           python-version: '3.7'
     - uses: ilammy/msvc-dev-cmd@v1
