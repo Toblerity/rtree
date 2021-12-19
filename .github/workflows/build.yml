@@ -133,14 +133,19 @@ jobs:
         python-version: '3.7'
     - name: Install cibuildwheel
       run: |
+        python --version
         python -m pip install cibuildwheel==1.6.4
     - name: Run MacOS Preinstall Build
       if: startsWith(matrix.os, 'macos')
       run: |
         # provides sha256sum
         brew install coreutils
-        pip install cmake
+        python -m pip install cmake
         bash ci/install_libspatialindex.bash
+    - name: Set up 3.x Python for Mac
+      uses: actions/setup-python@v2
+      with:
+          python-version: '3.7'
     - uses: ilammy/msvc-dev-cmd@v1
       if: startsWith(matrix.os, 'windows')
     - name: Run Windows Preinstall Build
@@ -150,6 +155,7 @@ jobs:
         ci\install_libspatialindex.bat
     - name: Build wheels
       run: |
+        python --version
         python -m cibuildwheel --output-dir wheelhouse
     - uses: actions/upload-artifact@v2
       with:
