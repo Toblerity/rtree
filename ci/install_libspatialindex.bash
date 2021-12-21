@@ -34,7 +34,7 @@ rm $VERSION.zip || true
 curl -L -O https://github.com/libspatialindex/libspatialindex/archive/$VERSION.zip
 
 # check the file hash
-echo "${SHA256}  ${VERSION}.zip" | sha256sum --check
+echo "${SHA256}  ${VERSION}.zip" | sha256sum -c -
 
 rm -rf "libspatialindex-${VERSION}" || true
 unzip $VERSION
