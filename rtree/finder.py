@@ -111,10 +111,10 @@ def load():
 
     try:
         # try loading library using LD path search
-        rt = ctypes.cdll.LoadLibrary(
-            find_library('spatialindex_c'))
-        if rt is not None:
-            return rt
+        path = find_library('spatialindex_c')
+        if path is not None:
+            return ctypes.cdll.LoadLibrary(path)
+
     except BaseException:
         pass
 
