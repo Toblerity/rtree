@@ -193,8 +193,8 @@ stored on disk as the files ``3d_index.data`` and ``3d_index.index``::
   >>> p.dat_extension = 'data'
   >>> p.idx_extension = 'index'  
   >>> idx3d = index.Index('3d_index',properties=p)
-  >>> idx3d.insert(1, (0, 0, 60, 60, 23.0, 42.0))
-  >>> idx3d.intersection( (-1, -1, 62, 62, 22, 43))
+  >>> idx3d.insert(1, (0, 60, 23.0, 0, 60, 42.0))
+  >>> idx3d.intersection( (-1, 62, 22, -1, 62, 43))
   [1L]
 
 ZODB and Custom Storages
