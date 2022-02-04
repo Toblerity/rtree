@@ -135,7 +135,7 @@ jobs:
         python-version: '3.7'
     - name: Install cibuildwheel
       run: |
-        python -m pip install cibuildwheel=2.3.1
+        python -m pip install cibuildwheel==2.3.1
     - name: Run MacOS Preinstall Build
       if: startsWith(matrix.os, 'macos')
       run: |
