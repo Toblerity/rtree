@@ -57,7 +57,8 @@ class IndexCount(unittest.TestCase):
         self.assertEqual(len(self.idx), len(self.boxes15))
 
     def test_get_size(self):
-        self.assertEqual(self.idx.get_size(), len(self.boxes15))
+        with pytest.deprecated_call():
+            self.assertEqual(self.idx.get_size(), len(self.boxes15))
 
 
 class IndexBounds(unittest.TestCase):
