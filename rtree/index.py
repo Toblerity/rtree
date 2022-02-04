@@ -343,7 +343,7 @@ class Index(object):
 
         # it's a point make it into a bbox. [x, y] => [x, y, x, y]
         if len(coordinates) == dimension:
-            coordinates += coordinates
+            coordinates = *coordinates, *coordinates
 
         if len(coordinates) != dimension * 2:
             raise core.RTreeError(
