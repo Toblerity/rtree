@@ -45,6 +45,21 @@ class IndexVersion(unittest.TestCase):
         self.assertTrue(index.minor_version >= 7)
 
 
+class IndexCount(unittest.TestCase):
+
+    def setUp(self):
+        self.boxes15 = np.genfromtxt('boxes_15x15.data')
+        self.idx = index.Index()
+        for i, coords in enumerate(self.boxes15):
+            self.idx.add(i, coords)
+
+    def test_len(self):
+        self.assertEqual(len(self.idx), len(self.boxes15))
+
+    def test_get_size(self):
+        self.assertEqual(self.idx.get_size(), len(self.boxes15))
+
+
 class IndexBounds(unittest.TestCase):
 
     def test_invalid_specifications(self):

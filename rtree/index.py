@@ -289,10 +289,23 @@ class Index(object):
                     self.insert(*item)
 
     def get_size(self):
+        """The number of entries in the index.
+
+        :return: number of entries
+        :rtype: int
+        """
         try:
             return self.count(self.bounds)
         except core.RTreeError:
             return 0
+
+    def __len__(self):
+        """The number of entries in the index.
+
+        :return: number of entries
+        :rtype: int
+        """
+        return self.get_size()
 
     def __repr__(self):
         return 'rtree.index.Index(bounds={}, size={})'.format(self.bounds,
