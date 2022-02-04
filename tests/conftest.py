@@ -9,7 +9,7 @@ data_files = [
 ]
 
 
-@pytest.yield_fixture(autouse=True)
+@pytest.fixture(autouse=True)
 def temporary_working_directory(tmpdir):
     for filename in data_files:
         filename = os.path.join(os.path.dirname(__file__), filename)
