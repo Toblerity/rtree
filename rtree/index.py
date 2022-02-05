@@ -2,6 +2,7 @@ import ctypes
 import os
 import os.path
 import pprint
+import warnings
 
 from . import core
 
@@ -289,6 +290,18 @@ class Index(object):
                     self.insert(*item)
 
     def get_size(self):
+        warnings.warn(
+            "index.get_size() is deprecated, use len(index) instead",
+            DeprecationWarning,
+        )
+        return len(self)
+
+    def __len__(self):
+        """The number of entries in the index.
+
+        :return: number of entries
+        :rtype: int
+        """
         try:
             return self.count(self.bounds)
         except core.RTreeError:
