@@ -663,6 +663,31 @@ class Index:
         )
         return self._get_ids(it, p_num_results.value)
 
+    def __and__(self, other: Index) -> Index:
+        """Take the intersection of two Index objects.
+
+        :param other: another index
+        :return: a new index
+        """
+        new_idx = Index(properties=self.properties)
+        for item1 in self.intersection(self.bounds, objects=True):
+            for item2 in other.intersection(item1.bounds, objects=True):
+                item3 = item1 & item2
+                new_idx.insert(item3.id, item3.bounds, item3.object)
+        return new_idx
+
+    def __or__(self, other: Index) -> Index:
+        """Take the union of two Index objects.
+
+        :param other: another index
+        :return: a new index
+        """
+        new_idx = Index(properties=self.properties)
+        for old_idx in [self, other]:
+            for item in old_idx.intersection(old_idx.bounds, objects=True):
+                new_idx.insert(item.id, item.bounds, item.object)
+        return new_idx
+
     @overload
     def intersection(self, coordinates: Any, objects: Literal[True]) -> Iterator[Item]:
         ...
