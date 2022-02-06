@@ -22,7 +22,7 @@ https://rtree.readthedocs.io/en/latest/
 Requirements
 ..............................................................................
 
-* python 3+
+* python 3.5+
 * `libspatialindex`_ 1.8.5+.
 
 Download
