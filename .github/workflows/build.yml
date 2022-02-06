@@ -165,7 +165,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-       python_tag: ["cp35-*", "cp36-*", "cp37-*", "cp38-*", "cp39-*", "cp310-*"]
+       python_tag: ["cp36-*", "cp37-*", "cp38-*", "cp39-*", "cp310-*"]
     env:
       CIBW_ARCHS_LINUX: aarch64
       CIBW_BUILD: ${{matrix.python_tag}}
