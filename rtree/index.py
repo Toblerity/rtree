@@ -23,12 +23,11 @@ RT_TPRTree = 2
 
 __c_api_version__ = core.rt.SIDX_Version()
 
-major_version, minor_version, patch_version = [
+__c_api_version_list__ = [
     int(t) for t in __c_api_version__.decode('utf-8').split('.')]
 
-if (major_version < 2 and minor_version < 7):
-    raise Exception(
-        "This version of Rtree requires libspatialindex 1.7.0 or greater")
+if __c_api_version_list__ < [1, 8, 5]:
+    raise Exception("Rtree requires libspatialindex 1.8.5 or greater")
 
 __all__ = ['Rtree', 'Index', 'Property']
 
@@ -253,11 +252,6 @@ class Index(object):
                 message = "Unable to open file '%s' for index storage" % f
                 raise OSError(message)
         elif storage:
-            if (major_version < 2 and minor_version < 8):
-                raise core.RTreeError(
-                    "libspatialindex {0} does not support custom storage"
-                    .format(__c_api_version__))
-
             self.properties.storage = RT_Custom
             if storage.hasData:
                 self.properties.overwrite = \
