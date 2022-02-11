@@ -23,10 +23,10 @@ RT_TPRTree = 2
 
 __c_api_version__ = core.rt.SIDX_Version()
 
-__c_api_version_list__ = [
+major_version, minor_version, patch_version = [
     int(t) for t in __c_api_version__.decode('utf-8').split('.')]
 
-if __c_api_version_list__ < [1, 8, 5]:
+if (major_version, minor_version, patch_version) < (1, 8, 5):
     raise Exception("Rtree requires libspatialindex 1.8.5 or greater")
 
 __all__ = ['Rtree', 'Index', 'Property']
