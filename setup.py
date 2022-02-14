@@ -1,6 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
-import sys
 
 from setuptools import setup
 from setuptools.dist import Distribution
@@ -8,15 +7,6 @@ from setuptools.command.install import install
 
 from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
-
-# Get text from README.txt
-with open('docs/source/README.txt', 'r') as fp:
-    readme_text = fp.read()
-
-# Get __version without importing
-with open('rtree/__init__.py', 'r') as fp:
-    # get and exec just the line which looks like "__version__ = '0.9.4'"
-    exec(next(line for line in fp if '__version__' in line))
 
 # current working directory of this setup.py file
 _cwd = os.path.abspath(os.path.split(__file__)[0])
@@ -90,38 +80,6 @@ class InstallPlatlib(install):
 
 
 setup(
-    name='Rtree',
-    version=__version__,
-    description='R-Tree spatial index for Python GIS',
-    license='MIT',
-    keywords='gis spatial index r-tree',
-    author='Sean Gillies',
-    author_email='sean.gillies@gmail.com',
-    maintainer='Howard Butler',
-    maintainer_email='howard@hobu.co',
-    url='https://github.com/Toblerity/rtree',
-    long_description=readme_text,
-    packages=['rtree'],
-    package_data={"rtree": ['lib']},
-    python_requires='>=3.7',
-    zip_safe=False,
-    include_package_data=True,
     distclass=BinaryDistribution,
     cmdclass={'bdist_wheel': bdist_wheel, 'install': InstallPlatlib},
-    classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: MIT License',
-        'Operating System :: OS Independent',
-        'Programming Language :: C',
-        'Programming Language :: C++',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',
-        'Topic :: Scientific/Engineering :: GIS',
-        'Topic :: Database',
-    ],
 )
