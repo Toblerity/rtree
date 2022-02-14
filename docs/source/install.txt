@@ -6,7 +6,7 @@ Installation
 \*nix 
 ..............................................................................
 
-First, download and install version 1.7.0 of the `libspatialindex`_ library from:
+First, download and install version 1.8.5+ of the `libspatialindex`_ library from:
 
 http://libspatialindex.github.com
 
