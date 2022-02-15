@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
-from liblas import file
 import sys
-from rtree import index
 
 import ogr
+from liblas import file
+
+from rtree import index
 
 
 def quick_create_layer_def(lyr, field_list):
@@ -31,34 +32,23 @@ def quick_create_layer_def(lyr, field_list):
         field_defn.Destroy()
 
 
-shape_drv = ogr.GetDriverByName('ESRI Shapefile')
+shape_drv = ogr.GetDriverByName("ESRI Shapefile")
 
-shapefile_name = sys.argv[1].split('.')[0]
+shapefile_name = sys.argv[1].split(".")[0]
 shape_ds = shape_drv.CreateDataSource(shapefile_name)
-leaf_block_lyr = shape_ds.CreateLayer('leaf', geom_type=ogr.wkbPolygon)
-point_block_lyr = shape_ds.CreateLayer('point', geom_type=ogr.wkbPolygon)
-point_lyr = shape_ds.CreateLayer('points', geom_type=ogr.wkbPoint)
+leaf_block_lyr = shape_ds.CreateLayer("leaf", geom_type=ogr.wkbPolygon)
+point_block_lyr = shape_ds.CreateLayer("point", geom_type=ogr.wkbPolygon)
+point_lyr = shape_ds.CreateLayer("points", geom_type=ogr.wkbPoint)
 
 quick_create_layer_def(
-    leaf_block_lyr,
-    [
-        ('BLK_ID', ogr.OFTInteger),
-        ('COUNT', ogr.OFTInteger),
-    ])
+    leaf_block_lyr, [("BLK_ID", ogr.OFTInteger), ("COUNT", ogr.OFTInteger)]
+)
 
 quick_create_layer_def(
-    point_block_lyr,
-    [
-        ('BLK_ID', ogr.OFTInteger),
-        ('COUNT', ogr.OFTInteger),
-    ])
+    point_block_lyr, [("BLK_ID", ogr.OFTInteger), ("COUNT", ogr.OFTInteger)]
+)
 
-quick_create_layer_def(
-    point_lyr,
-    [
-        ('ID', ogr.OFTInteger),
-        ('BLK_ID', ogr.OFTInteger),
-    ])
+quick_create_layer_def(point_lyr, [("ID", ogr.OFTInteger), ("BLK_ID", ogr.OFTInteger)])
 
 p = index.Property()
 p.filename = sys.argv[1]
@@ -98,10 +88,10 @@ def get_bounds(leaf_ids, lasfile, block_id):
         miny = min(miny, p.y)
         maxy = max(maxy, p.y)
         feature = ogr.Feature(feature_def=point_lyr.GetLayerDefn())
-        g = ogr.CreateGeometryFromWkt('POINT (%.8f %.8f)' % (p.x, p.y))
+        g = ogr.CreateGeometryFromWkt("POINT (%.8f %.8f)" % (p.x, p.y))
         feature.SetGeometry(g)
-        feature.SetField('ID', p_id)
-        feature.SetField('BLK_ID', block_id)
+        feature.SetField("ID", p_id)
+        feature.SetField("BLK_ID", block_id)
         result = point_lyr.CreateFeature(feature)
         del result
 
@@ -109,8 +99,18 @@ def get_bounds(leaf_ids, lasfile, block_id):
 
 
 def make_poly(minx, miny, maxx, maxy):
-    wkt = 'POLYGON ((%.8f %.8f, %.8f %.8f, %.8f %.8f, %.8f %.8f, %.8f %.8f))'\
-        % (minx, miny, maxx, miny, maxx, maxy, minx, maxy, minx, miny)
+    wkt = "POLYGON ((%.8f %.8f, %.8f %.8f, %.8f %.8f, %.8f %.8f, %.8f %.8f))" % (
+        minx,
+        miny,
+        maxx,
+        miny,
+        maxx,
+        maxy,
+        minx,
+        maxy,
+        minx,
+        miny,
+    )
     shp = ogr.CreateGeometryFromWkt(wkt)
     return shp
 
@@ -118,8 +118,8 @@ def make_poly(minx, miny, maxx, maxy):
 def make_feature(lyr, geom, id, count):
     feature = ogr.Feature(feature_def=lyr.GetLayerDefn())
     feature.SetGeometry(geom)
-    feature.SetField('BLK_ID', id)
-    feature.SetField('COUNT', count)
+    feature.SetField("BLK_ID", id)
+    feature.SetField("COUNT", count)
     result = lyr.CreateFeature(feature)
     del result
 
@@ -141,17 +141,15 @@ for leaf in leaves:
 
     print(leaf[2])
     leaf = make_poly(minx, miny, maxx, maxy)
-    print('leaf: ' + str([minx, miny, maxx, maxy]))
+    print("leaf: " + str([minx, miny, maxx, maxy]))
 
     pminx, pminy, pmaxx, pmaxy = get_bounds(ids, f, id)
     point = make_poly(pminx, pminy, pmaxx, pmaxy)
 
-    print('point: ' + str([pminx, pminy, pmaxx, pmaxy]))
-    print('point bounds: ' +
-          str([point.GetArea(), area(pminx, pminy, pmaxx, pmaxy)]))
-    print('leaf bounds: ' +
-          str([leaf.GetArea(), area(minx, miny, maxx, maxy)]))
-    print('leaf - point: ' + str([abs(point.GetArea() - leaf.GetArea())]))
+    print("point: " + str([pminx, pminy, pmaxx, pmaxy]))
+    print("point bounds: " + str([point.GetArea(), area(pminx, pminy, pmaxx, pmaxy)]))
+    print("leaf bounds: " + str([leaf.GetArea(), area(minx, miny, maxx, maxy)]))
+    print("leaf - point: " + str([abs(point.GetArea() - leaf.GetArea())]))
     print([minx, miny, maxx, maxy])
     #  if shp2.GetArea() != shp.GetArea():
     #      import pdb;pdb.set_trace()

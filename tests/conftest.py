@@ -3,10 +3,7 @@ import shutil
 
 import pytest
 
-
-data_files = [
-    'boxes_15x15.data',
-]
+data_files = ["boxes_15x15.data"]
 
 
 @pytest.fixture(autouse=True)

@@ -2,11 +2,9 @@
 import os
 
 from setuptools import setup
-from setuptools.dist import Distribution
 from setuptools.command.install import install
-
+from setuptools.dist import Distribution
 from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
-
 
 # current working directory of this setup.py file
 _cwd = os.path.abspath(os.path.split(__file__)[0])
@@ -20,6 +18,7 @@ class bdist_wheel(_bdist_wheel):
 
 class BinaryDistribution(Distribution):
     """Distribution which always forces a binary package with platform name"""
+
     def has_ext_modules(foo):
         return True
 
@@ -42,14 +41,12 @@ class InstallPlatlib(install):
         # get the location of the shared library on the filesystem
 
         # where we're putting the shared library in the build directory
-        target_dir = os.path.join(self.build_lib, 'rtree', 'lib')
+        target_dir = os.path.join(self.build_lib, "rtree", "lib")
         # where are we checking for shared libraries
-        source_dir = os.path.join(_cwd, 'rtree', 'lib')
+        source_dir = os.path.join(_cwd, "rtree", "lib")
 
         # what patterns represent shared libraries
-        patterns = {'*.so',
-                    'libspatialindex*dylib',
-                    '*.dll'}
+        patterns = {"*.so", "libspatialindex*dylib", "*.dll"}
 
         if not os.path.isdir(source_dir):
             # no copying of binary parts to library
@@ -75,11 +72,11 @@ class InstallPlatlib(install):
 
             # copy the source file to the target directory
             self.copy_file(
-                os.path.join(source_dir, file_name),
-                os.path.join(target_dir, file_name))
+                os.path.join(source_dir, file_name), os.path.join(target_dir, file_name)
+            )
 
 
 setup(
     distclass=BinaryDistribution,
-    cmdclass={'bdist_wheel': bdist_wheel, 'install': InstallPlatlib},
+    cmdclass={"bdist_wheel": bdist_wheel, "install": InstallPlatlib},
 )
