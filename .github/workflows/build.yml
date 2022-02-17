@@ -43,8 +43,8 @@ jobs:
         python-version: '3.10'
     - name: Setup
       run: pip install isort[colors]
-    - name: Lint with mypy
-      run: mypy .
+    - name: Lint with isort
+      run: isort --check --diff .
 
   mypy:
     name: mypy
@@ -56,8 +56,8 @@ jobs:
         python-version: '3.10'
     - name: Setup
       run: pip install mypy pytest
-    - name: Lint with isort
-      run: isort --check --diff .
+    - name: Lint with mypy
+      run: mypy .
 
   conda:
     name: Conda ${{ matrix.python-version }} - ${{ matrix.os }}
