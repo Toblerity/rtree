@@ -23,7 +23,7 @@ _candidates = [
 ]
 
 
-def load():
+def load() -> ctypes.CDLL:
     """
     Load the `libspatialindex` shared library.
 
@@ -57,7 +57,7 @@ def load():
                 rt = ctypes.cdll.LoadLibrary(os.path.join(path, lib_name))
                 if rt is not None:
                     return rt
-            except (WindowsError, OSError):
+            except OSError:
                 pass
             except BaseException as E:
                 print("rtree.finder unexpected error: {}".format(str(E)))

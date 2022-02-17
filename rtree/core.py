@@ -1,10 +1,11 @@
 import ctypes
+from typing import Any, Callable
 
 from . import finder
 from .exceptions import RTreeError
 
 
-def check_return(result, func, cargs):
+def check_return(result: int, func: Callable[..., Any], cargs: Any) -> bool:
     "Error checking for Error calls"
     if result != 0:
         s = rt.Error_GetLastErrorMsg().decode()
@@ -14,7 +15,7 @@ def check_return(result, func, cargs):
     return True
 
 
-def check_void(result, func, cargs):
+def check_void(result: int, func: Callable[..., Any], cargs: Any) -> int:
     "Error checking for void* returns"
     if not bool(result):
         s = rt.Error_GetLastErrorMsg().decode()
@@ -24,7 +25,7 @@ def check_void(result, func, cargs):
     return result
 
 
-def check_void_done(result, func, cargs):
+def check_void_done(result: int, func: Callable[..., Any], cargs: Any) -> int:
     "Error checking for void* returns that might be empty with no error"
     if rt.Error_GetErrorCount():
         s = rt.Error_GetLastErrorMsg().decode()
@@ -34,7 +35,7 @@ def check_void_done(result, func, cargs):
     return result
 
 
-def check_value(result, func, cargs):
+def check_value(result: int, func: Callable[..., Any], cargs: Any) -> int:
     "Error checking proper value returns"
     count = rt.Error_GetErrorCount()
     if count != 0:
@@ -45,7 +46,7 @@ def check_value(result, func, cargs):
     return result
 
 
-def check_value_free(result, func, cargs):
+def check_value_free(result: int, func: Callable[..., Any], cargs: Any) -> int:
     "Error checking proper value returns"
     count = rt.Error_GetErrorCount()
     if count != 0:
@@ -56,14 +57,14 @@ def check_value_free(result, func, cargs):
     return result
 
 
-def free_returned_char_p(result, func, cargs):
+def free_returned_char_p(result: int, func: Callable[..., Any], cargs: Any) -> bytes:
     retvalue = ctypes.string_at(result)
     p = ctypes.cast(result, ctypes.POINTER(ctypes.c_void_p))
     rt.Index_Free(p)
     return retvalue
 
 
-def free_error_msg_ptr(result, func, cargs):
+def free_error_msg_ptr(result: int, func: Callable[..., Any], cargs: Any) -> bytes:
     retvalue = ctypes.string_at(result)
     p = ctypes.cast(result, ctypes.POINTER(ctypes.c_void_p))
     rt.Index_Free(p)
