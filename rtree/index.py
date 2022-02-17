@@ -290,7 +290,6 @@ class Index(object):
         """The number of entries in the index.
 
         :return: number of entries
-        :rtype: int
         """
         try:
             return self.count(self.bounds)
@@ -410,13 +409,11 @@ class Index(object):
     def insert(self, id: int, coordinates: Iterable[float], obj: Any = None) -> None:
         """Inserts an item into the index with the given coordinates.
 
-        :param id: long integer
-            A long integer that is the identifier for this index entry.  IDs
+        :param id: A long integer that is the identifier for this index entry.  IDs
             need not be unique to be inserted into the index, and it is up
             to the user to ensure they are unique if this is a requirement.
 
-        :param coordinates: sequence or array
-            This may be an object that satisfies the numpy array
+        :param coordinates: This may be an object that satisfies the numpy array
             protocol, providing the index's dimension * 2 coordinate
             pairs representing the `mink` and `maxk` coordinates in
             each dimension defining the bounds of the query window.
@@ -500,8 +497,7 @@ class Index(object):
     def count(self, coordinates: Iterable[float]) -> int:
         """Return number of objects that intersect the given coordinates.
 
-        :param coordinates: sequence or array
-            This may be an object that satisfies the numpy array
+        :param coordinates: This may be an object that satisfies the numpy array
             protocol, providing the index's dimension * 2 coordinate
             pairs representing the `mink` and `maxk` coordinates in
             each dimension defining the bounds of the query window.
@@ -588,14 +584,12 @@ class Index(object):
         """Return ids or objects in the index that contains within the given
         coordinates.
 
-        :param coordinates: sequence or array
-            This may be an object that satisfies the numpy array
+        :param coordinates: This may be an object that satisfies the numpy array
             protocol, providing the index's dimension * 2 coordinate
             pairs representing the `mink` and `maxk` coordinates in
             each dimension defining the bounds of the query window.
 
-        :param objects: True or False or 'raw'
-            If True, the intersection method will return index objects that
+        :param objects: If True, the intersection method will return index objects that
             were pickled when they were stored with each index entry, as well
             as the id and bounds of the index entries. If 'raw', the objects
             will be returned without the :class:`rtree.index.Item` wrapper.
@@ -657,8 +651,7 @@ class Index(object):
         """Return ids or objects in the index that intersect the given
         coordinates.
 
-        :param coordinates: sequence or array
-            This may be an object that satisfies the numpy array
+        :param coordinates: This may be an object that satisfies the numpy array
             protocol, providing the index's dimension * 2 coordinate
             pairs representing the `mink` and `maxk` coordinates in
             each dimension defining the bounds of the query window.
@@ -667,8 +660,7 @@ class Index(object):
             velocity pairs `minvk` and `maxvk` and a time pair for the
             time range as a float.
 
-        :param objects: True or False or 'raw'
-            If True, the intersection method will return index objects that
+        :param objects: If True, the intersection method will return index objects that
             were pickled when they were stored with each index entry, as well
             as the id and bounds of the index entries. If 'raw', the objects
             will be returned without the :class:`rtree.index.Item` wrapper.
@@ -881,8 +873,7 @@ class Index(object):
     ) -> List[Union[int, Item]]:
         """Returns the ``k``-nearest objects to the given coordinates.
 
-        :param coordinates: sequence or array
-            This may be an object that satisfies the numpy array
+        :param coordinates: This may be an object that satisfies the numpy array
             protocol, providing the index's dimension * 2 coordinate
             pairs representing the `mink` and `maxk` coordinates in
             each dimension defining the bounds of the query window.
@@ -891,14 +882,12 @@ class Index(object):
             velocity pairs `minvk` and `maxvk` and a time pair for the
             time range as a float.
 
-        :param num_results: integer
-            The number of results to return nearest to the given coordinates.
-            If two index entries are equidistant, *both* are returned.
+        :param num_results: The number of results to return nearest to the given
+            coordinates. If two index entries are equidistant, *both* are returned.
             This property means that :attr:`num_results` may return more
             items than specified
 
-        :param objects: True / False / 'raw'
-            If True, the nearest method will return index objects that
+        :param objects: If True, the nearest method will return index objects that
             were pickled when they were stored with each index entry, as
             well as the id and bounds of the index entries.
             If 'raw', it will return the object as entered into the database
@@ -999,14 +988,12 @@ class Index(object):
            is not guaranteed to delete all items in the index with the given ID
            and coordinates.
 
-        :param id: long integer
-            A long integer ID for the entry, which need not be unique. The
+        :param id: A long integer ID for the entry, which need not be unique. The
             index can contain multiple entries with identical IDs and
             coordinates. Uniqueness of items should be enforced at the
             application level by the user.
 
-        :param coordinates: sequence or array
-            Dimension * 2 coordinate pairs, representing the min
+        :param coordinates: Dimension * 2 coordinate pairs, representing the min
             and max coordinates in each dimension of the item to be
             deleted from the index. Their ordering will depend on the
             index's :attr:`interleaved` data member.
@@ -1958,9 +1945,8 @@ class RtreeContainer(Rtree):
             This parameter determines the coordinate order for all methods that
             take in coordinates.
 
-        :param properties: An :class:`index.Property` object
-            This object sets both the creation and instantiation properties
-            for the object and they are passed down into libspatialindex.
+        :param properties: This object sets both the creation and instantiation
+            properties for the object and they are passed down into libspatialindex.
             A few properties are curried from instantiation parameters
             for you like ``pagesize`` to ensure compatibility with previous
             versions of the library.  All other properties must be set on the
@@ -2036,11 +2022,9 @@ class RtreeContainer(Rtree):
     def insert(self, obj, coordinates):
         """Inserts an item into the index with the given coordinates.
 
-        :param obj: object
-            Any object.
+        :param obj: Any object.
 
-        :param coordinates: sequence or array
-            This may be an object that satisfies the numpy array
+        :param coordinates: This may be an object that satisfies the numpy array
             protocol, providing the index's dimension * 2 coordinate
             pairs representing the `mink` and `maxk` coordinates in
             each dimension defining the bounds of the query window.
@@ -2082,8 +2066,7 @@ class RtreeContainer(Rtree):
         """Return ids or objects in the index that intersect the given
         coordinates.
 
-        :param coordinates: sequence or array
-            This may be an object that satisfies the numpy array
+        :param coordinates: This may be an object that satisfies the numpy array
             protocol, providing the index's dimension * 2 coordinate
             pairs representing the `mink` and `maxk` coordinates in
             each dimension defining the bounds of the query window.
@@ -2092,8 +2075,7 @@ class RtreeContainer(Rtree):
             velocity pairs `minvk` and `maxvk` and a time pair for the
             time range as a float.
 
-        :param bbox: True or False
-            If True, the intersection method will return the stored objects,
+        :param bbox: If True, the intersection method will return the stored objects,
             as well as the bounds of the entry.
 
         The following example queries the container for any stored objects that
@@ -2151,8 +2133,7 @@ class RtreeContainer(Rtree):
         """Returns the ``k``-nearest objects to the given coordinates
         in increasing distance order.
 
-        :param coordinates: sequence or array
-            This may be an object that satisfies the numpy array
+        :param coordinates: This may be an object that satisfies the numpy array
             protocol, providing the index's dimension * 2 coordinate
             pairs representing the `mink` and `maxk` coordinates in
             each dimension defining the bounds of the query window.
@@ -2161,14 +2142,12 @@ class RtreeContainer(Rtree):
             velocity pairs `minvk` and `maxvk` and a time pair for the
             time range as a float.
 
-        :param num_results: integer
-            The number of results to return nearest to the given coordinates.
-            If two entries are equidistant, *both* are returned.
+        :param num_results: The number of results to return nearest to the given
+            coordinates. If two entries are equidistant, *both* are returned.
             This property means that :attr:`num_results` may return more
             items than specified.
 
-        :param bbox: True or False
-            If True, the nearest method will return the stored objects, as
+        :param bbox: If True, the nearest method will return the stored objects, as
             well as the bounds of the entry.
 
         .. warning::
@@ -2200,11 +2179,9 @@ class RtreeContainer(Rtree):
         """Deletes the item from the container within the specified
         coordinates.
 
-        :param obj: object
-            Any object.
+        :param obj: Any object.
 
-        :param coordinates: sequence or array
-            Dimension * 2 coordinate pairs, representing the min
+        :param coordinates: Dimension * 2 coordinate pairs, representing the min
             and max coordinates in each dimension of the item to be
             deleted from the index. Their ordering will depend on the
             index's :attr:`interleaved` data member.

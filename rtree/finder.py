@@ -24,13 +24,9 @@ _candidates = [
 
 
 def load() -> ctypes.CDLL:
-    """
-    Load the `libspatialindex` shared library.
+    """Load the `libspatialindex` shared library.
 
-    Returns
-    -----------
-    rt : ctypes object
-      Loaded shared library
+    :returns: Loaded shared library
     """
     if os.name == "nt":
         # check the platform architecture
