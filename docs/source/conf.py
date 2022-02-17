@@ -12,6 +12,7 @@
 # serve to show the default.
 
 import sys
+from typing import List
 
 sys.path.append("../../")
 
@@ -78,7 +79,7 @@ release = rtree.__version__
 
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.
-exclude_trees = []
+exclude_trees: List[str] = []
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 # default_role = None

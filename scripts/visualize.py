@@ -2,8 +2,8 @@
 
 import sys
 
-import ogr
 from liblas import file
+from osgeo import ogr
 
 from rtree import index
 
