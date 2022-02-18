@@ -6,7 +6,7 @@ import os.path
 import pickle
 import pprint
 import warnings
-from typing import Any, Dict, Iterable, List, Sequence, Tuple, Union
+from typing import Any, Dict, List, Literal, Sequence, Tuple, Union, overload
 
 from . import core
 from .exceptions import RTreeError
@@ -74,7 +74,7 @@ def _get_data(handle):
     return s
 
 
-class Index(object):
+class Index:
     """An R-Tree, MVR-Tree, or TPR-Tree indexing object"""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -228,7 +228,7 @@ class Index(object):
             self.properties.filename = basename
 
             # check we can read the file
-            f = basename + "." + self.properties.idx_extension
+            f = str(basename) + "." + self.properties.idx_extension
             p = os.path.abspath(f)
 
             # assume if the file exists, we're not going to overwrite it
@@ -310,10 +310,10 @@ class Index(object):
         self.__dict__.update(state)
         self.handle = IndexHandle(self.properties.handle)
 
-    def dumps(self, obj: Any) -> bytes:
+    def dumps(self, obj: object) -> bytes:
         return pickle.dumps(obj)
 
-    def loads(self, string: bytes) -> Any:
+    def loads(self, string: bytes) -> object:
         return pickle.loads(string)
 
     def close(self) -> None:
@@ -372,14 +372,14 @@ class Index(object):
         return (p_mins, p_maxs)
 
     @staticmethod
-    def _get_time_doubles(times: Sequence[float]) -> Tuple[float]:
+    def _get_time_doubles(times):
         if times[0] > times[1]:
             raise RTreeError("Start time must be less than end time")
         t_start = ctypes.c_double(times[0])
         t_end = ctypes.c_double(times[1])
         return t_start, t_end
 
-    def _serialize(self, obj: Any) -> Tuple[int, float, bytes]:
+    def _serialize(self, obj):
         serialized = self.dumps(obj)
         size = len(serialized)
 
@@ -406,7 +406,14 @@ class Index(object):
 
     result_offset = property(get_result_offset, set_result_offset)
 
-    def insert(self, id: int, coordinates: Iterable[float], obj: Any = None) -> None:
+    def insert(
+        self,
+        id: int,
+        coordinates: Union[
+            Sequence[float], Tuple[Sequence[float], Sequence[float], float]
+        ],
+        obj: object = None,
+    ) -> None:
         """Inserts an item into the index with the given coordinates.
 
         :param id: A long integer that is the identifier for this index entry.  IDs
@@ -467,10 +474,10 @@ class Index(object):
     def _insertTP(
         self,
         id: int,
-        coordinates: Iterable[float],
-        velocities: Iterable[float],
+        coordinates: Sequence[float],
+        velocities: Sequence[float],
         time: float,
-        obj: Any = None,
+        obj: object = None,
     ) -> None:
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
@@ -494,7 +501,7 @@ class Index(object):
             size,
         )
 
-    def count(self, coordinates: Iterable[float]) -> int:
+    def count(self, coordinates: Sequence[float]) -> int:
         """Return number of objects that intersect the given coordinates.
 
         :param coordinates: This may be an object that satisfies the numpy array
@@ -553,10 +560,7 @@ class Index(object):
         return p_num_results.value
 
     def _countTP(
-        self,
-        coordinates: Iterable[float],
-        velocities: Iterable[float],
-        times: Sequence[float],
+        self, coordinates: Sequence[float], velocities: Sequence[float], times: float
     ) -> int:
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
@@ -578,9 +582,19 @@ class Index(object):
 
         return p_num_results.value
 
+    @overload
+    def contains(self, coordinates: Any, objects: Literal[True]) -> List[Item]:
+        ...
+
+    @overload
     def contains(
-        self, coordinates: Iterable[float], objects: Union[bool, str] = False
-    ) -> List[Union[int, Item]]:
+        self, coordinates: Any, objects: Union[Literal[False], Literal["raw"]] = False
+    ) -> object:
+        ...
+
+    def contains(
+        self, coordinates: Any, objects: Union[bool, Literal["raw"]] = False
+    ) -> List[Union[Item, object]]:
         """Return ids or objects in the index that contains within the given
         coordinates.
 
@@ -645,9 +659,21 @@ class Index(object):
         )
         return self._get_ids(it, p_num_results.value)
 
+    @overload
     def intersection(
-        self, coordinates: Iterable[float], objects: Union[bool, str] = False
-    ) -> List[Union[int, Item]]:
+        self, coordinates: Any, objects: Literal[True] = False
+    ) -> List[Item]:
+        ...
+
+    @overload
+    def intersection(
+        self, coordinates: Any, objects: Union[Literal[False], Literal["raw"]] = False
+    ) -> List[object]:
+        ...
+
+    def intersection(
+        self, coordinates: Any, objects: Union[bool, Literal["raw"]] = False
+    ) -> List[Union[Item, object]]:
         """Return ids or objects in the index that intersect the given
         coordinates.
 
@@ -729,13 +755,7 @@ class Index(object):
         )
         return self._get_ids(it, p_num_results.value)
 
-    def _intersectionTP(
-        self,
-        coordinates: Iterable[float],
-        velocities: Iterable[float],
-        times: Sequence[float],
-        objects: Union[bool, str] = False,
-    ) -> List[Union[int, Item]]:
+    def _intersectionTP(self, coordinates, velocities, times, objects=False):
 
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
@@ -865,12 +885,27 @@ class Index(object):
 
         return self._get_objects(it, p_num_results.contents.value, objects)
 
+    @overload
+    def nearest(
+        self, coordinates: Any, num_results: int, objects: Literal[True] = False
+    ) -> List[Item]:
+        ...
+
+    @overload
     def nearest(
         self,
-        coordinates: Iterable[float],
+        coordinates: Any,
+        num_results: int,
+        objects: Union[Literal[False], Literal["raw"]] = False,
+    ) -> List[object]:
+        ...
+
+    def nearest(
+        self,
+        coordinates: Any,
         num_results: int = 1,
-        objects: Union[bool, str] = False,
-    ) -> List[Union[int, Item]]:
+        objects: Union[bool, Literal["raw"]] = False,
+    ) -> List[Union[Item, object]]:
         """Returns the ``k``-nearest objects to the given coordinates.
 
         :param coordinates: This may be an object that satisfies the numpy array
@@ -981,7 +1016,7 @@ class Index(object):
 
     bounds = property(get_bounds)
 
-    def delete(self, id: int, coordinates: Iterable[float]) -> None:
+    def delete(self, id: int, coordinates: Sequence[float]) -> None:
         """Deletes an item from the index with the given ``'id'`` and
            coordinates given by the ``coordinates`` sequence. As the index can
            contain multiple items with the same ID and coordinates, deletion
@@ -1033,7 +1068,13 @@ class Index(object):
             self.handle, id, p_mins, p_maxs, self.properties.dimension
         )
 
-    def _deleteTP(self, id, coordinates, velocities, times):
+    def _deleteTP(
+        self,
+        id: int,
+        coordinates: Sequence[float],
+        velocities: Sequence[float],
+        times: float,
+    ) -> None:
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
         t_start, t_end = self._get_time_doubles(times)
@@ -1049,14 +1090,14 @@ class Index(object):
             self.properties.dimension,
         )
 
-    def valid(self):
+    def valid(self) -> bool:
         return bool(core.rt.Index_IsValid(self.handle))
 
     def clearBuffer(self):
         return core.rt.Index_ClearBuffer(self.handle)
 
     @classmethod
-    def deinterleave(self, interleaved: Sequence[Any]) -> Sequence[Any]:
+    def deinterleave(self, interleaved: Sequence[object]) -> Sequence[object]:
         """
         [xmin, ymin, xmax, ymax] => [xmin, xmax, ymin, ymax]
 
@@ -1075,7 +1116,7 @@ class Index(object):
         return di
 
     @classmethod
-    def interleave(self, deinterleaved: Sequence[Any]) -> Sequence[Any]:
+    def interleave(self, deinterleaved: Sequence[float]) -> Sequence[float]:
         """
         [xmin, xmax, ymin, ymax, zmin, zmax]
             => [xmin, ymin, zmin, xmax, ymax, zmax]
@@ -1235,7 +1276,7 @@ class Index(object):
 Rtree = Index
 
 
-class Item(object):
+class Item:
     """A container for index entries"""
 
     __slots__ = ("handle", "owned", "id", "object", "bounds")
@@ -1279,8 +1320,8 @@ class InvalidHandleException(Exception):
     """Handle has been destroyed and can no longer be used"""
 
 
-class Handle(object):
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+class Handle:
+    def __init__(self, *args: object, **kwargs: object) -> None:
         self._ptr = self._create(*args, **kwargs)
 
     def _create(self, *args, **kwargs):
@@ -1340,7 +1381,7 @@ class PropertyHandle(Handle):
     _destroy = core.rt.IndexProperty_Destroy
 
 
-class Property(object):
+class Property:
     """An index property object is a container that contains a number of
     settable index properties.  Many of these properties must be set at
     index creation times, while others can be used to adjust performance
@@ -1373,7 +1414,7 @@ class Property(object):
         "writethrough",
     )
 
-    def __init__(self, handle=None, owned=True, **kwargs: Any) -> None:
+    def __init__(self, handle=None, owned=True, **kwargs: object) -> None:
         if handle is None:
             handle = PropertyHandle()
         self.handle = handle
@@ -1751,7 +1792,7 @@ class CustomStorageCallbacks(ctypes.Structure):
         )
 
 
-class ICustomStorage(object):
+class ICustomStorage:
     # error codes
     NoError = 0
     InvalidPageError = 1
@@ -1920,7 +1961,7 @@ class CustomStorage(ICustomStorage):
 class RtreeContainer(Rtree):
     """An R-Tree, MVR-Tree, or TPR-Tree indexed container for python objects"""
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: object, **kwargs: object) -> None:
         """Creates a new index
 
         :param stream:

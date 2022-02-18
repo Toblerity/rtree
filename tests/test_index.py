@@ -3,7 +3,7 @@ import pickle
 import sys
 import tempfile
 import unittest
-from typing import Any, Iterator, Tuple
+from typing import Iterator, Tuple
 
 import numpy as np
 import pytest
@@ -637,10 +637,10 @@ class DictStorage(index.CustomStorage):
         index.CustomStorage.__init__(self)
         self.clear()
 
-    def create(self, returnError: Any) -> None:
+    def create(self, returnError: object) -> None:
         """Called when the storage is created on the C side"""
 
-    def destroy(self, returnError: Any) -> None:
+    def destroy(self, returnError: object) -> None:
         """Called when the storage is destroyed on the C side"""
 
     def clear(self) -> None:
