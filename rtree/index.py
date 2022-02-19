@@ -6,7 +6,12 @@ import os.path
 import pickle
 import pprint
 import warnings
-from typing import Any, Dict, List, Literal, Sequence, Tuple, Union, overload
+from typing import Any, Dict, List, Sequence, Tuple, Union, overload
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
 from . import core
 from .exceptions import RTreeError
