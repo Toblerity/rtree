@@ -27,7 +27,6 @@ Documentation
    class
    changes
    performance
-   examples
    history
 
 * :ref:`genindex`
