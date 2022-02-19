@@ -7,7 +7,7 @@ import pickle
 import pprint
 import sys
 import warnings
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union, overload
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union, overload
 
 if sys.version_info >= (3, 8):
     from typing import Literal
@@ -125,7 +125,7 @@ class Index:
             This parameter determines the coordinate order for all methods that
             take in coordinates.
 
-        :param properties: An :class:`index.Property` object
+        :param properties: An :class:`index.Property` object.
             This object sets both the creation and instantiation properties
             for the object and they are passed down into libspatialindex.
             A few properties are curried from instantiation parameters
@@ -1110,7 +1110,7 @@ class Index:
         return core.rt.Index_ClearBuffer(self.handle)
 
     @classmethod
-    def deinterleave(self, interleaved: Sequence[object]) -> Sequence[object]:
+    def deinterleave(self, interleaved: Sequence[object]) -> List[object]:
         """
         [xmin, ymin, xmax, ymax] => [xmin, xmax, ymin, ymax]
 
@@ -1129,7 +1129,7 @@ class Index:
         return di
 
     @classmethod
-    def interleave(self, deinterleaved: Sequence[float]) -> Sequence[float]:
+    def interleave(self, deinterleaved: Sequence[float]) -> List[float]:
         """
         [xmin, xmax, ymin, ymax, zmin, zmax]
             => [xmin, ymin, zmin, xmax, ymax, zmax]
@@ -1311,11 +1311,11 @@ class Item:
         self.object = self.get_object(loads)
         self.bounds = _get_bounds(self.handle, core.rt.IndexItem_GetBounds, False)
 
-    def __gt__(self, other):
+    def __gt__(self, other: Item) -> bool:
         return self.id > other.id
 
     @property
-    def bbox(self):
+    def bbox(self) -> List[float]:
         """Returns the bounding box of the index entry"""
         return Index.interleave(self.bounds)
 
@@ -1334,16 +1334,16 @@ class InvalidHandleException(Exception):
 
 
 class Handle:
-    def __init__(self, *args: object, **kwargs: object) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         self._ptr = self._create(*args, **kwargs)
 
-    def _create(self, *args, **kwargs):
+    def _create(self, *args: Any, **kwargs: Any):
         raise NotImplementedError
 
     def _destroy(self, ptr):
         raise NotImplementedError
 
-    def destroy(self):
+    def destroy(self) -> None:
         try:
 
             if self._ptr is not None:
@@ -1358,7 +1358,7 @@ class Handle:
             raise InvalidHandleException
         return self._ptr
 
-    def __del__(self):
+    def __del__(self) -> None:
         try:
             self.destroy()
         except NameError:
@@ -1374,7 +1374,7 @@ class IndexHandle(Handle):
     _create = core.rt.Index_Create
     _destroy = core.rt.Index_Destroy
 
-    def flush(self):
+    def flush(self) -> None:
         try:
             core.rt.Index_Flush
             if self._ptr is not None:
@@ -1427,25 +1427,25 @@ class Property:
         "writethrough",
     )
 
-    def __init__(self, handle=None, owned=True, **kwargs: object) -> None:
+    def __init__(self, handle=None, owned: bool = True, **kwargs: Any) -> None:
         if handle is None:
             handle = PropertyHandle()
         self.handle = handle
         self.initialize_from_dict(kwargs)
 
-    def initialize_from_dict(self, state):
+    def initialize_from_dict(self, state: Dict[str, Any]) -> None:
         for k, v in state.items():
             if v is not None:
                 setattr(self, k, v)
 
-    def __getstate__(self):
+    def __getstate__(self) -> Dict[Any, Any]:
         return self.as_dict()
 
     def __setstate__(self, state):
         self.handle = PropertyHandle()
         self.initialize_from_dict(state)
 
-    def as_dict(self):
+    def as_dict(self) -> Dict[str, Any]:
         d = {}
         for k in self.pkeys:
             try:
@@ -1455,16 +1455,16 @@ class Property:
             d[k] = v
         return d
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return repr(self.as_dict())
 
-    def __str__(self):
+    def __str__(self) -> str:
         return pprint.pformat(self.as_dict())
 
-    def get_index_type(self):
+    def get_index_type(self) -> int:
         return core.rt.IndexProperty_GetIndexType(self.handle)
 
-    def set_index_type(self, value):
+    def set_index_type(self, value: int) -> None:
         return core.rt.IndexProperty_SetIndexType(self.handle, value)
 
     type = property(get_index_type, set_index_type)
@@ -1472,20 +1472,20 @@ class Property:
     :data:`RT_RTree`, :data:`RT_MVTree`, or :data:`RT_TPRTree`.  Only
     RT_RTree (the default) is practically supported at this time."""
 
-    def get_variant(self):
+    def get_variant(self) -> int:
         return core.rt.IndexProperty_GetIndexVariant(self.handle)
 
-    def set_variant(self, value):
+    def set_variant(self, value: int) -> None:
         return core.rt.IndexProperty_SetIndexVariant(self.handle, value)
 
     variant = property(get_variant, set_variant)
     """Index variant.  Valid index variant values are
     :data:`RT_Linear`, :data:`RT_Quadratic`, and :data:`RT_Star`"""
 
-    def get_dimension(self):
+    def get_dimension(self) -> int:
         return core.rt.IndexProperty_GetDimension(self.handle)
 
-    def set_dimension(self, value):
+    def set_dimension(self, value: int) -> None:
         if value <= 0:
             raise RTreeError("Negative or 0 dimensional indexes are not allowed")
         return core.rt.IndexProperty_SetDimension(self.handle, value)
@@ -1494,10 +1494,10 @@ class Property:
     """Index dimension.  Must be greater than 0, though a dimension of 1 might
     have undefined behavior."""
 
-    def get_storage(self):
+    def get_storage(self) -> int:
         return core.rt.IndexProperty_GetIndexStorage(self.handle)
 
-    def set_storage(self, value):
+    def set_storage(self, value: int) -> None:
         return core.rt.IndexProperty_SetIndexStorage(self.handle, value)
 
     storage = property(get_storage, set_storage)
@@ -1510,10 +1510,10 @@ class Property:
     :data:`RT_Custom` is assumed. Otherwise, :data:`RT_Memory` is the default.
     """
 
-    def get_pagesize(self):
+    def get_pagesize(self) -> int:
         return core.rt.IndexProperty_GetPagesize(self.handle)
 
-    def set_pagesize(self, value):
+    def set_pagesize(self, value: int) -> None:
         if value <= 0:
             raise RTreeError("Pagesize must be > 0")
         return core.rt.IndexProperty_SetPagesize(self.handle, value)
@@ -1522,10 +1522,10 @@ class Property:
     """The pagesize when disk storage is used.  It is ideal to ensure that your
     index entries fit within a single page for best performance."""
 
-    def get_index_capacity(self):
+    def get_index_capacity(self) -> int:
         return core.rt.IndexProperty_GetIndexCapacity(self.handle)
 
-    def set_index_capacity(self, value):
+    def set_index_capacity(self, value: int) -> None:
         if value <= 0:
             raise RTreeError("index_capacity must be > 0")
         return core.rt.IndexProperty_SetIndexCapacity(self.handle, value)
@@ -1533,10 +1533,10 @@ class Property:
     index_capacity = property(get_index_capacity, set_index_capacity)
     """Index capacity"""
 
-    def get_leaf_capacity(self):
+    def get_leaf_capacity(self) -> int:
         return core.rt.IndexProperty_GetLeafCapacity(self.handle)
 
-    def set_leaf_capacity(self, value):
+    def set_leaf_capacity(self, value: int) -> None:
         if value <= 0:
             raise RTreeError("leaf_capacity must be > 0")
         return core.rt.IndexProperty_SetLeafCapacity(self.handle, value)
@@ -1544,10 +1544,10 @@ class Property:
     leaf_capacity = property(get_leaf_capacity, set_leaf_capacity)
     """Leaf capacity"""
 
-    def get_index_pool_capacity(self):
+    def get_index_pool_capacity(self) -> int:
         return core.rt.IndexProperty_GetIndexPoolCapacity(self.handle)
 
-    def set_index_pool_capacity(self, value):
+    def set_index_pool_capacity(self, value: int) -> None:
         if value <= 0:
             raise RTreeError("index_pool_capacity must be > 0")
         return core.rt.IndexProperty_SetIndexPoolCapacity(self.handle, value)
@@ -1555,10 +1555,10 @@ class Property:
     index_pool_capacity = property(get_index_pool_capacity, set_index_pool_capacity)
     """Index pool capacity"""
 
-    def get_point_pool_capacity(self):
+    def get_point_pool_capacity(self) -> int:
         return core.rt.IndexProperty_GetPointPoolCapacity(self.handle)
 
-    def set_point_pool_capacity(self, value):
+    def set_point_pool_capacity(self, value: int) -> None:
         if value <= 0:
             raise RTreeError("point_pool_capacity must be > 0")
         return core.rt.IndexProperty_SetPointPoolCapacity(self.handle, value)
@@ -1566,10 +1566,10 @@ class Property:
     point_pool_capacity = property(get_point_pool_capacity, set_point_pool_capacity)
     """Point pool capacity"""
 
-    def get_region_pool_capacity(self):
+    def get_region_pool_capacity(self) -> int:
         return core.rt.IndexProperty_GetRegionPoolCapacity(self.handle)
 
-    def set_region_pool_capacity(self, value):
+    def set_region_pool_capacity(self, value: int) -> None:
         if value <= 0:
             raise RTreeError("region_pool_capacity must be > 0")
         return core.rt.IndexProperty_SetRegionPoolCapacity(self.handle, value)
@@ -1577,10 +1577,10 @@ class Property:
     region_pool_capacity = property(get_region_pool_capacity, set_region_pool_capacity)
     """Region pool capacity"""
 
-    def get_buffering_capacity(self):
+    def get_buffering_capacity(self) -> int:
         return core.rt.IndexProperty_GetBufferingCapacity(self.handle)
 
-    def set_buffering_capacity(self, value):
+    def set_buffering_capacity(self, value: int) -> None:
         if value <= 0:
             raise RTreeError("buffering_capacity must be > 0")
         return core.rt.IndexProperty_SetBufferingCapacity(self.handle, value)
@@ -1608,10 +1608,10 @@ class Property:
     overwrite = property(get_overwrite, set_overwrite)
     """Overwrite existing index files"""
 
-    def get_near_minimum_overlap_factor(self):
+    def get_near_minimum_overlap_factor(self) -> int:
         return core.rt.IndexProperty_GetNearMinimumOverlapFactor(self.handle)
 
-    def set_near_minimum_overlap_factor(self, value):
+    def set_near_minimum_overlap_factor(self, value: int) -> None:
         if value <= 0:
             raise RTreeError("near_minimum_overlap_factor must be > 0")
         return core.rt.IndexProperty_SetNearMinimumOverlapFactor(self.handle, value)
@@ -1631,19 +1631,19 @@ class Property:
     writethrough = property(get_writethrough, set_writethrough)
     """Write through caching"""
 
-    def get_fill_factor(self):
+    def get_fill_factor(self) -> int:
         return core.rt.IndexProperty_GetFillFactor(self.handle)
 
-    def set_fill_factor(self, value):
+    def set_fill_factor(self, value: int) -> None:
         return core.rt.IndexProperty_SetFillFactor(self.handle, value)
 
     fill_factor = property(get_fill_factor, set_fill_factor)
     """Index node fill factor before branching"""
 
-    def get_split_distribution_factor(self):
+    def get_split_distribution_factor(self) -> int:
         return core.rt.IndexProperty_GetSplitDistributionFactor(self.handle)
 
-    def set_split_distribution_factor(self, value):
+    def set_split_distribution_factor(self, value: int) -> None:
         return core.rt.IndexProperty_SetSplitDistributionFactor(self.handle, value)
 
     split_distribution_factor = property(
@@ -1704,10 +1704,10 @@ class Property:
     idx_extension = property(get_idx_extension, set_idx_extension)
     """Extension for .idx file"""
 
-    def get_custom_storage_callbacks_size(self):
+    def get_custom_storage_callbacks_size(self) -> int:
         return core.rt.IndexProperty_GetCustomStorageCallbacksSize(self.handle)
 
-    def set_custom_storage_callbacks_size(self, value):
+    def set_custom_storage_callbacks_size(self, value: int) -> None:
         return core.rt.IndexProperty_SetCustomStorageCallbacksSize(self.handle, value)
 
     custom_storage_callbacks_size = property(
@@ -1974,7 +1974,7 @@ class CustomStorage(ICustomStorage):
 class RtreeContainer(Rtree):
     """An R-Tree, MVR-Tree, or TPR-Tree indexed container for python objects"""
 
-    def __init__(self, *args: object, **kwargs: object) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Creates a new index
 
         :param stream:
@@ -2051,29 +2051,29 @@ class RtreeContainer(Rtree):
                 or isinstance(args[0], ICustomStorage)
             ):
                 raise ValueError("%s supports only in-memory indexes" % self.__class__)
-        self._objects = {}
+        self._objects: Dict[int, Tuple[int, object]] = {}
         return super(RtreeContainer, self).__init__(*args, **kwargs)
 
-    def get_size(self):
+    def get_size(self) -> int:
         try:
             return self.count(self.bounds)
         except RTreeError:
             return 0
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         m = "rtree.index.RtreeContainer(bounds={}, size={})"
         return m.format(self.bounds, self.get_size())
 
-    def __contains__(self, obj):
+    def __contains__(self, obj: object) -> bool:
         return id(obj) in self._objects
 
-    def __len__(self):
+    def __len__(self) -> int:
         return sum(count for count, obj in self._objects.values())
 
-    def __iter__(self):
+    def __iter__(self) -> Iterable[object]:
         return iter(obj for count, obj in self._objects.values())
 
-    def insert(self, obj, coordinates):
+    def insert(self, obj: object, coordinates: Any) -> None:  # type: ignore[override]
         """Inserts an item into the index with the given coordinates.
 
         :param obj: Any object.
@@ -2114,9 +2114,23 @@ class RtreeContainer(Rtree):
         self._objects[id(obj)] = (count, obj)
         return super(RtreeContainer, self).insert(id(obj), coordinates, None)
 
-    add = insert
+    add = insert  # type: ignore[assignment]
 
-    def intersection(self, coordinates, bbox=False):
+    @overload  # type: ignore[override]
+    def intersection(
+        self, coordinates: Any, bbox: Literal[True]
+    ) -> Iterable[Tuple[object, List[float]]]:
+        ...
+
+    @overload
+    def intersection(
+        self, coordinates: Any, bbox: Literal[False] = False
+    ) -> Iterable[object]:
+        ...
+
+    def intersection(
+        self, coordinates: Any, bbox: bool = False
+    ) -> Iterable[Union[Tuple[object, List[float]], object]]:
         """Return ids or objects in the index that intersect the given
         coordinates.
 
@@ -2183,7 +2197,21 @@ class RtreeContainer(Rtree):
         else:
             raise ValueError("valid values for the bbox argument are True and False")
 
-    def nearest(self, coordinates, num_results=1, bbox=False):
+    @overload  # type: ignore[override]
+    def nearest(
+        self, coordinates: Any, num_results: int, bbox: Literal[True]
+    ) -> Iterable[Tuple[object, List[float]]]:
+        ...
+
+    @overload
+    def nearest(
+        self, coordinates: Any, num_results: int, bbox: Literal[False] = False
+    ) -> Iterable[object]:
+        ...
+
+    def nearest(
+        self, coordinates: Any, num_results: int = 1, bbox: bool = False
+    ) -> Iterable[Union[Tuple[object, List[float]], object]]:
         """Returns the ``k``-nearest objects to the given coordinates
         in increasing distance order.
 
@@ -2229,7 +2257,7 @@ class RtreeContainer(Rtree):
         else:
             raise ValueError("valid values for the bbox argument are True and False")
 
-    def delete(self, obj, coordinates):
+    def delete(self, obj: object, coordinates: Any) -> None:
         """Deletes the item from the container within the specified
         coordinates.
 
