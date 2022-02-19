@@ -5,12 +5,13 @@ import os
 import os.path
 import pickle
 import pprint
+import sys
 import warnings
-from typing import Any, Dict, List, Sequence, Tuple, Union, overload
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union, overload
 
-try:
+if sys.version_info >= (3, 8):
     from typing import Literal
-except ImportError:
+else:
     from typing_extensions import Literal
 
 from . import core
@@ -411,14 +412,7 @@ class Index:
 
     result_offset = property(get_result_offset, set_result_offset)
 
-    def insert(
-        self,
-        id: int,
-        coordinates: Union[
-            Sequence[float], Tuple[Sequence[float], Sequence[float], float]
-        ],
-        obj: object = None,
-    ) -> None:
+    def insert(self, id: int, coordinates: Any, obj: object = None) -> None:
         """Inserts an item into the index with the given coordinates.
 
         :param id: A long integer that is the identifier for this index entry.  IDs
@@ -462,7 +456,8 @@ class Index:
 
         """
         if self.properties.type == RT_TPRTree:
-            return self._insertTP(id, *coordinates, obj=obj)
+            # https://github.com/python/mypy/issues/6799
+            return self._insertTP(id, *coordinates, obj=obj)  # type: ignore[misc]
 
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         data = ctypes.c_ubyte(0)
@@ -506,7 +501,7 @@ class Index:
             size,
         )
 
-    def count(self, coordinates: Sequence[float]) -> int:
+    def count(self, coordinates: Any) -> int:
         """Return number of objects that intersect the given coordinates.
 
         :param coordinates: This may be an object that satisfies the numpy array
@@ -593,13 +588,17 @@ class Index:
 
     @overload
     def contains(
-        self, coordinates: Any, objects: Union[Literal[False], Literal["raw"]] = False
-    ) -> object:
+        self, coordinates: Any, objects: Literal[False] = False
+    ) -> Optional[List[int]]:
+        ...
+
+    @overload
+    def contains(self, coordinates: Any, objects: Literal["raw"]) -> List[object]:
         ...
 
     def contains(
         self, coordinates: Any, objects: Union[bool, Literal["raw"]] = False
-    ) -> List[Union[Item, object]]:
+    ) -> Optional[List[Union[Item, int, object]]]:
         """Return ids or objects in the index that contains within the given
         coordinates.
 
@@ -665,20 +664,22 @@ class Index:
         return self._get_ids(it, p_num_results.value)
 
     @overload
-    def intersection(
-        self, coordinates: Any, objects: Literal[True] = False
-    ) -> List[Item]:
+    def intersection(self, coordinates: Any, objects: Literal[True]) -> List[Item]:
         ...
 
     @overload
     def intersection(
-        self, coordinates: Any, objects: Union[Literal[False], Literal["raw"]] = False
-    ) -> List[object]:
+        self, coordinates: Any, objects: Literal[False] = False
+    ) -> List[int]:
+        ...
+
+    @overload
+    def intersection(self, coordinates: Any, objects: Literal["raw"]) -> List[object]:
         ...
 
     def intersection(
         self, coordinates: Any, objects: Union[bool, Literal["raw"]] = False
-    ) -> List[Union[Item, object]]:
+    ) -> List[Union[Item, int, object]]:
         """Return ids or objects in the index that intersect the given
         coordinates.
 
@@ -740,7 +741,10 @@ class Index:
 
         """
         if self.properties.type == RT_TPRTree:
-            return self._intersectionTP(*coordinates, objects=objects)
+            # https://github.com/python/mypy/issues/6799
+            return self._intersectionTP(  # type: ignore[misc]
+                *coordinates, objects=objects
+            )
         if objects:
             return self._intersection_obj(coordinates, objects)
 
@@ -811,7 +815,7 @@ class Index:
         )
         return self._get_objects(it, p_num_results.value, objects)
 
-    def _contains_obj(self, coordinates, objects):
+    def _contains_obj(self, coordinates: Any, objects):
 
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
 
@@ -892,16 +896,19 @@ class Index:
 
     @overload
     def nearest(
-        self, coordinates: Any, num_results: int, objects: Literal[True] = False
+        self, coordinates: Any, num_results: int, objects: Literal[True]
     ) -> List[Item]:
         ...
 
     @overload
     def nearest(
-        self,
-        coordinates: Any,
-        num_results: int,
-        objects: Union[Literal[False], Literal["raw"]] = False,
+        self, coordinates: Any, num_results: int, objects: Literal[False] = False
+    ) -> List[int]:
+        ...
+
+    @overload
+    def nearest(
+        self, coordinates: Any, num_results: int, objects: Literal["raw"]
     ) -> List[object]:
         ...
 
@@ -910,7 +917,7 @@ class Index:
         coordinates: Any,
         num_results: int = 1,
         objects: Union[bool, Literal["raw"]] = False,
-    ) -> List[Union[Item, object]]:
+    ) -> List[Union[Item, int, object]]:
         """Returns the ``k``-nearest objects to the given coordinates.
 
         :param coordinates: This may be an object that satisfies the numpy array
@@ -944,7 +951,8 @@ class Index:
             >>> hits = idx.nearest((0, 0, 10, 10), 3, objects=True)
         """
         if self.properties.type == RT_TPRTree:
-            return self._nearestTP(*coordinates, objects=objects)
+            # https://github.com/python/mypy/issues/6799
+            return self._nearestTP(*coordinates, objects=objects)  # type: ignore[misc]
 
         if objects:
             return self._nearest_obj(coordinates, num_results, objects)
@@ -1021,7 +1029,7 @@ class Index:
 
     bounds = property(get_bounds)
 
-    def delete(self, id: int, coordinates: Sequence[float]) -> None:
+    def delete(self, id: int, coordinates: Any) -> None:
         """Deletes an item from the index with the given ``'id'`` and
            coordinates given by the ``coordinates`` sequence. As the index can
            contain multiple items with the same ID and coordinates, deletion
