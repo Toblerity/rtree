@@ -349,9 +349,9 @@ class IndexSerialization(unittest.TestCase):
         idx = index.Index(
             tname, data_gen(interleaved=False), properties=p, interleaved=False
         )
-        hits = sorted(list(idx.intersection((0, 60, 0, 60))))
-        self.assertTrue(len(hits), 10)
-        self.assertEqual(hits, [0, 4, 16, 27, 35, 40, 47, 50, 76, 80])
+        hits1 = sorted(list(idx.intersection((0, 60, 0, 60))))
+        self.assertTrue(len(hits1), 10)
+        self.assertEqual(hits1, [0, 4, 16, 27, 35, 40, 47, 50, 76, 80])
 
         leaves = idx.leaves()
         expected = [
@@ -477,9 +477,9 @@ class IndexSerialization(unittest.TestCase):
                 for L, E in zip(leaves, expected)
             )
 
-        hits = sorted(list(idx.intersection((0, 60, 0, 60), objects=True)))
-        self.assertTrue(len(hits), 10)
-        self.assertEqual(hits[0].object, 42)
+        hits2 = sorted(list(idx.intersection((0, 60, 0, 60), objects=True)))
+        self.assertTrue(len(hits2), 10)
+        self.assertEqual(hits2[0].object, 42)
 
     def test_overwrite(self) -> None:
         """Index overwrite works as expected"""

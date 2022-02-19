@@ -1313,6 +1313,9 @@ class Item:
         self.object = self.get_object(loads)
         self.bounds = _get_bounds(self.handle, core.rt.IndexItem_GetBounds, False)
 
+    def __lt__(self, other: Item) -> bool:
+        return self.id < other.id
+
     def __gt__(self, other: Item) -> bool:
         return self.id > other.id
 
