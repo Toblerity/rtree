@@ -3,7 +3,7 @@ import pickle
 import sys
 import tempfile
 import unittest
-from typing import Iterator, Tuple
+from typing import Dict, Iterator, Tuple
 
 import numpy as np
 import pytest
@@ -598,7 +598,7 @@ class IndexStream(IndexTestCase):
 
     def test_empty_stream(self) -> None:
         """Assert empty stream raises exception"""
-        self.assertRaises(RTreeError, index.Index, ((x for x in [])))
+        self.assertRaises(RTreeError, index.Index, iter(()))
 
     def test_exception_in_generator(self) -> None:
         """Assert exceptions raised in callbacks are raised in main thread"""
@@ -631,7 +631,7 @@ class IndexStream(IndexTestCase):
 
                 raise TestException("raising here")
 
-            return index.Index(gen())
+            return index.Index(gen())  # type: ignore[func-returns-value]
 
         self.assertRaises(TestException, create_index)
 
@@ -643,15 +643,15 @@ class DictStorage(index.CustomStorage):
         index.CustomStorage.__init__(self)
         self.clear()
 
-    def create(self, returnError: object) -> None:
+    def create(self, returnError):
         """Called when the storage is created on the C side"""
 
-    def destroy(self, returnError: object) -> None:
+    def destroy(self, returnError):
         """Called when the storage is destroyed on the C side"""
 
     def clear(self) -> None:
         """Clear all our data"""
-        self.dict = {}
+        self.dict: Dict = {}
 
     def loadByteArray(self, page, returnError):
         """Returns the data for page or returns an error"""

@@ -7,6 +7,14 @@ target-version = ['py37', 'py38', 'py39']
 color = true
 skip_magic_trailing_comma = true
 
+[tool.coverage.report]
+# Ignore warnings for overloads
+# https://github.com/nedbat/coveragepy/issues/970#issuecomment-612602180
+exclude_lines = [
+    "pragma: no cover",
+    "@overload",
+]
+
 [tool.isort]
 profile = "black"
 known_first_party = ["rtree"]
