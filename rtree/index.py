@@ -7,7 +7,7 @@ import pickle
 import pprint
 import sys
 import warnings
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union, overload
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union, overload
 
 if sys.version_info >= (3, 8):
     from typing import Literal
@@ -583,22 +583,22 @@ class Index:
         return p_num_results.value
 
     @overload
-    def contains(self, coordinates: Any, objects: Literal[True]) -> List[Item]:
+    def contains(self, coordinates: Any, objects: Literal[True]) -> Iterator[Item]:
         ...
 
     @overload
     def contains(
         self, coordinates: Any, objects: Literal[False] = False
-    ) -> Optional[List[int]]:
+    ) -> Optional[Iterator[int]]:
         ...
 
     @overload
-    def contains(self, coordinates: Any, objects: Literal["raw"]) -> List[object]:
+    def contains(self, coordinates: Any, objects: Literal["raw"]) -> Iterator[object]:
         ...
 
     def contains(
         self, coordinates: Any, objects: Union[bool, Literal["raw"]] = False
-    ) -> Optional[List[Union[Item, int, object]]]:
+    ) -> Optional[Iterator[Union[Item, int, object]]]:
         """Return ids or objects in the index that contains within the given
         coordinates.
 
@@ -664,22 +664,24 @@ class Index:
         return self._get_ids(it, p_num_results.value)
 
     @overload
-    def intersection(self, coordinates: Any, objects: Literal[True]) -> List[Item]:
+    def intersection(self, coordinates: Any, objects: Literal[True]) -> Iterator[Item]:
         ...
 
     @overload
     def intersection(
         self, coordinates: Any, objects: Literal[False] = False
-    ) -> List[int]:
+    ) -> Iterator[int]:
         ...
 
     @overload
-    def intersection(self, coordinates: Any, objects: Literal["raw"]) -> List[object]:
+    def intersection(
+        self, coordinates: Any, objects: Literal["raw"]
+    ) -> Iterator[object]:
         ...
 
     def intersection(
         self, coordinates: Any, objects: Union[bool, Literal["raw"]] = False
-    ) -> List[Union[Item, int, object]]:
+    ) -> Iterator[Union[Item, int, object]]:
         """Return ids or objects in the index that intersect the given
         coordinates.
 
@@ -897,19 +899,19 @@ class Index:
     @overload
     def nearest(
         self, coordinates: Any, num_results: int, objects: Literal[True]
-    ) -> List[Item]:
+    ) -> Iterator[Item]:
         ...
 
     @overload
     def nearest(
         self, coordinates: Any, num_results: int, objects: Literal[False] = False
-    ) -> List[int]:
+    ) -> Iterator[int]:
         ...
 
     @overload
     def nearest(
         self, coordinates: Any, num_results: int, objects: Literal["raw"]
-    ) -> List[object]:
+    ) -> Iterator[object]:
         ...
 
     def nearest(
@@ -917,7 +919,7 @@ class Index:
         coordinates: Any,
         num_results: int = 1,
         objects: Union[bool, Literal["raw"]] = False,
-    ) -> List[Union[Item, int, object]]:
+    ) -> Iterator[Union[Item, int, object]]:
         """Returns the ``k``-nearest objects to the given coordinates.
 
         :param coordinates: This may be an object that satisfies the numpy array
@@ -2070,7 +2072,7 @@ class RtreeContainer(Rtree):
     def __len__(self) -> int:
         return sum(count for count, obj in self._objects.values())
 
-    def __iter__(self) -> Iterable[object]:
+    def __iter__(self) -> Iterator[object]:
         return iter(obj for count, obj in self._objects.values())
 
     def insert(self, obj: object, coordinates: Any) -> None:  # type: ignore[override]
@@ -2117,20 +2119,18 @@ class RtreeContainer(Rtree):
     add = insert  # type: ignore[assignment]
 
     @overload  # type: ignore[override]
-    def intersection(
-        self, coordinates: Any, bbox: Literal[True]
-    ) -> Iterable[Tuple[object, List[float]]]:
+    def intersection(self, coordinates: Any, bbox: Literal[True]) -> Iterator[Item]:
         ...
 
     @overload
     def intersection(
         self, coordinates: Any, bbox: Literal[False] = False
-    ) -> Iterable[object]:
+    ) -> Iterator[object]:
         ...
 
     def intersection(
         self, coordinates: Any, bbox: bool = False
-    ) -> Iterable[Union[Tuple[object, List[float]], object]]:
+    ) -> Iterator[Union[Item, object]]:
         """Return ids or objects in the index that intersect the given
         coordinates.
 
@@ -2199,19 +2199,19 @@ class RtreeContainer(Rtree):
 
     @overload  # type: ignore[override]
     def nearest(
-        self, coordinates: Any, num_results: int, bbox: Literal[True]
-    ) -> Iterable[Tuple[object, List[float]]]:
+        self, coordinates: Any, num_results: int = 1, bbox: Literal[True] = True
+    ) -> Iterator[Item]:
         ...
 
     @overload
     def nearest(
-        self, coordinates: Any, num_results: int, bbox: Literal[False] = False
-    ) -> Iterable[object]:
+        self, coordinates: Any, num_results: int = 1, bbox: Literal[False] = False
+    ) -> Iterator[object]:
         ...
 
     def nearest(
         self, coordinates: Any, num_results: int = 1, bbox: bool = False
-    ) -> Iterable[Union[Tuple[object, List[float]], object]]:
+    ) -> Iterator[Union[Item, object]]:
         """Returns the ``k``-nearest objects to the given coordinates
         in increasing distance order.
 

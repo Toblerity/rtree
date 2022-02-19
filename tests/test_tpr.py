@@ -1,5 +1,4 @@
 import os
-import sys
 import unittest
 from collections import defaultdict, namedtuple
 from math import ceil

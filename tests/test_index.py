@@ -299,8 +299,14 @@ class IndexSerialization(unittest.TestCase):
 
         some_data = {"a": 22, "b": [1, "ccc"]}
 
-        idx.dumps = lambda obj: json.dumps(obj).encode("utf-8")
-        idx.loads = lambda string: json.loads(string.decode("utf-8"))
+        # https://github.com/python/mypy/issues/2427
+        idx.dumps = lambda obj: json.dumps(obj).encode(  # type: ignore[assignment]
+            "utf-8"
+        )
+        idx.loads = lambda string: json.loads(  # type: ignore[assignment]
+            string.decode("utf-8")
+        )
+
         idx.add(0, (0, 0, 1, 1), some_data)
 
         self.assertEqual(list(idx.nearest((0, 0), 1, objects="raw"))[0], some_data)
