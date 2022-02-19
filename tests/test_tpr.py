@@ -1,8 +1,9 @@
 import os
+import sys
 import unittest
 from collections import defaultdict, namedtuple
 from math import ceil
-from typing import Iterator, Optional, Tuple, Union
+from typing import Any, Iterator, Optional, Tuple, Union
 
 import numpy as np
 
@@ -27,7 +28,7 @@ class Cartesian(
         return self.getX(t), self.getY(t)
 
     def get_coordinates(
-        self, t_now: object = None
+        self, t_now: Optional[float] = None
     ) -> Tuple[
         Tuple[float, float, float, float],
         Tuple[float, float, float, float],
@@ -49,7 +50,7 @@ class QueryCartesian(
         self,
     ) -> Tuple[
         Tuple[float, float, float, float],
-        Tuple[int, int, int, int],
+        Tuple[float, float, float, float],
         Tuple[float, float],
     ]:
         return (
@@ -76,9 +77,9 @@ def data_generator(
     min_y: int = 0,
     max_x: int = 1,
     max_y: int = 1,
-) -> Iterator[Tuple[str, int, Cartesian]]:
+) -> Iterator[Tuple[str, int, Any]]:
     def create_object(
-        id_: int, time: float, x: Optional[float] = None, y: Optional[float] = None
+        id_: float, time: float, x: Optional[float] = None, y: Optional[float] = None
     ) -> Cartesian:
         # Create object with random or defined x, y and random velocity
         if x is None:
