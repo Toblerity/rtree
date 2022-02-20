@@ -2,6 +2,7 @@ import os
 import unittest
 from collections import defaultdict, namedtuple
 from math import ceil
+from typing import Any, Iterator, Optional, Tuple, Union
 
 import numpy as np
 
@@ -16,16 +17,22 @@ class Cartesian(
 ):
     __slots__ = ()
 
-    def getX(self, t):
+    def getX(self, t: float) -> float:
         return self.x + self.x_vel * (t - self.time)
 
-    def getY(self, t):
+    def getY(self, t: float) -> float:
         return self.y + self.y_vel * (t - self.time)
 
-    def getXY(self, t):
+    def getXY(self, t: float) -> Tuple[float, float]:
         return self.getX(t), self.getY(t)
 
-    def get_coordinates(self, t_now=None):
+    def get_coordinates(
+        self, t_now: Optional[float] = None
+    ) -> Tuple[
+        Tuple[float, float, float, float],
+        Tuple[float, float, float, float],
+        Union[float, Tuple[float, float]],
+    ]:
         return (
             (self.x, self.y, self.x, self.y),
             (self.x_vel, self.y_vel, self.x_vel, self.y_vel),
@@ -38,7 +45,13 @@ class QueryCartesian(
 ):
     __slots__ = ()
 
-    def get_coordinates(self):
+    def get_coordinates(
+        self,
+    ) -> Tuple[
+        Tuple[float, float, float, float],
+        Tuple[float, float, float, float],
+        Tuple[float, float],
+    ]:
         return (
             (self.x - self.dx, self.y - self.dy, self.x + self.dx, self.y + self.dy),
             (0, 0, 0, 0),
@@ -47,24 +60,26 @@ class QueryCartesian(
 
 
 def data_generator(
-    dataset_size=100,
-    simulation_length=10,
-    max_update_interval=20,
-    queries_per_time_step=5,
-    min_query_extent=0.05,
-    max_query_extent=0.1,
-    horizon=20,
-    min_query_interval=2,
-    max_query_interval=10,
-    agility=0.01,
-    min_speed=0.0025,
-    max_speed=0.0166,
-    min_x=0,
-    min_y=0,
-    max_x=1,
-    max_y=1,
-):
-    def create_object(id_, time, x=None, y=None):
+    dataset_size: int = 100,
+    simulation_length: int = 10,
+    max_update_interval: int = 20,
+    queries_per_time_step: int = 5,
+    min_query_extent: float = 0.05,
+    max_query_extent: float = 0.1,
+    horizon: int = 20,
+    min_query_interval: int = 2,
+    max_query_interval: int = 10,
+    agility: float = 0.01,
+    min_speed: float = 0.0025,
+    max_speed: float = 0.0166,
+    min_x: int = 0,
+    min_y: int = 0,
+    max_x: int = 1,
+    max_y: int = 1,
+) -> Iterator[Tuple[str, int, Any]]:
+    def create_object(
+        id_: float, time: float, x: Optional[float] = None, y: Optional[float] = None
+    ) -> Cartesian:
         # Create object with random or defined x, y and random velocity
         if x is None:
             x = np.random.uniform(min_x, max_x)
@@ -137,7 +152,9 @@ def data_generator(
             yield "QUERY", t_now, QueryCartesian(t, t + dt, x, y, dx, dy)
 
 
-def intersects(x1, y1, x2, y2, x, y, dx, dy):
+def intersects(
+    x1: float, y1: float, x2: float, y2: float, x: float, y: float, dx: float, dy: float
+) -> bool:
     # Checks if line from x1, y1 to x2, y2 intersects with rectangle with
     # bottom left at x-dx, y-dy and top right at x+dx, y+dy.
     # Implementation of https://stackoverflow.com/a/293052
@@ -167,7 +184,7 @@ def intersects(x1, y1, x2, y2, x, y, dx, dy):
 
 
 class TPRTests(unittest.TestCase):
-    def test_tpr(self):
+    def test_tpr(self) -> None:
         # TODO : this freezes forever on some windows cloud builds
         if os.name == "nt":
             return

@@ -10,21 +10,21 @@ from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 _cwd = os.path.abspath(os.path.split(__file__)[0])
 
 
-class bdist_wheel(_bdist_wheel):
-    def finalize_options(self):
+class bdist_wheel(_bdist_wheel):  # type: ignore[misc]
+    def finalize_options(self) -> None:
         _bdist_wheel.finalize_options(self)
         self.root_is_pure = False
 
 
-class BinaryDistribution(Distribution):
+class BinaryDistribution(Distribution):  # type: ignore[misc]
     """Distribution which always forces a binary package with platform name"""
 
-    def has_ext_modules(foo):
+    def has_ext_modules(foo) -> bool:
         return True
 
 
-class InstallPlatlib(install):
-    def finalize_options(self):
+class InstallPlatlib(install):  # type: ignore[misc]
+    def finalize_options(self) -> None:
         """
         Copy the shared libraries into the wheel. Note that this
         will *only* check in `rtree/lib` rather than anywhere on

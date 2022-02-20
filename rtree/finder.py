@@ -23,14 +23,10 @@ _candidates = [
 ]
 
 
-def load():
-    """
-    Load the `libspatialindex` shared library.
+def load() -> ctypes.CDLL:
+    """Load the `libspatialindex` shared library.
 
-    Returns
-    -----------
-    rt : ctypes object
-      Loaded shared library
+    :returns: Loaded shared library
     """
     if os.name == "nt":
         # check the platform architecture
@@ -57,7 +53,7 @@ def load():
                 rt = ctypes.cdll.LoadLibrary(os.path.join(path, lib_name))
                 if rt is not None:
                     return rt
-            except (WindowsError, OSError):
+            except OSError:
                 pass
             except BaseException as E:
                 print("rtree.finder unexpected error: {}".format(str(E)))

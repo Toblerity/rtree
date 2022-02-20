@@ -12,6 +12,7 @@
 # serve to show the default.
 
 import sys
+from typing import List
 
 sys.path.append("../../")
 
@@ -23,6 +24,9 @@ import rtree  # noqa: E402
 # sys.path.append(os.path.abspath('.'))
 
 # -- General configuration -----------------------------------------------
+
+# If your documentation needs a minimal Sphinx version, state it here.
+needs_sphinx = "4.0"
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -75,7 +79,7 @@ release = rtree.__version__
 
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.
-exclude_trees = []
+exclude_trees: List[str] = []
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 # default_role = None
@@ -218,5 +222,9 @@ pdf_fit_mode = "overflow"
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {"http://docs.python.org/": None}
 
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {"http://docs.python.org/": None}
+
+# -- Extension configuration -------------------------------------------------
+
+# sphinx.ext.autodoc
+autodoc_typehints = "description"
+autodoc_typehints_description_target = "documented"
