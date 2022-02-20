@@ -1,5 +1,0 @@
-.. _examples:
-
-
-.. include:: ../../tests/index.txt
-    

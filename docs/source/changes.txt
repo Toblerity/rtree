@@ -4,19 +4,19 @@ Changes
 ..............................................................................
 
 0.9.3: 2019-12-10
-===============
+=================
 
 - find_library and libspatialindex library loading https://github.com/Toblerity/rtree/pull/131
 
 0.9.2: 2019-12-09
-===============
+=================
 
 - Refactored tests to be based on unittest https://github.com/Toblerity/rtree/pull/129
 - Update libspatialindex library loading code to adapt previous behavior https://github.com/Toblerity/rtree/pull/128
 - Empty data streams throw exceptions and do not partially construct indexes https://github.com/Toblerity/rtree/pull/127
 
 0.9.0: 2019-11-24
-===============
+=================
 
 - Add Index.GetResultSetOffset()
 - Add Index.contains() method for object and id (requires libspatialindex 1.9.3+) #116
