@@ -73,12 +73,14 @@ def free_error_msg_ptr(result, func, cargs):
 # load the shared library by looking in likely places
 rt = finder.load()
 
+rt.Error_GetLastErrorNum.argtypes = []
 rt.Error_GetLastErrorNum.restype = ctypes.c_int
 
 rt.Error_GetLastErrorMsg.argtypes = []
 rt.Error_GetLastErrorMsg.restype = ctypes.POINTER(ctypes.c_char)
 rt.Error_GetLastErrorMsg.errcheck = free_error_msg_ptr  # type: ignore
 
+rt.Error_GetLastErrorMethod.argtypes = []
 rt.Error_GetLastErrorMethod.restype = ctypes.POINTER(ctypes.c_char)
 rt.Error_GetLastErrorMethod.errcheck = free_returned_char_p  # type: ignore
 
