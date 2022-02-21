@@ -310,7 +310,7 @@ rt.IndexProperty_Destroy.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_Destroy.restype = None
 rt.IndexProperty_Destroy.errcheck = check_void_done  # type: ignore
 
-rt.IndexProperty_SetIndexType.argtypes = [ctypes.c_void_p, ctypes.c_int32]
+rt.IndexProperty_SetIndexType.argtypes = [ctypes.c_void_p, ctypes.c_int]
 rt.IndexProperty_SetIndexType.restype = ctypes.c_int
 rt.IndexProperty_SetIndexType.errcheck = check_return  # type: ignore
 
@@ -326,7 +326,7 @@ rt.IndexProperty_GetDimension.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetDimension.restype = ctypes.c_int
 rt.IndexProperty_GetDimension.errcheck = check_value  # type: ignore
 
-rt.IndexProperty_SetIndexVariant.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+rt.IndexProperty_SetIndexVariant.argtypes = [ctypes.c_void_p, ctypes.c_int]
 rt.IndexProperty_SetIndexVariant.restype = ctypes.c_int
 rt.IndexProperty_SetIndexVariant.errcheck = check_return  # type: ignore
 
@@ -334,7 +334,7 @@ rt.IndexProperty_GetIndexVariant.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetIndexVariant.restype = ctypes.c_int
 rt.IndexProperty_GetIndexVariant.errcheck = check_value  # type: ignore
 
-rt.IndexProperty_SetIndexStorage.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+rt.IndexProperty_SetIndexStorage.argtypes = [ctypes.c_void_p, ctypes.c_int]
 rt.IndexProperty_SetIndexStorage.restype = ctypes.c_int
 rt.IndexProperty_SetIndexStorage.errcheck = check_return  # type: ignore
 
