@@ -45,7 +45,7 @@ cd build
 
 cp "${SL}/CMakeLists.txt" ..
 
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="${CIBW_ARCHS_MACOS/ /;}" ..
 make -j 4
 
 # copy built libraries relative to path of this script
