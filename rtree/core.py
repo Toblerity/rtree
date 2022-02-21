@@ -527,7 +527,7 @@ rt.IndexProperty_GetIndexID.argtypes = [ctypes.c_void_p]
 rt.IndexProperty_GetIndexID.restype = ctypes.c_int64
 rt.IndexProperty_GetIndexID.errcheck = check_value  # type: ignore
 
-rt.SIDX_NewBuffer.argtypes = [ctypes.c_uint]
+rt.SIDX_NewBuffer.argtypes = [ctypes.c_size_t]
 rt.SIDX_NewBuffer.restype = ctypes.c_void_p
 rt.SIDX_NewBuffer.errcheck = check_void  # type: ignore
 
@@ -551,7 +551,7 @@ try:
         ctypes.c_double,
         ctypes.c_uint32,
         ctypes.POINTER(ctypes.c_ubyte),
-        ctypes.c_uint32,
+        ctypes.c_size_t,
     ]
     rt.Index_InsertTPData.restype = ctypes.c_int
     rt.Index_InsertTPData.errcheck = check_return  # type: ignore
