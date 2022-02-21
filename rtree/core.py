@@ -611,6 +611,8 @@ try:
         ctypes.c_uint32,
         ctypes.POINTER(ctypes.c_uint64),
     ]
+    rt.Index_TPIntersects_count.restype = ctypes.c_int
+    rt.Index_TPIntersects_count.errcheck = check_return  # type: ignore
 
     rt.Index_TPNearestNeighbors_id.argtypes = [
         ctypes.c_void_p,
