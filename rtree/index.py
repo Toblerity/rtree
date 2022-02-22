@@ -31,9 +31,9 @@ RT_TPRTree = 2
 
 __c_api_version__ = core.rt.SIDX_Version()
 
-major_version, minor_version, patch_version = [
+major_version, minor_version, patch_version = (
     int(t) for t in __c_api_version__.decode("utf-8").split(".")
-]
+)
 
 if (major_version, minor_version, patch_version) < (1, 8, 5):
     raise Exception("Rtree requires libspatialindex 1.8.5 or greater")
@@ -329,7 +329,7 @@ class Index:
             self.handle.destroy()
             self.handle = None
         else:
-            raise IOError("Unclosable index")
+            raise OSError("Unclosable index")
 
     def flush(self) -> None:
         """Force a flush of the index to storage."""
@@ -2057,7 +2057,7 @@ class RtreeContainer(Rtree):
             ):
                 raise ValueError("%s supports only in-memory indexes" % self.__class__)
         self._objects: Dict[int, Tuple[int, object]] = {}
-        return super(RtreeContainer, self).__init__(*args, **kwargs)
+        return super().__init__(*args, **kwargs)
 
     def get_size(self) -> int:
         try:
@@ -2117,7 +2117,7 @@ class RtreeContainer(Rtree):
         except KeyError:
             count = 1
         self._objects[id(obj)] = (count, obj)
-        return super(RtreeContainer, self).insert(id(obj), coordinates, None)
+        return super().insert(id(obj), coordinates, None)
 
     add = insert  # type: ignore[assignment]
 
@@ -2190,10 +2190,10 @@ class RtreeContainer(Rtree):
 
         """
         if bbox is False:
-            for id in super(RtreeContainer, self).intersection(coordinates, bbox):
+            for id in super().intersection(coordinates, bbox):
                 yield self._objects[id][1]
         elif bbox is True:
-            for value in super(RtreeContainer, self).intersection(coordinates, bbox):
+            for value in super().intersection(coordinates, bbox):
                 value.object = self._objects[value.id][1]
                 value.id = None
                 yield value
@@ -2246,14 +2246,10 @@ class RtreeContainer(Rtree):
             >>> hits = idx.nearest((0, 0, 10, 10), 3, bbox=True)
         """
         if bbox is False:
-            for id in super(RtreeContainer, self).nearest(
-                coordinates, num_results, bbox
-            ):
+            for id in super().nearest(coordinates, num_results, bbox):
                 yield self._objects[id][1]
         elif bbox is True:
-            for value in super(RtreeContainer, self).nearest(
-                coordinates, num_results, bbox
-            ):
+            for value in super().nearest(coordinates, num_results, bbox):
                 value.object = self._objects[value.id][1]
                 value.id = None
                 yield value
@@ -2313,7 +2309,7 @@ class RtreeContainer(Rtree):
             del self._objects[id(obj)]
         else:
             self._objects[id(obj)] = (count, obj)
-        return super(RtreeContainer, self).delete(id(obj), coordinates)
+        return super().delete(id(obj), coordinates)
 
     def leaves(self):
         return [

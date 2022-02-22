@@ -545,7 +545,7 @@ class IndexNearest(IndexTestCase):
             idx.add(i, (minx, miny, maxx, maxy), obj={"a": 42})
 
         hits = sorted(
-            [(i.id, i.object) for i in idx.nearest((15, 10, 15, 10), 1, objects=True)]
+            (i.id, i.object) for i in idx.nearest((15, 10, 15, 10), 1, objects=True)
         )
         self.assertEqual(hits, [(0, {"a": 42}), (1, {"a": 42})])
 

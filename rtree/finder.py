@@ -34,7 +34,7 @@ def load() -> ctypes.CDLL:
             arch = "64"
         else:
             arch = "32"
-        lib_name = "spatialindex_c-{}.dll".format(arch)
+        lib_name = f"spatialindex_c-{arch}.dll"
 
         # add search paths for conda installs
         if "conda" in sys.version:
@@ -56,10 +56,10 @@ def load() -> ctypes.CDLL:
             except OSError:
                 pass
             except BaseException as E:
-                print("rtree.finder unexpected error: {}".format(str(E)))
+                print(f"rtree.finder unexpected error: {E!s}")
             finally:
                 os.environ["PATH"] = oldenv
-        raise OSError("could not find or load {}".format(lib_name))
+        raise OSError(f"could not find or load {lib_name}")
 
     elif os.name == "posix":
 
@@ -99,7 +99,7 @@ def load() -> ctypes.CDLL:
                 if rt is not None:
                     return rt
             except BaseException as E:
-                print("rtree.finder ({}) unexpected error: {}".format(target, str(E)))
+                print(f"rtree.finder ({target}) unexpected error: {E!s}")
             finally:
                 os.chdir(cwd)
 
