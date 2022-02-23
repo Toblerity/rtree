@@ -668,12 +668,35 @@ class Index:
 
         :param other: another index
         :return: a new index
+        :raises AssertionError: if self and other have different interleave or dimension
         """
-        new_idx = Index(properties=self.properties)
+        assert self.interleaved == other.interleaved
+        assert self.properties.dimension == other.properties.dimension
+
+        i = 0
+        new_idx = Index(interleaved=self.interleaved, properties=self.properties)
+
+        # For each Item in self...
         for item1 in self.intersection(self.bounds, objects=True):
+            # For each Item in other that intersects...
             for item2 in other.intersection(item1.bounds, objects=True):
-                item3 = item1 & item2
-                new_idx.insert(item3.id, item3.bounds, item3.object)
+                # Compute the intersection bounding box
+                bounds = []
+                for j in range(len(item1.bounds)):
+                    if self.interleaved:
+                        if j < len(item1.bounds) // 2:
+                            bounds.append(max(item1.bounds[j], item2.bounds[j]))
+                        else:
+                            bounds.append(min(item1.bounds[j], item2.bounds[j]))
+                    else:
+                        if j % 2 == 0:
+                            bounds.append(max(item1.bounds[j], item2.bounds[j]))
+                        else:
+                            bounds.append(min(item1.bounds[j], item2.bounds[j]))
+
+                new_idx.insert(i, bounds, (item1.object, item2.object))
+                i += 1
+
         return new_idx
 
     def __or__(self, other: Index) -> Index:
@@ -681,11 +704,19 @@ class Index:
 
         :param other: another index
         :return: a new index
+        :raises AssertionError: if self and other have different interleave or dimension
         """
-        new_idx = Index(properties=self.properties)
+        assert self.interleaved == other.interleaved
+        assert self.properties.dimension == other.properties.dimension
+
+        new_idx = Index(interleaved=self.interleaved, properties=self.properties)
+
+        # For each index...
         for old_idx in [self, other]:
+            # For each item...
             for item in old_idx.intersection(old_idx.bounds, objects=True):
                 new_idx.insert(item.id, item.bounds, item.object)
+
         return new_idx
 
     @overload
