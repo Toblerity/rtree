@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Rtree documentation build configuration file, created by
 # sphinx-quickstart on Tue Aug 18 13:21:07 2009.

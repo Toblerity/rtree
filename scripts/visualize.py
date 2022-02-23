@@ -88,7 +88,7 @@ def get_bounds(leaf_ids, lasfile, block_id):
         miny = min(miny, p.y)
         maxy = max(maxy, p.y)
         feature = ogr.Feature(feature_def=point_lyr.GetLayerDefn())
-        g = ogr.CreateGeometryFromWkt("POINT (%.8f %.8f)" % (p.x, p.y))
+        g = ogr.CreateGeometryFromWkt(f"POINT ({p.x:.8f} {p.y:.8f})")
         feature.SetGeometry(g)
         feature.SetField("ID", p_id)
         feature.SetField("BLK_ID", block_id)
@@ -99,17 +99,9 @@ def get_bounds(leaf_ids, lasfile, block_id):
 
 
 def make_poly(minx, miny, maxx, maxy):
-    wkt = "POLYGON ((%.8f %.8f, %.8f %.8f, %.8f %.8f, %.8f %.8f, %.8f %.8f))" % (
-        minx,
-        miny,
-        maxx,
-        miny,
-        maxx,
-        maxy,
-        minx,
-        maxy,
-        minx,
-        miny,
+    wkt = (
+        f"POLYGON (({minx:.8f} {miny:.8f}, {maxx:.8f} {miny:.8f}, {maxx:.8f} "
+        f"{maxy:.8f}, {minx:.8f} {maxy:.8f}, {minx:.8f} {miny:.8f}))"
     )
     shp = ogr.CreateGeometryFromWkt(wkt)
     return shp
