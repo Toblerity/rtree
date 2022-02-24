@@ -1,6 +1,5 @@
 import ctypes
 import pickle
-import sys
 import tempfile
 import unittest
 from typing import Dict, Iterator, Tuple
@@ -11,9 +10,6 @@ import pytest
 import rtree
 from rtree import core, index
 from rtree.exceptions import RTreeError
-
-# is this running on Python 3
-PY3 = sys.version_info.major >= 3
 
 
 class IndexTestCase(unittest.TestCase):
@@ -282,8 +278,6 @@ class IndexSerialization(unittest.TestCase):
 
     def test_unicode_filenames(self) -> None:
         """Unicode filenames work as expected"""
-        if sys.version_info.major < 3:
-            return
         tname = tempfile.mktemp()
         filename = tname + "gilename\u4500abc"
         idx = index.Index(filename)
@@ -469,13 +463,11 @@ class IndexSerialization(unittest.TestCase):
             ),
         ]
 
-        if PY3 and False:
-            # TODO : this reliably fails on Python 2.7 and 3.5
-            # go through the traversal and see if everything is close
-            assert all(
-                all(np.allclose(a, b) for a, b in zip(L, E))
-                for L, E in zip(leaves, expected)
-            )
+        # go through the traversal and see if everything is close
+        assert all(
+            all(np.allclose(a, b) for a, b in zip(L, E))
+            for L, E in zip(leaves, expected)
+        )
 
         hits2 = sorted(list(idx.intersection((0, 60, 0, 60), objects=True)))
         self.assertTrue(len(hits2), 10)
