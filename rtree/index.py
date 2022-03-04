@@ -676,26 +676,37 @@ class Index:
         i = 0
         new_idx = Index(interleaved=self.interleaved, properties=self.properties)
 
-        # For each Item in self...
-        for item1 in self.intersection(self.bounds, objects=True):
-            # For each Item in other that intersects...
-            for item2 in other.intersection(item1.bounds, objects=True):
-                # Compute the intersection bounding box
-                bounds = []
-                for j in range(len(item1.bounds)):
-                    if self.interleaved:
-                        if j < len(item1.bounds) // 2:
-                            bounds.append(max(item1.bounds[j], item2.bounds[j]))
+        if self.interleaved:
+            # For each Item in self...
+            for item1 in self.intersection(self.bounds, objects=True):
+                # For each Item in other that intersects...
+                for item2 in other.intersection(item1.bbox, objects=True):
+                    # Compute the intersection bounding box
+                    bbox = []
+                    for j in range(len(item1.bbox)):
+                        if j < len(item1.bbox) // 2:
+                            bbox.append(max(item1.bbox[j], item2.bbox[j]))
                         else:
-                            bounds.append(min(item1.bounds[j], item2.bounds[j]))
-                    else:
+                            bbox.append(min(item1.bbox[j], item2.bbox[j]))
+
+                    new_idx.insert(i, bbox, (item1.object, item2.object))
+                    i += 1
+
+        else:
+            # For each Item in self...
+            for item1 in self.intersection(self.bounds, objects=True):
+                # For each Item in other that intersects...
+                for item2 in other.intersection(item1.bounds, objects=True):
+                    # Compute the intersection bounding box
+                    bounds = []
+                    for j in range(len(item1.bounds)):
                         if j % 2 == 0:
                             bounds.append(max(item1.bounds[j], item2.bounds[j]))
                         else:
                             bounds.append(min(item1.bounds[j], item2.bounds[j]))
 
-                new_idx.insert(i, bounds, (item1.object, item2.object))
-                i += 1
+                    new_idx.insert(i, bounds, (item1.object, item2.object))
+                    i += 1
 
         return new_idx
 
@@ -715,7 +726,10 @@ class Index:
         for old_idx in [self, other]:
             # For each item...
             for item in old_idx.intersection(old_idx.bounds, objects=True):
-                new_idx.insert(item.id, item.bounds, item.object)
+                if self.interleaved:
+                    new_idx.insert(item.id, item.bbox, item.object)
+                else:
+                    new_idx.insert(item.id, item.bounds, item.object)
 
         return new_idx
 
