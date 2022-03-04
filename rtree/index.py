@@ -676,9 +676,9 @@ class Index:
         i = 0
         new_idx = Index(interleaved=self.interleaved, properties=self.properties)
 
-        if self.interleaved:
-            # For each Item in self...
-            for item1 in self.intersection(self.bounds, objects=True):
+        # For each Item in self...
+        for item1 in self.intersection(self.bounds, objects=True):
+            if self.interleaved:
                 # For each Item in other that intersects...
                 for item2 in other.intersection(item1.bbox, objects=True):
                     # Compute the intersection bounding box
@@ -692,9 +692,7 @@ class Index:
                     new_idx.insert(i, bbox, (item1.object, item2.object))
                     i += 1
 
-        else:
-            # For each Item in self...
-            for item1 in self.intersection(self.bounds, objects=True):
+            else:
                 # For each Item in other that intersects...
                 for item2 in other.intersection(item1.bounds, objects=True):
                     # Compute the intersection bounding box
