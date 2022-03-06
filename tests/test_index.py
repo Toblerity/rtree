@@ -264,6 +264,120 @@ class IndexIntersection(IndexTestCase):
         self.assertEqual([1, 1], list(idx.intersection((0, 0, 5, 5))))
 
 
+class TestIndexIntersectionUnion:
+    @pytest.fixture(scope="class")
+    def index_a_interleaved(self) -> index.Index:
+        idx = index.Index(interleaved=True)
+        idx.insert(1, (3, 3, 5, 5), "a_1")
+        idx.insert(2, (4, 2, 6, 4), "a_2")
+        return idx
+
+    @pytest.fixture(scope="class")
+    def index_a_uninterleaved(self) -> index.Index:
+        idx = index.Index(interleaved=False)
+        idx.insert(1, (3, 5, 3, 5), "a_1")
+        idx.insert(2, (4, 6, 2, 4), "a_2")
+        return idx
+
+    @pytest.fixture(scope="class")
+    def index_b_interleaved(self) -> index.Index:
+        idx = index.Index(interleaved=True)
+        idx.insert(3, (2, 1, 7, 6), "b_3")
+        idx.insert(4, (8, 7, 9, 8), "b_4")
+        return idx
+
+    @pytest.fixture(scope="class")
+    def index_b_uninterleaved(self) -> index.Index:
+        idx = index.Index(interleaved=False)
+        idx.insert(3, (2, 7, 1, 6), "b_3")
+        idx.insert(4, (8, 9, 7, 8), "b_4")
+        return idx
+
+    def test_intersection_interleaved(
+        self, index_a_interleaved: index.Index, index_b_interleaved: index.Index
+    ) -> None:
+        index_c_interleaved = index_a_interleaved & index_b_interleaved
+        assert index_c_interleaved.interleaved
+        assert len(index_c_interleaved) == 2
+        for hit in index_c_interleaved.intersection(
+            index_c_interleaved.bounds, objects=True
+        ):
+            if hit.bbox == [3.0, 3.0, 5.0, 5.0]:
+                assert hit.object == ("a_1", "b_3")
+            elif hit.bbox == [4.0, 2.0, 6.0, 4.0]:
+                assert hit.object == ("a_2", "b_3")
+            else:
+                assert False
+
+    def test_intersection_uninterleaved(
+        self, index_a_uninterleaved: index.Index, index_b_uninterleaved: index.Index
+    ) -> None:
+        index_c_uninterleaved = index_a_uninterleaved & index_b_uninterleaved
+        assert not index_c_uninterleaved.interleaved
+        assert len(index_c_uninterleaved) == 2
+        for hit in index_c_uninterleaved.intersection(
+            index_c_uninterleaved.bounds, objects=True
+        ):
+            if hit.bounds == [3.0, 5.0, 3.0, 5.0]:
+                assert hit.object == ("a_1", "b_3")
+            elif hit.bounds == [4.0, 6.0, 2.0, 4.0]:
+                assert hit.object == ("a_2", "b_3")
+            else:
+                assert False
+
+    def test_intersection_mismatch(
+        self, index_a_interleaved: index.Index, index_b_uninterleaved: index.Index
+    ) -> None:
+        with pytest.raises(AssertionError):
+            index_a_interleaved & index_b_uninterleaved
+
+    def test_union_interleaved(
+        self, index_a_interleaved: index.Index, index_b_interleaved: index.Index
+    ) -> None:
+        index_c_interleaved = index_a_interleaved | index_b_interleaved
+        assert index_c_interleaved.interleaved
+        assert len(index_c_interleaved) == 4
+        for hit in index_c_interleaved.intersection(
+            index_c_interleaved.bounds, objects=True
+        ):
+            if hit.bbox == [3.0, 3.0, 5.0, 5.0]:
+                assert hit.object == "a_1"
+            elif hit.bbox == [4.0, 2.0, 6.0, 4.0]:
+                assert hit.object == "a_2"
+            elif hit.bbox == [2.0, 1.0, 7.0, 6.0]:
+                assert hit.object == "b_3"
+            elif hit.bbox == [8.0, 7.0, 9.0, 8.0]:
+                assert hit.object == "b_4"
+            else:
+                assert False
+
+    def test_union_uninterleaved(
+        self, index_a_uninterleaved: index.Index, index_b_uninterleaved: index.Index
+    ) -> None:
+        index_c_uninterleaved = index_a_uninterleaved | index_b_uninterleaved
+        assert not index_c_uninterleaved.interleaved
+        assert len(index_c_uninterleaved) == 4
+        for hit in index_c_uninterleaved.intersection(
+            index_c_uninterleaved.bounds, objects=True
+        ):
+            if hit.bounds == [3.0, 5.0, 3.0, 5.0]:
+                assert hit.object == "a_1"
+            elif hit.bounds == [4.0, 6.0, 2.0, 4.0]:
+                assert hit.object == "a_2"
+            elif hit.bounds == [2.0, 7.0, 1.0, 6.0]:
+                assert hit.object == "b_3"
+            elif hit.bounds == [8.0, 9.0, 7.0, 8.0]:
+                assert hit.object == "b_4"
+            else:
+                assert False
+
+    def test_union_mismatch(
+        self, index_a_interleaved: index.Index, index_b_uninterleaved: index.Index
+    ) -> None:
+        with pytest.raises(AssertionError):
+            index_a_interleaved | index_b_uninterleaved
+
+
 class IndexSerialization(unittest.TestCase):
     def setUp(self) -> None:
         self.boxes15 = np.genfromtxt("boxes_15x15.data")
