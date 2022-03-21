@@ -157,12 +157,22 @@ class IndexProperties(IndexTestCase):
 
 
 class TestPickling(unittest.TestCase):
+    # https://github.com/Toblerity/rtree/issues/87
+    @pytest.mark.xfail
     def test_index(self) -> None:
         idx = rtree.index.Index()
+        idx.insert(0, [0, 1, 2, 3], 4)
         unpickled = pickle.loads(pickle.dumps(idx))
         self.assertNotEqual(idx.handle, unpickled.handle)
         self.assertEqual(idx.properties.as_dict(), unpickled.properties.as_dict())
         self.assertEqual(idx.interleaved, unpickled.interleaved)
+        self.assertEqual(len(idx), len(unpickled))
+        self.assertEqual(idx.bounds, unpickled.bounds)
+        a = next(idx.intersection(idx.bounds, objects=True))
+        b = next(unpickled.intersection(unpickled.bounds, objects=True))
+        self.assertEqual(a.id, b.id)
+        self.assertEqual(a.bounds, b.bounds)
+        self.assertEqual(a.object, b.object)
 
     def test_property(self) -> None:
         p = rtree.index.Property()
