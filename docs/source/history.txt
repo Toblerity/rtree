@@ -43,5 +43,5 @@ and can now evolve separately. Rtree is pure Python as of 0.6.0+.
 .. _`ZODB`: http://www.zodb.org/
 .. _`R-trees`: http://en.wikipedia.org/wiki/R-tree
 .. _`ctypes`: http://docs.python.org/library/ctypes.html
-.. _`libspatialindex`: http://libspatialindex.github.com
+.. _`libspatialindex`: https://libspatialindex.org/
 .. _`Rtree`: http://rtree.github.com

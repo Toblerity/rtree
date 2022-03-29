@@ -35,5 +35,5 @@ Documentation
 
 .. _`R-trees`: http://en.wikipedia.org/wiki/R-tree
 .. _`ctypes`: http://docs.python.org/library/ctypes.html
-.. _`libspatialindex`: http://libspatialindex.github.com
+.. _`libspatialindex`: https://libspatialindex.org/
 .. _`Rtree`: http://toblerity.github.com/rtree/

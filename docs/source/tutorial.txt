@@ -205,4 +205,4 @@ storage backend for `ZODB`_
 
 .. _ZODB: http://www.zodb.org/
 
-.. _`libspatialindex`: http://libspatialindex.github.com    
+.. _`libspatialindex`: https://libspatialindex.org/ 

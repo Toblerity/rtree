@@ -8,7 +8,7 @@ Installation
 
 First, download and install version 1.8.5+ of the `libspatialindex`_ library from:
 
-http://libspatialindex.github.com
+https://libspatialindex.org/
 
 The library is a GNU-style build, so it is a matter of::
 
@@ -42,5 +42,5 @@ is as easy as::
 .. _`PyPI`: http://pypi.python.org/pypi/Rtree/
 .. _`Rtree`: http://pypi.python.org/pypi/Rtree/
 
-.. _`libspatialindex`: http://libspatialindex.github.com
+.. _`libspatialindex`: https://libspatialindex.org/
 
