@@ -4,7 +4,7 @@
 [![PyPI version](https://badge.fury.io/py/Rtree.svg)](https://badge.fury.io/py/Rtree)
 
 
-Rtree`_ is a [ctypes](http://docs.python.org/library/ctypes.html) Python wrapper of [libspatialindex](https://libspatialindex.org/) that provides a
+Rtree is a [ctypes](http://docs.python.org/library/ctypes.html) Python wrapper of [libspatialindex](https://libspatialindex.org/) that provides a
 number of advanced spatial indexing features for the spatially curious Python
 user.  These features include:
 
