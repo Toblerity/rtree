@@ -37,8 +37,10 @@ def load() -> ctypes.CDLL:
         lib_name = f"spatialindex_c-{arch}.dll"
 
         # add search paths for conda installs
-        if os.path.exists(os.path.join(sys.prefix, 'conda-meta')) or \
-           "conda" in sys.version:
+        if (
+            os.path.exists(os.path.join(sys.prefix, "conda-meta"))
+            or "conda" in sys.version
+        ):
             _candidates.append(os.path.join(sys.prefix, "Library", "bin"))
 
         # get the current PATH
