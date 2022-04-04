@@ -13,7 +13,7 @@ Howard Butler <hobu.inc@gmail.com>
 * .count() and .intersection() methods
 * Windows support
 * Node fetching
-* Index property access 
+* Index property access
 
 Brent Pedersen <bpederse@gmail.com>
 
@@ -26,3 +26,8 @@ Matthias <nitro@dr-code.org>
 
 * Custom storage API (both Rtree and libspatialindex)
 
+
+Adam Stewart
+
+* intersection/union support
+* __len__ method
