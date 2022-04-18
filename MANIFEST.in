@@ -1,5 +1,4 @@
 include *.md *.txt
 include MANIFEST.in
-include rtree/py.typed
 recursive-include tests *
 recursive-include docs *
