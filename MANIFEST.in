@@ -1,4 +1,0 @@
-include *.md *.txt
-include MANIFEST.in
-recursive-include tests *
-recursive-include docs *
