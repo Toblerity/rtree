@@ -6,13 +6,17 @@ on:
   release:
     types:
       - published
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
 jobs:
   black:
     name: black
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.10'
     - name: Setup
@@ -24,8 +28,8 @@ jobs:
     name: flake8
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.10'
     - name: Setup
@@ -37,8 +41,8 @@ jobs:
     name: isort
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.10'
     - name: Setup
@@ -50,8 +54,8 @@ jobs:
     name: mypy
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.10'
     - name: Setup
@@ -71,7 +75,7 @@ jobs:
         sidx-version: ['1.8.5','1.9.3']
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: conda-incubator/setup-miniconda@v2
       with:
         channels: conda-forge
@@ -93,17 +97,16 @@ jobs:
         python -m pytest --doctest-modules rtree tests
 
   ubuntu:
-    name: Ubuntu ${{ matrix.os }}
-
-    runs-on: ubuntu-18.04
+    name: Ubuntu Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: true
       matrix:
-        os: ['ubuntu-18.04', 'ubuntu-20.04']
+        python-version: ['3.8', '3.9', '3.10']
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
       name: Install Python
       with:
         python-version: '3.10'
@@ -142,14 +145,14 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
       name: Install Python
       with:
         python-version: '3.10'
     - name: Install cibuildwheel
       run: |
-        python -m pip install cibuildwheel==2.3.1
+        python -m pip install cibuildwheel==2.10.2
     - name: Run MacOS Preinstall Build
       if: startsWith(matrix.os, 'macos')
       run: |
@@ -193,13 +196,13 @@ jobs:
         python-version: '3.10'
     - name: Install cibuildwheel
       run: |
-        python -m pip install cibuildwheel==2.3.1
+        python -m pip install cibuildwheel==2.10.2
     - uses: docker/setup-qemu-action@v1
       name: Set up QEMU
     - name: Build wheels
       run: |
         python -m cibuildwheel --output-dir wheelhouse
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: aarch64-whl
         path: wheelhouse/*.whl
@@ -215,8 +218,8 @@ jobs:
       fail-fast: true
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         name: Install Python
         with:
           python-version: '3.10'
@@ -229,7 +232,7 @@ jobs:
             export PATH=$PATH:/home/runner/.local/bin
             python3 setup.py sdist
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           path: dist
         name: Download artifacts
@@ -251,7 +254,7 @@ jobs:
           rm -rf *\-whl
           ls -al
 
-      - uses: pypa/gh-action-pypi-publish@master
+      - uses: pypa/gh-action-pypi-publish@release/v1
         name: Publish package
         if: github.event_name == 'release' && github.event.action == 'published'
         with:
