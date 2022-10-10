@@ -113,7 +113,7 @@ jobs:
     - name: Setup
       shell: bash -l {0}
       run: |
-          sudo apt install libspatialindex-c4v5 python3-pip
+          sudo apt install libspatialindex-c6 python3-pip
           python3 -m pip install --upgrade pip
           python3 -m pip install setuptools numpy pytest
 
@@ -226,7 +226,7 @@ jobs:
       - name: Source
         shell: bash -l {0}
         run: |
-            sudo apt install libspatialindex-c4v5 python3-pip
+            sudo apt install libspatialindex-c6 python3-pip
             python3 -m pip install --upgrade pip
             python3 -m pip install setuptools numpy pytest wheel
             export PATH=$PATH:/home/runner/.local/bin
