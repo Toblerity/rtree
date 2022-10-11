@@ -26,6 +26,11 @@ pip install rtree
 
 # Changes
 
+## 1.0.1
+
+* Fix up type hints #243 (thanks @oderby)
+* Python 3.11 wheels #250 (thanks @ewouth)
+
 ## 1.0.0
 
 
