@@ -2,6 +2,10 @@ name: Build
 
 on:
   push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/build.yml'
   pull_request:
   release:
     types:
