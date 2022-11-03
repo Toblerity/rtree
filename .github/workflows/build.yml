@@ -135,7 +135,7 @@ jobs:
       CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
       MACOSX_DEPLOYMENT_TARGET: 10.9
       CIBW_BUILD_VERBOSITY_MACOS: 3
-      CIBW_TEST_SKIP: "*-macosx_arm64 *-macosx_universal2:arm64 *-musllinux*"
+      CIBW_TEST_SKIP: "*-macosx_arm64 *-macosx_universal2:arm64 *-musllinux* *i686"
       CIBW_ARCHS_MACOS: "x86_64 arm64"
       CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
       CIBW_BEFORE_ALL_LINUX: "pip install cmake; bash {project}/ci/install_libspatialindex.bash"
@@ -186,10 +186,11 @@ jobs:
     - name: Build wheels
       uses: pypa/cibuildwheel@v2.11.2
       env:
+        CIBW_SKIP: pp*
         CIBW_ARCHS_LINUX: aarch64
         CIBW_TEST_REQUIRES: pytest numpy
         CIBW_TEST_COMMAND: "pytest -v {project}/tests"
-        CIBW_TEST_SKIP: "cp37-* *-musllinux*"
+        CIBW_TEST_SKIP: "*-musllinux*"
         CIBW_BEFORE_ALL_LINUX: "pip install cmake; bash {project}/ci/install_libspatialindex.bash"
     - uses: actions/upload-artifact@v3
       with:
