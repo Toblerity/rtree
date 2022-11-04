@@ -139,10 +139,10 @@ jobs:
       CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
       MACOSX_DEPLOYMENT_TARGET: 10.9
       CIBW_BUILD_VERBOSITY_MACOS: 3
-      CIBW_TEST_SKIP: "*-macosx_arm64 *-macosx_universal2:arm64"
+      CIBW_TEST_SKIP: "*-macosx_arm64 *-macosx_universal2:arm64 *-musllinux* *i686"
       CIBW_ARCHS_MACOS: "x86_64 arm64"
       CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
-      CIBW_BEFORE_BUILD_LINUX: "pip install cmake; bash {project}/ci/install_libspatialindex.bash"
+      CIBW_BEFORE_ALL_LINUX: "pip install cmake; bash {project}/ci/install_libspatialindex.bash"
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
@@ -152,9 +152,6 @@ jobs:
       name: Install Python
       with:
         python-version: '3.10'
-    - name: Install cibuildwheel
-      run: |
-        python -m pip install cibuildwheel==2.10.2
     - name: Run MacOS Preinstall Build
       if: startsWith(matrix.os, 'macos')
       run: |
@@ -170,25 +167,15 @@ jobs:
         choco install vcpython27 -f -y
         ci\install_libspatialindex.bat
     - name: Build wheels
-      run: |
-        python3 -m cibuildwheel --output-dir wheelhouse
+      uses: pypa/cibuildwheel@v2.11.2
     - uses: actions/upload-artifact@v2
       with:
         name: ${{ matrix.os }}-whl
         path: wheelhouse/*.whl
 
   wheels_aarch64:
-    name: Build wheel on aarch64 for ${{ matrix.python_tag }}
+    name: Build Linux wheels on aarch64
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-       python_tag: [ "cp37-*", "cp38-*", "cp39-*", "cp310-*", "cp311-*"]
-    env:
-      CIBW_ARCHS_LINUX: aarch64
-      CIBW_BUILD: ${{matrix.python_tag}}
-      CIBW_TEST_REQUIRES: pytest numpy
-      CIBW_TEST_COMMAND: "pytest -v {project}/tests"
-      CIBW_BEFORE_BUILD_LINUX: "pip install cmake; bash {project}/ci/install_libspatialindex.bash"
 
     steps:
     - uses: actions/checkout@v3
@@ -196,14 +183,19 @@ jobs:
       name: Install Python
       with:
         python-version: '3.10'
-    - name: Install cibuildwheel
-      run: |
-        python -m pip install cibuildwheel==2.10.2
     - uses: docker/setup-qemu-action@v2
       name: Set up QEMU
+      with:
+        platforms: arm64
     - name: Build wheels
-      run: |
-        python -m cibuildwheel --output-dir wheelhouse
+      uses: pypa/cibuildwheel@v2.11.2
+      env:
+        CIBW_SKIP: pp*
+        CIBW_ARCHS_LINUX: aarch64
+        CIBW_TEST_REQUIRES: pytest numpy
+        CIBW_TEST_COMMAND: "pytest -v {project}/tests"
+        CIBW_TEST_SKIP: "*-musllinux*"
+        CIBW_BEFORE_ALL_LINUX: "pip install cmake; bash {project}/ci/install_libspatialindex.bash"
     - uses: actions/upload-artifact@v3
       with:
         name: aarch64-whl
@@ -213,7 +205,7 @@ jobs:
     name: Package and push release
 
     #needs: [windows-wheel, linux-wheel, osx-wheel, conda, ubuntu]
-    needs: [conda, ubuntu, wheels]
+    needs: [conda, ubuntu, wheels, wheels_aarch64]
 
     runs-on: 'ubuntu-latest'
     strategy:
