@@ -240,7 +240,6 @@ class Index:
             # assume if the file exists, we're not going to overwrite it
             # unless the user explicitly set the property to do so
             if os.path.exists(p):
-
                 self.properties.overwrite = bool(kwargs.get("overwrite", False))
 
                 # assume we're fetching the first index_id.  If the user
@@ -339,7 +338,6 @@ class Index:
     def get_coordinate_pointers(
         self, coordinates: Sequence[float]
     ) -> Tuple[float, float]:
-
         try:
             iter(coordinates)
         except TypeError:
@@ -835,7 +833,6 @@ class Index:
         return self._get_ids(it, p_num_results.value)
 
     def _intersectionTP(self, coordinates, velocities, times, objects=False):
-
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
         pv_mins, pv_maxs = self.get_coordinate_pointers(velocities)
         t_start, t_end = self._get_time_doubles(times)
@@ -868,7 +865,6 @@ class Index:
             return self._get_ids(it, p_num_results.value)
 
     def _intersection_obj(self, coordinates, objects):
-
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
 
         p_num_results = ctypes.c_uint64(0)
@@ -886,7 +882,6 @@ class Index:
         return self._get_objects(it, p_num_results.value, objects)
 
     def _contains_obj(self, coordinates: Any, objects):
-
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
 
         p_num_results = ctypes.c_uint64(0)
@@ -946,7 +941,6 @@ class Index:
             raise
 
     def _nearest_obj(self, coordinates, num_results, objects):
-
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
 
         p_num_results = ctypes.pointer(ctypes.c_uint64(num_results))
@@ -1418,7 +1412,6 @@ class Handle:
 
     def destroy(self) -> None:
         try:
-
             if self._ptr is not None:
                 self._destroy(self._ptr)
                 self._ptr = None
@@ -1443,7 +1436,6 @@ class Handle:
 
 
 class IndexHandle(Handle):
-
     _create = core.rt.Index_Create
     _destroy = core.rt.Index_Destroy
 
@@ -1457,12 +1449,10 @@ class IndexHandle(Handle):
 
 
 class IndexStreamHandle(IndexHandle):
-
     _create = core.rt.Index_CreateWithStream
 
 
 class PropertyHandle(Handle):
-
     _create = core.rt.IndexProperty_Create
     _destroy = core.rt.IndexProperty_Destroy
 

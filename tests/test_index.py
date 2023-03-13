@@ -25,7 +25,6 @@ class IndexTestCase(unittest.TestCase):
     ) -> Iterator[Tuple[int, Tuple[float, float, float, float], int]]:
         boxes15 = np.genfromtxt("boxes_15x15.data")
         for i, (minx, miny, maxx, maxy) in enumerate(boxes15):
-
             if interleaved:
                 yield (i, (minx, miny, maxx, maxy), 42)
             else:
@@ -747,7 +746,6 @@ class IndexStream(IndexTestCase):
 
         def create_index() -> index.Index:
             def gen() -> None:
-
                 raise TestException("raising here")
 
             return index.Index(gen())  # type: ignore[func-returns-value]
