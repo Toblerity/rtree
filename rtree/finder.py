@@ -65,7 +65,6 @@ def load() -> ctypes.CDLL:
         raise OSError(f"could not find or load {lib_name}")
 
     elif os.name == "posix":
-
         # posix includes both mac and linux
         # use the extension for the specific platform
         if platform.system() == "Darwin":
