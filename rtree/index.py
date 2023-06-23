@@ -925,7 +925,6 @@ class Index:
         finally:
             core.rt.Index_DestroyObjResults(its, num_results)
 
-
     def _get_ids(self, it, num_results):
         # take the pointer, yield the results  and free
         items = ctypes.cast(it, ctypes.POINTER(ctypes.c_int64 * num_results))
