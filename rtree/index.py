@@ -922,10 +922,8 @@ class Index:
                     else:
                         yield self.loads(data)
 
+        finally:
             core.rt.Index_DestroyObjResults(its, num_results)
-        except Exception:  # need to catch all exceptions, not just rtree.
-            core.rt.Index_DestroyObjResults(its, num_results)
-            raise
 
     def _get_ids(self, it, num_results):
         # take the pointer, yield the results  and free
@@ -935,10 +933,9 @@ class Index:
         try:
             for i in range(num_results):
                 yield items.contents[i]
+
+        finally:
             core.rt.Index_Free(its)
-        except Exception:
-            core.rt.Index_Free(its)
-            raise
 
     def _nearest_obj(self, coordinates, num_results, objects):
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
