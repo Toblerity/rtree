@@ -76,7 +76,9 @@ class InstallPlatlib(install):  # type: ignore[misc]
             )
 
 
+# See pyproject.toml for other project metadata
 setup(
+    name="Rtree",
     distclass=BinaryDistribution,
     cmdclass={"bdist_wheel": bdist_wheel, "install": InstallPlatlib},
 )

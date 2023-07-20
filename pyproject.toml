@@ -1,9 +1,56 @@
 [build-system]
-requires = ["wheel", "setuptools>=39.2"]
+requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "Rtree"
+authors = [
+    {name = "Sean Gillies", email = "sean.gillies@gmail.com"},
+]
+maintainers = [
+    {name = "Howard Butler", email = "howard@hobu.co"},
+]
+description = "R-Tree spatial index for Python GIS"
+readme = "README.md"
+requires-python = ">=3.7"
+keywords = ["gis", "spatial", "index", "r-tree"]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Database",
+]
+dependencies = [
+    'typing_extensions>=3.7; python_version<"3.8"',
+]
+dynamic = ["version"]
+
+[project.urls]
+Documentation = "https://rtree.readthedocs.io"
+Repository = "https://github.com/Toblerity/rtree"
+
+[tool.setuptools]
+packages = ["rtree"]
+zip-safe = false
+
+[tool.setuptools.dynamic]
+version = {attr = "rtree.__version__"}
+
+[tool.setuptools.package-data]
+rtree = ["lib", "py.typed"]
+
 [tool.black]
-target-version = ['py37', 'py38', 'py39']
+target-version = ["py37", "py38", "py39", "py310", "py311"]
 color = true
 skip_magic_trailing_comma = true
 
