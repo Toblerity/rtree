@@ -73,8 +73,20 @@ def load() -> ctypes.CDLL:
             # macos shared libraries are `.dylib`
             lib_name = "libspatialindex_c.dylib"
         else:
+            import importlib.metadata
+
             # linux shared libraries are `.so`
             lib_name = "libspatialindex_c.so"
+
+            # add path for binary wheel prepared with cibuildwheel/auditwheel
+            for file in importlib.metadata.files("rtree"):
+                if (
+                    file.parent.name == "Rtree.libs"
+                    and file.stem.startswith("libspatialindex")
+                    and ".so" in file.suffixes
+                ):
+                    _candidates.insert(1, os.path.join(str(file.locate())))
+                    break
 
         # get the starting working directory
         cwd = os.getcwd()

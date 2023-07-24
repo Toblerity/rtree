@@ -131,18 +131,6 @@ jobs:
   wheels:
     name: Build wheel on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    env:
-      CIBW_SKIP: "pp* *-win32 cp312-*"  # remove once numpy supports Python 3.12
-      CIBW_TEST_REQUIRES: pytest numpy
-      CIBW_TEST_COMMAND: "pytest -v {project}/tests"
-      # we are copying the shared libraries ourselves so skip magical copy
-      CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
-      MACOSX_DEPLOYMENT_TARGET: 10.9
-      CIBW_BUILD_VERBOSITY_MACOS: 3
-      CIBW_TEST_SKIP: "*-macosx_arm64 *-macosx_universal2:arm64 *-musllinux* *i686"
-      CIBW_ARCHS_MACOS: "x86_64 arm64"
-      CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
-      CIBW_BEFORE_ALL_LINUX: "pip install cmake; bash {project}/ci/install_libspatialindex.bash"
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
@@ -173,39 +161,11 @@ jobs:
         name: ${{ matrix.os }}-whl
         path: wheelhouse/*.whl
 
-  wheels_aarch64:
-    name: Build Linux wheels on aarch64
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v4
-      name: Install Python
-      with:
-        python-version: '3.11'
-    - uses: docker/setup-qemu-action@v2
-      name: Set up QEMU
-      with:
-        platforms: arm64
-    - name: Build wheels
-      uses: pypa/cibuildwheel@v2.15.0
-      env:
-        CIBW_SKIP: pp*
-        CIBW_ARCHS_LINUX: aarch64
-        CIBW_TEST_REQUIRES: pytest numpy
-        CIBW_TEST_COMMAND: "pytest -v {project}/tests"
-        CIBW_TEST_SKIP: "*-musllinux*"
-        CIBW_BEFORE_ALL_LINUX: "pip install cmake; bash {project}/ci/install_libspatialindex.bash"
-    - uses: actions/upload-artifact@v3
-      with:
-        name: aarch64-whl
-        path: wheelhouse/*.whl
-
   collect-artifacts:
     name: Package and push release
 
     #needs: [windows-wheel, linux-wheel, osx-wheel, conda, ubuntu]
-    needs: [conda, ubuntu, wheels, wheels_aarch64]
+    needs: [conda, ubuntu, wheels]
 
     runs-on: 'ubuntu-latest'
     strategy:
