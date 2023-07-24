@@ -4,6 +4,8 @@ finder.py
 
 Locate `libspatialindex` shared library by any means necessary.
 """
+from __future__ import annotations
+
 import ctypes
 import os
 import platform

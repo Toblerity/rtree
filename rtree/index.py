@@ -5,14 +5,8 @@ import os
 import os.path
 import pickle
 import pprint
-import sys
 import warnings
-from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union, overload
-
-if sys.version_info >= (3, 8):
-    from typing import Literal
-else:
-    from typing_extensions import Literal
+from typing import Any, Iterator, Literal, Sequence, overload
 
 from . import core
 from .exceptions import RTreeError
@@ -306,12 +300,12 @@ class Index:
             self.bounds, self.get_size()
         )
 
-    def __getstate__(self) -> Dict[str, Any]:
+    def __getstate__(self) -> dict[str, Any]:
         state = self.__dict__.copy()
         del state["handle"]
         return state
 
-    def __setstate__(self, state: Dict[str, Any]) -> None:
+    def __setstate__(self, state: dict[str, Any]) -> None:
         self.__dict__.update(state)
         self.handle = IndexHandle(self.properties.handle)
 
@@ -337,7 +331,7 @@ class Index:
 
     def get_coordinate_pointers(
         self, coordinates: Sequence[float]
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         try:
             iter(coordinates)
         except TypeError:
@@ -587,7 +581,7 @@ class Index:
     @overload
     def contains(
         self, coordinates: Any, objects: Literal[False] = False
-    ) -> Optional[Iterator[int]]:
+    ) -> Iterator[int] | None:
         ...
 
     @overload
@@ -595,8 +589,8 @@ class Index:
         ...
 
     def contains(
-        self, coordinates: Any, objects: Union[bool, Literal["raw"]] = False
-    ) -> Optional[Iterator[Union[Item, int, object]]]:
+        self, coordinates: Any, objects: bool | Literal["raw"] = False
+    ) -> Iterator[Item | int | object] | None:
         """Return ids or objects in the index that contains within the given
         coordinates.
 
@@ -746,8 +740,8 @@ class Index:
         ...
 
     def intersection(
-        self, coordinates: Any, objects: Union[bool, Literal["raw"]] = False
-    ) -> Iterator[Union[Item, int, object]]:
+        self, coordinates: Any, objects: bool | Literal["raw"] = False
+    ) -> Iterator[Item | int | object]:
         """Return ids or objects in the index that intersect the given
         coordinates.
 
@@ -977,8 +971,8 @@ class Index:
         self,
         coordinates: Any,
         num_results: int = 1,
-        objects: Union[bool, Literal["raw"]] = False,
-    ) -> Iterator[Union[Item, int, object]]:
+        objects: bool | Literal["raw"] = False,
+    ) -> Iterator[Item | int | object]:
         """Returns the ``k``-nearest objects to the given coordinates.
 
         :param coordinates: This may be an object that satisfies the numpy array
@@ -1171,7 +1165,7 @@ class Index:
         return core.rt.Index_ClearBuffer(self.handle)
 
     @classmethod
-    def deinterleave(self, interleaved: Sequence[object]) -> List[object]:
+    def deinterleave(self, interleaved: Sequence[object]) -> list[object]:
         """
         [xmin, ymin, xmax, ymax] => [xmin, xmax, ymin, ymax]
 
@@ -1190,7 +1184,7 @@ class Index:
         return di
 
     @classmethod
-    def interleave(self, deinterleaved: Sequence[float]) -> List[float]:
+    def interleave(self, deinterleaved: Sequence[float]) -> list[float]:
         """
         [xmin, xmax, ymin, ymax, zmin, zmax]
             => [xmin, ymin, zmin, xmax, ymax, zmax]
@@ -1379,7 +1373,7 @@ class Item:
         return self.id > other.id
 
     @property
-    def bbox(self) -> List[float]:
+    def bbox(self) -> list[float]:
         """Returns the bounding box of the index entry"""
         return Index.interleave(self.bounds)
 
@@ -1493,19 +1487,19 @@ class Property:
         self.handle = handle
         self.initialize_from_dict(kwargs)
 
-    def initialize_from_dict(self, state: Dict[str, Any]) -> None:
+    def initialize_from_dict(self, state: dict[str, Any]) -> None:
         for k, v in state.items():
             if v is not None:
                 setattr(self, k, v)
 
-    def __getstate__(self) -> Dict[Any, Any]:
+    def __getstate__(self) -> dict[Any, Any]:
         return self.as_dict()
 
     def __setstate__(self, state):
         self.handle = PropertyHandle()
         self.initialize_from_dict(state)
 
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> dict[str, Any]:
         d = {}
         for k in self.pkeys:
             try:
@@ -2111,7 +2105,7 @@ class RtreeContainer(Rtree):
                 or isinstance(args[0], ICustomStorage)
             ):
                 raise ValueError("%s supports only in-memory indexes" % self.__class__)
-        self._objects: Dict[int, Tuple[int, object]] = {}
+        self._objects: dict[int, tuple[int, object]] = {}
         return super().__init__(*args, **kwargs)
 
     def get_size(self) -> int:
@@ -2188,7 +2182,7 @@ class RtreeContainer(Rtree):
 
     def intersection(
         self, coordinates: Any, bbox: bool = False
-    ) -> Iterator[Union[Item, object]]:
+    ) -> Iterator[Item | object]:
         """Return ids or objects in the index that intersect the given
         coordinates.
 
@@ -2269,7 +2263,7 @@ class RtreeContainer(Rtree):
 
     def nearest(
         self, coordinates: Any, num_results: int = 1, bbox: bool = False
-    ) -> Iterator[Union[Item, object]]:
+    ) -> Iterator[Item | object]:
         """Returns the ``k``-nearest objects to the given coordinates
         in increasing distance order.
 

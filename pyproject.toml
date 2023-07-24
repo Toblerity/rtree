@@ -12,7 +12,7 @@ maintainers = [
 ]
 description = "R-Tree spatial index for Python GIS"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 keywords = ["gis", "spatial", "index", "r-tree"]
 license = {text = "MIT"}
 classifiers = [
@@ -22,16 +22,12 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering :: GIS",
     "Topic :: Database",
-]
-dependencies = [
-    'typing_extensions>=3.7; python_version<"3.8"',
 ]
 dynamic = ["version"]
 
@@ -50,7 +46,7 @@ version = {attr = "rtree.__version__"}
 rtree = ["lib", "py.typed"]
 
 [tool.black]
-target-version = ["py37", "py38", "py39", "py310", "py311"]
+target-version = ["py38", "py39", "py310", "py311"]
 color = true
 skip_magic_trailing_comma = true
 
