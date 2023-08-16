@@ -132,7 +132,7 @@ jobs:
     name: Build wheel on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
-      CIBW_SKIP: "pp*" "*-win32" "cp312"  # remove once numpy supports Python 3.12
+      CIBW_SKIP: "pp* *-win32 cp312-*"  # remove once numpy supports Python 3.12
       CIBW_TEST_REQUIRES: pytest numpy
       CIBW_TEST_COMMAND: "pytest -v {project}/tests"
       # we are copying the shared libraries ourselves so skip magical copy
