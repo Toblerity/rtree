@@ -132,7 +132,7 @@ jobs:
     name: Build wheel on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
-      CIBW_SKIP: pp* *-win32
+      CIBW_SKIP: "pp* *-win32 cp312-*"  # remove once numpy supports Python 3.12
       CIBW_TEST_REQUIRES: pytest numpy
       CIBW_TEST_COMMAND: "pytest -v {project}/tests"
       # we are copying the shared libraries ourselves so skip magical copy
@@ -167,7 +167,7 @@ jobs:
         choco install vcpython27 -f -y
         ci\install_libspatialindex.bat
     - name: Build wheels
-      uses: pypa/cibuildwheel@v2.14.1
+      uses: pypa/cibuildwheel@v2.15.0
     - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.os }}-whl
@@ -188,7 +188,7 @@ jobs:
       with:
         platforms: arm64
     - name: Build wheels
-      uses: pypa/cibuildwheel@v2.14.1
+      uses: pypa/cibuildwheel@v2.15.0
       env:
         CIBW_SKIP: pp*
         CIBW_ARCHS_LINUX: aarch64
