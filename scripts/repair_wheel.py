@@ -64,7 +64,8 @@ def main():
             shutil.copyfile(file, tmpdir / file.name)
         (file,) = tmpdir.glob("*.whl")
 
-        # we need to handle macOS universal2 & arm64 here for now, let's use platform_tag_args for this.
+        # we need to handle macOS universal2 & arm64 here for now,
+        # let's use platform_tag_args for this.
         platform_tag_args = []
         if os_ == "macos":
             additional_platforms = []
@@ -85,7 +86,8 @@ def main():
             additional_platforms.append("macosx_{}_{}_arm64".format(*arm64_target))
 
             if target < (11, 0):
-                # They're were also issues with pip not picking up some universal2 wheels, tag twice
+                # They're were also issues with pip not picking up some
+                # universal2 wheels, tag twice
                 additional_platforms.append("macosx_11_0_universal2")
 
             platform_tag_args = [f"--platform-tag=+{'.'.join(additional_platforms)}"]
@@ -107,7 +109,7 @@ def main():
         )
         (file,) = tmpdir.glob("*.whl")
         # unpack
-        proc = subprocess.run(["wheel", "unpack", file.name], cwd=tmpdir, check=True)
+        subprocess.run(["wheel", "unpack", file.name], cwd=tmpdir, check=True)
         for unpackdir in tmpdir.iterdir():
             if unpackdir.is_dir():
                 break
