@@ -77,6 +77,9 @@ archs = ["x86_64", "arm64"]
 test-skip = "*-macosx_arm64 *-macosx_universal2:arm64"
 environment = { MACOSX_DEPLOYMENT_TARGET="10.9" }
 
+[tool.cibuildwheel.windows]
+archs = ["AMD64"]
+
 [tool.coverage.report]
 # Ignore warnings for overloads
 # https://github.com/nedbat/coveragepy/issues/970#issuecomment-612602180
