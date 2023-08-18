@@ -79,7 +79,7 @@ def load() -> ctypes.CDLL:
             lib_name = "libspatialindex_c.so"
 
             # add path for binary wheel prepared with cibuildwheel/auditwheel
-            for file in importlib.metadata.files("rtree"):
+            for file in importlib.metadata.files("rtree"):  # type: ignore
                 if (
                     file.parent.name == "Rtree.libs"
                     and file.stem.startswith("libspatialindex")
