@@ -138,6 +138,11 @@ jobs:
         os: [windows-latest, ubuntu-latest, macos-latest]
     steps:
     - uses: actions/checkout@v3
+    - name: Set up QEMU
+      if: runner.os == 'Linux'
+      uses: docker/setup-qemu-action@v2
+      with:
+        platforms: all
     - uses: actions/setup-python@v4
       name: Install Python
       with:
