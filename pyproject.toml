@@ -51,7 +51,7 @@ color = true
 skip_magic_trailing_comma = true
 
 [tool.cibuildwheel]
-build = "cp39-*"
+build = "cp38-*"
 build-verbosity = "3"
 repair-wheel-command = "python scripts/repair_wheel.py -w {dest_dir} {wheel}"
 test-requires = "tox"
@@ -59,7 +59,7 @@ test-command = "tox --conf {project} --installpkg {wheel}"
 
 [tool.cibuildwheel.linux]
 archs = ["auto", "aarch64"]
-# test-skip = "*-musllinux* *i686"
+# test-skip = "*i686 musllinux_*_aarch64"
 before-all = [
     "yum install -y cmake libffi-devel",
     "bash {project}/ci/install_libspatialindex.bash",

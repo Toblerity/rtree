@@ -37,7 +37,7 @@ curl -L -O https://github.com/libspatialindex/libspatialindex/archive/$VERSION.z
 echo "${SHA256}  ${VERSION}.zip" | sha256sum -c -
 
 rm -rf "libspatialindex-${VERSION}" || true
-unzip $VERSION
+unzip -q $VERSION
 cd libspatialindex-${VERSION}
 
 mkdir build
