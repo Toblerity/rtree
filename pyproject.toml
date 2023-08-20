@@ -74,7 +74,8 @@ before-all = [
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
-# test-skip = "*-macosx_arm64 *-macosx_universal2:arm64"
+test-skip = "*-macosx_arm64"
+# sync this with .github/workflows/build.yml
 environment = { MACOSX_DEPLOYMENT_TARGET="10.9" }
 
 [tool.cibuildwheel.windows]
