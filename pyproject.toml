@@ -77,6 +77,11 @@ archs = ["x86_64", "arm64"]
 test-skip = "*-macosx_arm64"
 # sync this with .github/workflows/build.yml
 environment = { MACOSX_DEPLOYMENT_TARGET="10.9" }
+before-all = [
+    "brew install coreutils",  # provides sha256sum
+    "pip install cmake",
+    "bash {project}/ci/install_libspatialindex.bash",
+]
 
 [tool.cibuildwheel.windows]
 archs = ["AMD64"]

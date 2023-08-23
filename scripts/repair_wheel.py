@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import re
 import shutil
 import subprocess
 import sys
@@ -64,34 +63,6 @@ def main():
             shutil.copyfile(file, tmpdir / file.name)
         (file,) = tmpdir.glob("*.whl")
 
-        # we need to handle macOS universal2 & arm64 here for now,
-        # let's use platform_tag_args for this.
-        platform_tag_args = []
-        if os_ == "macos":
-            additional_platforms = []
-
-            # first, get the target macOS deployment target from the wheel
-            match = re.match(r"^.*-macosx_(\d+)_(\d+)_x86_64\.whl$", file.name)
-            assert match is not None
-            target = tuple(map(int, match.groups()))
-
-            # let's add universal2 platform for this wheel.
-            additional_platforms = ["macosx_{}_{}_universal2".format(*target)]
-
-            # given pip support for universal2 was added after arm64 introduction
-            # let's also add arm64 platform.
-            arm64_target = target
-            if arm64_target < (11, 0):
-                arm64_target = (11, 0)
-            additional_platforms.append("macosx_{}_{}_arm64".format(*arm64_target))
-
-            if target < (11, 0):
-                # They're were also issues with pip not picking up some
-                # universal2 wheels, tag twice
-                additional_platforms.append("macosx_11_0_universal2")
-
-            platform_tag_args = [f"--platform-tag=+{'.'.join(additional_platforms)}"]
-
         # make this a py3 wheel
         subprocess.run(
             [
@@ -101,7 +72,6 @@ def main():
                 "py3",
                 "--abi-tag",
                 "none",
-                *platform_tag_args,
                 "--remove",
                 str(file),
             ],

@@ -148,13 +148,6 @@ jobs:
       name: Install Python
       with:
         python-version: '3.11'
-    - name: Run MacOS Preinstall Build
-      if: startsWith(matrix.os, 'macos')
-      run: |
-        # provides sha256sum
-        brew install coreutils
-        pip install cmake
-        bash ci/install_libspatialindex.bash
     - uses: ilammy/msvc-dev-cmd@v1
       if: startsWith(matrix.os, 'windows')
     - name: Run Windows Preinstall Build
