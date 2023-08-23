@@ -47,7 +47,7 @@ cp "${SL}/CMakeLists.txt" ..
 printenv
 
 if [ "$(uname)" == "Darwin" ]; then
-    CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=${AUDITWHEEL_ARCH/ /;}"
+    CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=${ARCHFLAGS##* }"
 fi
 
 cmake -DCMAKE_BUILD_TYPE=Release ${CMAKE_ARGS} ..
