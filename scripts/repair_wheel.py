@@ -50,8 +50,8 @@ def main():
             subprocess.run(
                 [
                     "delocate-wheel",
-                    "--require-archs",
-                    "arm64,x86_64",
+                    # "--require-archs",
+                    # "arm64,x86_64",
                     "-w",
                     str(tmpdir),
                     str(file),

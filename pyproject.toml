@@ -60,14 +60,14 @@ test-command = "tox --conf {project} --installpkg {wheel}"
 [tool.cibuildwheel.linux]
 archs = ["auto", "aarch64"]
 test-skip = "*aarch64"  # slow!
-before-all = [
+before-build = [
     "yum install -y cmake libffi-devel",
     "bash {project}/ci/install_libspatialindex.bash",
 ]
 
 [[tool.cibuildwheel.overrides]]
 select = "*-musllinux*"
-before-all = [
+before-build = [
     "apk add cmake libffi-dev",
     "bash {project}/ci/install_libspatialindex.bash",
 ]
@@ -75,11 +75,9 @@ before-all = [
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
 test-skip = "*-macosx_arm64"
-# sync this with .github/workflows/build.yml
-environment = { MACOSX_DEPLOYMENT_TARGET="10.9" }
-before-all = [
-    "brew install coreutils",  # provides sha256sum
-    "pip install cmake",
+environment = { MACOSX_DEPLOYMENT_TARGET="10.9", CIBW_ARCHS_MACOS="x86_64 arm64" }
+before-build = [
+    "brew install coreutils cmake",
     "bash {project}/ci/install_libspatialindex.bash",
 ]
 

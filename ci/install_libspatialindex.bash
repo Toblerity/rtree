@@ -5,7 +5,6 @@ set -xe
 VERSION=1.9.3
 SHA256=63a03bfb26aa65cf0159f925f6c3491b6ef79bc0e3db5a631d96772d6541187e
 
-
 # where to copy resulting files
 # this has to be run before `cd`-ing anywhere
 gentarget() {
@@ -45,7 +44,13 @@ cd build
 
 cp "${SL}/CMakeLists.txt" ..
 
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="${CIBW_ARCHS_MACOS/ /;}" ..
+printenv
+
+if [ "$(uname)" == "Darwin" ]; then
+    CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=${AUDITWHEEL_ARCH/ /;}"
+fi
+
+cmake -DCMAKE_BUILD_TYPE=Release ${CMAKE_ARGS} ..
 make -j 4
 
 # copy built libraries relative to path of this script

@@ -131,9 +131,6 @@ jobs:
   wheels:
     name: Build wheel on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    env:
-      # sync this with tool.cibuildwheel.macos.environment in pyproject.toml
-      MACOSX_DEPLOYMENT_TARGET: 10.9
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
