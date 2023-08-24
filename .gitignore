@@ -8,3 +8,5 @@ dist/
 include
 lib
 .coverage
+.tox
+wheelhouse

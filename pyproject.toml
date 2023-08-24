@@ -50,6 +50,40 @@ target-version = ["py38", "py39", "py310", "py311"]
 color = true
 skip_magic_trailing_comma = true
 
+[tool.cibuildwheel]
+build = "cp38-*"
+build-verbosity = "3"
+repair-wheel-command = "python scripts/repair_wheel.py -w {dest_dir} {wheel}"
+test-requires = "tox"
+test-command = "tox --conf {project} --installpkg {wheel}"
+
+[tool.cibuildwheel.linux]
+archs = ["auto", "aarch64"]
+test-skip = "*aarch64"  # slow!
+before-build = [
+    "yum install -y cmake libffi-devel",
+    "bash {project}/ci/install_libspatialindex.bash",
+]
+
+[[tool.cibuildwheel.overrides]]
+select = "*-musllinux*"
+before-build = [
+    "apk add cmake libffi-dev",
+    "bash {project}/ci/install_libspatialindex.bash",
+]
+
+[tool.cibuildwheel.macos]
+archs = ["x86_64", "arm64"]
+test-skip = "*-macosx_arm64"
+environment = { MACOSX_DEPLOYMENT_TARGET="10.9" }
+before-build = [
+    "brew install coreutils cmake",
+    "bash {project}/ci/install_libspatialindex.bash",
+]
+
+[tool.cibuildwheel.windows]
+archs = ["AMD64"]
+
 [tool.coverage.report]
 # Ignore warnings for overloads
 # https://github.com/nedbat/coveragepy/issues/970#issuecomment-612602180
