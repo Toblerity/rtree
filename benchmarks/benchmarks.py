@@ -6,10 +6,8 @@
 # One-at-a-time load:
 # 527883.95 usec/pass
 #
-#
 # 30000 points
 # Query box:  (1240000, 1010000, 1400000, 1390000)
-#
 #
 # Brute Force:
 # 46 hits
@@ -27,7 +25,6 @@
 # 46 raw hits
 # 347.60 usec/pass
 
-import os
 import random
 import timeit
 from pathlib import Path
@@ -37,24 +34,24 @@ from rtree import Rtree as _Rtree
 
 print(f"Benchmarking Rtree-{rtree.__version__} from {Path(rtree.__file__).parent}")
 print(f"Using {rtree.core.rt._name} version {rtree.core.rt.SIDX_Version().decode()}")
+print()
 
 TEST_TIMES = 20
 
 
-# a very basic Geometry
 class Point:
+    """A very basic Geometry."""
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
-
-
-# Scatter points randomly in a 1x1 box
 
 
 class Rtree(_Rtree):
     pickle_protocol = -1
 
 
+# Scatter points randomly in a 1x1 box
 bounds = (0, 0, 6000000, 6000000)
 count = 30000
 points = []
@@ -72,6 +69,7 @@ index = Rtree()
 disk_index = Rtree("test", overwrite=1)
 
 coordinates = []
+random.seed("Rtree", version=2)
 for i in range(count):
     x = random.randrange(bounds[0], bounds[2]) + random.random()
     y = random.randrange(bounds[1], bounds[3]) + random.random()
@@ -86,8 +84,9 @@ s = """
 bulk = Rtree(coordinates[:2000])
 """
 t = timeit.Timer(stmt=s, setup="from __main__ import coordinates, Rtree, insert_object")
-print("\nStream load:")
-print("%.2f usec/pass" % (1000000 * t.timeit(number=TEST_TIMES) / TEST_TIMES))
+print("Stream load:")
+print(f"{1e6 * t.timeit(number=TEST_TIMES) / TEST_TIMES:.2f} usec/pass")
+print()
 
 s = """
 idx = Rtree()
@@ -97,14 +96,14 @@ for point in points[:2000]:
     i+=1
 """
 t = timeit.Timer(stmt=s, setup="from __main__ import points, Rtree, insert_object")
-print("\nOne-at-a-time load:")
-print("%.2f usec/pass\n\n" % (1000000 * t.timeit(number=TEST_TIMES) / TEST_TIMES))
-
+print("One-at-a-time load:")
+print(f"{1e6 * t.timeit(number=TEST_TIMES) / TEST_TIMES:.2f} usec/pass")
+print()
 
 bbox = (1240000, 1010000, 1400000, 1390000)
 print(count, "points")
 print("Query box: ", bbox)
-print("")
+print()
 
 # Brute force all points within a 0.1x0.1 box
 s = """
@@ -113,7 +112,7 @@ hits = [p for p in points
         and p.y >= bbox[1] and p.y <= bbox[3]]
 """
 t = timeit.Timer(stmt=s, setup="from __main__ import points, bbox")
-print("\nBrute Force:")
+print("Brute Force:")
 print(
     len(
         [
@@ -124,7 +123,8 @@ print(
     ),
     "hits",
 )
-print("%.2f usec/pass" % (1000000 * t.timeit(number=TEST_TIMES) / TEST_TIMES))
+print(f"{1e6 * t.timeit(number=TEST_TIMES) / TEST_TIMES:.2f} usec/pass")
+print()
 
 # 0.1x0.1 box using intersection
 
@@ -140,10 +140,10 @@ hits = [p.object for p in index.intersection(bbox, objects=insert_object)]
 t = timeit.Timer(
     stmt=s, setup="from __main__ import points, index, bbox, insert_object"
 )
-print("\nMemory-based Rtree Intersection:")
+print("Memory-based Rtree Intersection:")
 print(len([points[id] for id in index.intersection(bbox)]), "hits")
-print("%.2f usec/pass" % (1000000 * t.timeit(number=100) / 100))
-
+print(f"{1e6 * t.timeit(number=100) / 100:.2f} usec/pass")
+print()
 
 # run same test on disk_index.
 s = s.replace("index.", "disk_index.")
@@ -151,11 +151,11 @@ s = s.replace("index.", "disk_index.")
 t = timeit.Timer(
     stmt=s, setup="from __main__ import points, disk_index, bbox, insert_object"
 )
-print("\nDisk-based Rtree Intersection:")
+print("Disk-based Rtree Intersection:")
 hits = list(disk_index.intersection(bbox))
 print(len(hits), "hits")
-print("%.2f usec/pass" % (1000000 * t.timeit(number=TEST_TIMES) / TEST_TIMES))
-
+print(f"{1e6 * t.timeit(number=TEST_TIMES) / TEST_TIMES:.2f} usec/pass")
+print()
 
 if insert_object:
     s = """
@@ -164,14 +164,11 @@ hits = disk_index.intersection(bbox, objects="raw")
     t = timeit.Timer(
         stmt=s, setup="from __main__ import points, disk_index, bbox, insert_object"
     )
-    print("\nDisk-based Rtree Intersection " "without Item() wrapper (objects='raw'):")
+    print("Disk-based Rtree Intersection " "without Item() wrapper (objects='raw'):")
     result = list(disk_index.intersection(bbox, objects="raw"))
     print(len(result), "raw hits")
-    print("%.2f usec/pass" % (1000000 * t.timeit(number=TEST_TIMES) / TEST_TIMES))
-    assert "a" in result[0], result[0]
+    print(f"{1e6 * t.timeit(number=TEST_TIMES) / TEST_TIMES:.2f} usec/pass")
+    assert "a" in result[0], result[0]  # type: ignore
 
-try:
-    os.remove("test.dat")
-    os.remove("test.idx")
-except OSError:
-    pass
+Path("test.dat").unlink()
+Path("test.idx").unlink()
