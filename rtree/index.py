@@ -230,10 +230,11 @@ class Index:
             # check we can read the file
             f = str(basename) + "." + self.properties.idx_extension
             p = os.path.abspath(f)
+            path_exists = os.path.exists(p)
 
             # assume if the file exists, we're not going to overwrite it
             # unless the user explicitly set the property to do so
-            if os.path.exists(p):
+            if path_exists:
                 self.properties.overwrite = bool(kwargs.get("overwrite", False))
 
                 # assume we're fetching the first index_id.  If the user
@@ -244,8 +245,9 @@ class Index:
                     except RTreeError:
                         self.properties.index_id = 1
 
+            writing_required = (not path_exists) or self.properties.overwrite
             d = os.path.dirname(p)
-            if not os.access(d, os.W_OK):
+            if writing_required and not os.access(d, os.W_OK):
                 message = "Unable to open file '%s' for index storage" % f
                 raise OSError(message)
         elif storage:
