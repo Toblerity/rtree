@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import ctypes
+import os
+import pathlib
 import pickle
+import stat
 import tempfile
 import unittest
 from typing import Dict, Iterator, Tuple
@@ -605,6 +608,35 @@ class IndexSerialization(unittest.TestCase):
         idx = index.Index(tname)
         del idx
         idx = index.Index(tname, overwrite=True)
+        assert isinstance(idx, index.Index)
+
+    def _make_read_only_index(self) -> str:
+        """Create a read-only index & return the path without extension"""
+        dirname = pathlib.Path(tempfile.mkdtemp())
+        file_path_no_extension = dirname / "index"
+        idx_filename = file_path_no_extension.with_suffix(".idx")
+
+        idx = index.Index(str(file_path_no_extension))
+        idx.add(1, (2, 2))
+        del idx
+
+        # Now that the index is written, make it read-only
+        os.chmod(idx_filename, stat.S_IREAD)
+        assert not os.access(idx_filename, os.W_OK)
+
+        return str(file_path_no_extension)
+
+    def test_overwrite_uneditable_throws(self) -> None:
+        """Existing index with overwrite should throw if we can't edit the file"""
+        file_path_no_extension = self._make_read_only_index()
+
+        with pytest.raises(OSError):
+            index.Index(file_path_no_extension, overwrite=True)
+
+    def test_read_only_ok_if_overwrite_false(self) -> None:
+        file_path_no_extension = self._make_read_only_index()
+
+        idx = index.Index(file_path_no_extension, overwrite=False)
         assert isinstance(idx, index.Index)
 
 
