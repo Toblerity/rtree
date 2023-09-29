@@ -46,7 +46,7 @@ class InstallPlatlib(install):  # type: ignore[misc]
         source_dir = os.path.join(_cwd, "rtree", "lib")
 
         # what patterns represent shared libraries
-        patterns = {"*.so", "libspatialindex*dylib", "*.dll"}
+        patterns = {"*.so*", "libspatialindex*dylib", "*.dll"}
 
         if not os.path.isdir(source_dir):
             # no copying of binary parts to library

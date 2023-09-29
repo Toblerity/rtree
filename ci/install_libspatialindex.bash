@@ -7,11 +7,21 @@ SHA256=63a03bfb26aa65cf0159f925f6c3491b6ef79bc0e3db5a631d96772d6541187e
 
 # where to copy resulting files
 # this has to be run before `cd`-ing anywhere
-gentarget() {
+libtarget() {
   OURPWD=$PWD
   cd "$(dirname "$0")"
   mkdir -p ../rtree/lib
   cd ../rtree/lib
+  arr=$(pwd)
+  cd "$OURPWD"
+  echo $arr
+}
+
+headertarget() {
+  OURPWD=$PWD
+  cd "$(dirname "$0")"
+  mkdir -p ../rtree/include
+  cd ../rtree/include
   arr=$(pwd)
   cd "$OURPWD"
   echo $arr
@@ -26,7 +36,8 @@ scriptloc() {
 }
 # note that we're doing this convoluted thing to get
 # an absolute path so mac doesn't yell at us
-TARGET=`gentarget`
+LIBTARGET=`libtarget`
+HEADERTARGET=`headertarget`
 SL=`scriptloc`
 
 rm $VERSION.zip || true
@@ -60,10 +71,13 @@ if [ "$(uname)" == "Darwin" ]; then
     # change the rpath in the dylib to point to the same directory
     install_name_tool -change @rpath/libspatialindex.6.dylib @loader_path/libspatialindex.dylib bin/libspatialindex_c.dylib
     # copy the dylib files to the target director
-    cp bin/libspatialindex.dylib $TARGET
-    cp bin/libspatialindex_c.dylib $TARGET
+    cp bin/libspatialindex.dylib $LIBTARGET
+    cp bin/libspatialindex_c.dylib $LIBTARGET
+    cp -r ../include/* $HEADERTARGET
 else
-    cp -d bin/* $TARGET
+    cp -L bin/* $LIBTARGET
+    cp -r ../include/* $HEADERTARGET
 fi
 
-ls $TARGET
+ls $LIBTARGET
+ls -R $HEADERTARGET

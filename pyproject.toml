@@ -44,7 +44,7 @@ zip-safe = false
 version = {attr = "rtree.__version__"}
 
 [tool.setuptools.package-data]
-rtree = ["lib", "py.typed"]
+rtree = ["lib", "include", "py.typed"]
 
 [tool.black]
 target-version = ["py38", "py39", "py310", "py311", "py312"]
