@@ -26,6 +26,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: GIS",
     "Topic :: Database",
 ]
@@ -46,7 +47,7 @@ version = {attr = "rtree.__version__"}
 rtree = ["lib", "py.typed"]
 
 [tool.black]
-target-version = ["py38", "py39", "py310", "py311"]
+target-version = ["py38", "py39", "py310", "py311", "py312"]
 color = true
 skip_magic_trailing_comma = true
 
