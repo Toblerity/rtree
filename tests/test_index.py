@@ -4,7 +4,7 @@ import ctypes
 import pickle
 import tempfile
 import unittest
-from typing import Dict, Iterator, Tuple
+from typing import Iterator
 
 import numpy as np
 import pytest
@@ -23,7 +23,7 @@ class IndexTestCase(unittest.TestCase):
 
     def boxes15_stream(
         self, interleaved: bool = True
-    ) -> Iterator[Tuple[int, Tuple[float, float, float, float], int]]:
+    ) -> Iterator[tuple[int, tuple[float, float, float, float], int]]:
         boxes15 = np.genfromtxt("boxes_15x15.data")
         for i, (minx, miny, maxx, maxy) in enumerate(boxes15):
             if interleaved:
@@ -394,7 +394,7 @@ class IndexSerialization(unittest.TestCase):
 
     def boxes15_stream(
         self, interleaved: bool = True
-    ) -> Iterator[Tuple[int, Tuple[float, float, float, float], int]]:
+    ) -> Iterator[tuple[int, tuple[float, float, float, float], int]]:
         for i, (minx, miny, maxx, maxy) in enumerate(self.boxes15):
             if interleaved:
                 yield (i, (minx, miny, maxx, maxy), 42)
@@ -456,7 +456,7 @@ class IndexSerialization(unittest.TestCase):
 
         def data_gen(
             interleaved: bool = True,
-        ) -> Iterator[Tuple[int, Tuple[float, float, float, float], int]]:
+        ) -> Iterator[tuple[int, tuple[float, float, float, float], int]]:
             for i, (minx, miny, maxx, maxy) in enumerate(self.boxes15):
                 if interleaved:
                     yield (i, (minx, miny, maxx, maxy), 42)
@@ -590,7 +590,7 @@ class IndexSerialization(unittest.TestCase):
 
         # go through the traversal and see if everything is close
         assert all(
-            all(np.allclose(a, b) for a, b in zip(L, E))
+            all(np.allclose(a, b) for a, b in zip(L, E))  # type: ignore
             for L, E in zip(leaves, expected)
         )
 
@@ -724,7 +724,7 @@ class IndexStream(IndexTestCase):
             pass
 
         def create_index() -> index.Index:
-            def gen() -> Iterator[Tuple[int, Tuple[int, int, int, int], None]]:
+            def gen() -> Iterator[tuple[int, tuple[int, int, int, int], None]]:
                 # insert at least 6 or so before the exception
                 for i in range(10):
                     yield (i, (1, 2, 3, 4), None)
@@ -767,7 +767,7 @@ class DictStorage(index.CustomStorage):
 
     def clear(self) -> None:
         """Clear all our data"""
-        self.dict: Dict = {}
+        self.dict: dict = {}
 
     def loadByteArray(self, page, returnError):
         """Returns the data for page or returns an error"""

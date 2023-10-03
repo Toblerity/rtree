@@ -4,7 +4,7 @@ import os
 import unittest
 from collections import defaultdict, namedtuple
 from math import ceil
-from typing import Any, Iterator, Optional, Tuple, Union
+from typing import Any, Iterator
 
 import numpy as np
 
@@ -25,15 +25,15 @@ class Cartesian(
     def getY(self, t: float) -> float:
         return self.y + self.y_vel * (t - self.time)
 
-    def getXY(self, t: float) -> Tuple[float, float]:
+    def getXY(self, t: float) -> tuple[float, float]:
         return self.getX(t), self.getY(t)
 
     def get_coordinates(
-        self, t_now: Optional[float] = None
-    ) -> Tuple[
-        Tuple[float, float, float, float],
-        Tuple[float, float, float, float],
-        Union[float, Tuple[float, float]],
+        self, t_now: float | None = None
+    ) -> tuple[
+        tuple[float, float, float, float],
+        tuple[float, float, float, float],
+        float | tuple[float, float],
     ]:
         return (
             (self.x, self.y, self.x, self.y),
@@ -49,10 +49,10 @@ class QueryCartesian(
 
     def get_coordinates(
         self,
-    ) -> Tuple[
-        Tuple[float, float, float, float],
-        Tuple[float, float, float, float],
-        Tuple[float, float],
+    ) -> tuple[
+        tuple[float, float, float, float],
+        tuple[float, float, float, float],
+        tuple[float, float],
     ]:
         return (
             (self.x - self.dx, self.y - self.dy, self.x + self.dx, self.y + self.dy),
@@ -78,9 +78,9 @@ def data_generator(
     min_y: int = 0,
     max_x: int = 1,
     max_y: int = 1,
-) -> Iterator[Tuple[str, int, Any]]:
+) -> Iterator[tuple[str, int, Any]]:
     def create_object(
-        id_: float, time: float, x: Optional[float] = None, y: Optional[float] = None
+        id_: float, time: float, x: float | None = None, y: float | None = None
     ) -> Cartesian:
         # Create object with random or defined x, y and random velocity
         if x is None:
