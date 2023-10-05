@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ctypes
+import os
 
 from . import finder
 from .exceptions import RTreeError
@@ -72,8 +73,22 @@ def free_error_msg_ptr(result, func, cargs):
     return retvalue
 
 
+def get_include():
+    import rtree
+    return os.path.join(os.path.dirname(rtree.__file__), "include")
+
+
 # load the shared library by looking in likely places
 rt = finder.load()
+
+
+def get_libraries():
+    return os.path.dirname(rt._name)
+
+
+def get_library_name():
+    return os.path.split(rt._name)[-1]
+
 
 rt.SIDX_Version.argtypes = []
 rt.SIDX_Version.restype = ctypes.POINTER(ctypes.c_char)
