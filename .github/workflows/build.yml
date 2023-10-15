@@ -15,57 +15,12 @@ on:
     - cron: '0 6 * * 1'
 
 jobs:
-  black:
-    name: black
+  pre-commit:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    - name: Setup
-      run: pip install black
-    - name: Lint with black
-      run: black --check --diff .
-
-  flake8:
-    name: flake8
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    - name: Setup
-      run: pip install flake8
-    - name: Lint with flake8
-      run: flake8
-
-  isort:
-    name: isort
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    - name: Setup
-      run: pip install isort[colors]
-    - name: Lint with isort
-      run: isort --check --diff .
-
-  mypy:
-    name: mypy
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    - name: Setup
-      run: pip install mypy pytest
-    - name: Lint with mypy
-      run: mypy .
+    - uses: pre-commit/action@v3.0.0
 
   conda:
     name: Conda ${{ matrix.python-version }} - ${{ matrix.os }}
