@@ -4,7 +4,7 @@
 [![PyPI version](https://badge.fury.io/py/Rtree.svg)](https://badge.fury.io/py/Rtree)
 
 
-Rtree is a [ctypes](http://docs.python.org/library/ctypes.html) Python wrapper of [libspatialindex](https://libspatialindex.org/) that provides a
+Rtree is a [ctypes](https://docs.python.org/3/library/ctypes.html) Python wrapper of [libspatialindex](https://libspatialindex.org/) that provides a
 number of advanced spatial indexing features for the spatially curious Python
 user.  These features include:
 
@@ -26,6 +26,13 @@ pip install rtree
 
 # Changes
 
+## 1.1.0
+
+* Python 3.8+ is now required (#273)
+* Move project metadata to pyproject.toml (#269)
+* Refactor built wheels for PyPI (#276)
+* Fix memory leak when breaking mid-way in `_get_objects` and `_get_ids` (#266) (thanks @akariv!)
+
 ## 1.0.1
 
 * Fix up type hints #243 (thanks @oderby)
@@ -43,5 +50,3 @@ pip install rtree
 * Prevent get_coordinate_pointers from mutating inputs #205 (thanks @sjones94549!)
 * linux-aarch64 wheels #183 (thanks @odidev!)
 * black (#218) and flake8 (#145) linting
-
-https://github.com/Toblerity/rtree/releases/1.0.0
