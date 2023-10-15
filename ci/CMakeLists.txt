@@ -23,7 +23,7 @@ mark_as_advanced(CMAKE_VERBOSE_MAKEFILE)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
 
 # Make string comparison in cmake behave like you'd expect
-cmake_policy(SET CMP0054 NEW) 
+cmake_policy(SET CMP0054 NEW)
 
 if (WIN32)
     if(${CMAKE_VERSION} VERSION_GREATER "3.14.5")
@@ -72,7 +72,7 @@ if(WIN32)
 	endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
       endif()
 endif()
- 
+
 set(CMAKE_INCLUDE_DIRECTORIES_PROJECT_BEFORE ON)
 
 include (CheckFunctionExists)

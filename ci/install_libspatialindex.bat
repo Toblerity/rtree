@@ -2,7 +2,7 @@ python -c "import sys; print(sys.version)"
 
 set SIDX_VERSION=1.9.3
 
-curl -OL "https://github.com/libspatialindex/libspatialindex/archive/%SIDX_VERSION%.zip" 
+curl -OL "https://github.com/libspatialindex/libspatialindex/archive/%SIDX_VERSION%.zip"
 
 tar xvf "%SIDX_VERSION%.zip"
 
