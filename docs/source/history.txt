@@ -24,11 +24,11 @@ of new features and much more flexibility. See :ref:`changes` for more detail.
 .. note::
     A significant bug in the 1.6.1+ `libspatialindex`_ C API was found where
     it was using unsigned integers for index entry IDs instead of signed
-    integers. Because `Rtree`_ appeared to be the only significant user of the 
-    C API at this time, it was corrected immediately.  You should update 
-    immediately and re-insert data into new indexes if this is an important 
+    integers. Because `Rtree`_ appeared to be the only significant user of the
+    C API at this time, it was corrected immediately.  You should update
+    immediately and re-insert data into new indexes if this is an important
     consideration for your application.
-    
+
 Rtree 0.5.0 included a C library that is now the C API for libspatialindex and
 is part of that source tree. The code bases are independent from each other
 and can now evolve separately. Rtree is pure Python as of 0.6.0+.

@@ -1,5 +1,4 @@
 - python 3.8+
 - setuptools
-- libspatialindex C library 1.8.5+: 
+- libspatialindex C library 1.8.5+:
   https://libspatialindex.org/
-
