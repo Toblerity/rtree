@@ -2,4 +2,3 @@
 - setuptools
 - libspatialindex C library 1.8.5+: 
   https://libspatialindex.org/
-

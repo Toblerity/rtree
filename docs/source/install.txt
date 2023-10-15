@@ -43,4 +43,3 @@ is as easy as::
 .. _`Rtree`: http://pypi.python.org/pypi/Rtree/
 
 .. _`libspatialindex`: https://libspatialindex.org/
-

@@ -25,5 +25,3 @@ rmdir /Q /S bin
 
 dir %~dp0\..\rtree\
 dir %~dp0\..\rtree\lib
-
-

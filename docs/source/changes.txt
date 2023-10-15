@@ -122,4 +122,3 @@ available as a result of this refactoring.
 - Change license to LGPL.
 - Moved from Pleiades to GIS-Python repo.
 - Initial release.
-
