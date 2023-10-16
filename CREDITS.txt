@@ -26,8 +26,12 @@ Matthias <nitro@dr-code.org>
 
 * Custom storage API (both Rtree and libspatialindex)
 
-
 Adam Stewart
 
 * intersection/union support
 * __len__ method
+
+Mike Taves <mwtoews@gmail.com>
+
+* cibuildwheel configuration
+* general maintanance
