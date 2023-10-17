@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ctypes
 import pickle
+import sys
 import tempfile
 import unittest
 from typing import Iterator
@@ -451,6 +452,7 @@ class IndexSerialization(unittest.TestCase):
         self.assertTrue(len(hits), 10)
         self.assertEqual(hits, [0, 4, 16, 27, 35, 40, 47, 50, 76, 80])
 
+    @pytest.mark.skipif(not sys.maxsize > 2**32, reason="Fails on 32bit systems")
     def test_interleaving(self) -> None:
         """Streaming against a persisted index without interleaving"""
 
