@@ -81,14 +81,15 @@ def load() -> ctypes.CDLL:
             # add path for binary wheel prepared with cibuildwheel/auditwheel
             try:
                 pkg_files = importlib.metadata.files("rtree")
-                for file in pkg_files:  # type: ignore
-                    if (
-                        file.parent.name == "Rtree.libs"
-                        and file.stem.startswith("libspatialindex")
-                        and ".so" in file.suffixes
-                    ):
-                        _candidates.insert(1, os.path.join(str(file.locate())))
-                        break
+                if pkg_files is not None:
+                    for file in pkg_files:  # type: ignore
+                        if (
+                            file.parent.name == "Rtree.libs"
+                            and file.stem.startswith("libspatialindex")
+                            and ".so" in file.suffixes
+                        ):
+                            _candidates.insert(1, os.path.join(str(file.locate())))
+                            break
             except importlib.metadata.PackageNotFoundError:
                 pass
 
