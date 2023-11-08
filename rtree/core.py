@@ -75,6 +75,7 @@ def free_error_msg_ptr(result, func, cargs):
 
 def get_include():
     import rtree
+
     return os.path.join(os.path.dirname(rtree.__file__), "include")
 
 
