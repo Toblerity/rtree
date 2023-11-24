@@ -1,4 +1,5 @@
 from __future__ import annotations
+from importlib import resources
 
 import ctypes
 import os
@@ -76,7 +77,8 @@ def free_error_msg_ptr(result, func, cargs):
 def get_include():
     import rtree
 
-    return os.path.join(os.path.dirname(rtree.__file__), "include")
+    include_dir = resources.files(rtree).joinpath("include")
+    return str(include_dir) if include_dir.is_dir() else ""
 
 
 # load the shared library by looking in likely places
