@@ -139,7 +139,7 @@ jobs:
             export PATH=$PATH:/home/runner/.local/bin
             python3 setup.py sdist
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           path: dist
         name: Download artifacts
