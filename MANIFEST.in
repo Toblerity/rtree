@@ -3,4 +3,3 @@ include MANIFEST.in
 recursive-include benchmarks *
 recursive-include tests *
 recursive-include docs *
-recursive-include rtree/include *.h
