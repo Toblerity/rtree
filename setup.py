@@ -56,14 +56,11 @@ class InstallPlatlib(install):  # type: ignore[misc]
             else:
                 raise ValueError(f"unhandled platform {sys.platform!r}")
 
+            target_lib.mkdir(parents=True, exist_ok=True)
             for pth in source_lib.glob(lib_pattern):
                 # if the source isn't a file skip it
                 if not pth.is_file():
                     continue
-
-                # make directory if it doesn't exist yet
-                if not target_lib.is_dir():
-                    target_lib.mkdir(parents=True)
 
                 # copy the source file to the target directory
                 self.copy_file(str(pth), str(target_lib / pth.name))
@@ -73,14 +70,11 @@ class InstallPlatlib(install):  # type: ignore[misc]
         if source_include.is_dir():
             for pth in source_include.rglob("*.h"):
                 rpth = pth.relative_to(source_include)
-                target_subdir = target_include / rpth
-
-                # make directory if it doesn't exist yet
-                if not target_subdir.is_dir():
-                    target_subdir.mkdir(parents=True)
 
                 # copy the source file to the target directory
-                self.copy_file(str(pth), str(target_include / rpth))
+                target_subdir = target_include / rpth.parent
+                target_subdir.mkdir(parents=True, exist_ok=True)
+                self.copy_file(str(pth), str(target_subdir))
 
 
 # See pyproject.toml for other project metadata

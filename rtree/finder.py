@@ -143,7 +143,7 @@ def get_include() -> str:
         if pkg_files is not None:
             for path in pkg_files:  # type: ignore
                 if path.name == "SpatialIndex.h":
-                    return str(path.parent.parent)
+                    return str(Path(path.locate()).parent.parent)
     except importlib.metadata.PackageNotFoundError:
         pass
 
