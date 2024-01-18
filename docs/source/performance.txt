@@ -38,6 +38,12 @@ Override :py:data:`~rtree.index.Index.dumps` to use the highest pickle protocol
     ...         return cPickle.dumps(obj, -1)
     >>> r = FastRtree()
 
+.. topic:: Update from January 2024
+
+   Pickling is currently broken and awaiting a pull requst to fix it.
+   For more information, see the `pull request on GitHub`_.
+
+.. _pull request on GitHub: https://github.com/Toblerity/rtree/pull/197
 
 Use objects='raw'
 ...............................................................................
