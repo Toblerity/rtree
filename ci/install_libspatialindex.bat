@@ -21,7 +21,9 @@ ninja
 
 mkdir %~dp0\..\rtree\lib
 copy bin\*.dll %~dp0\..\rtree\lib
+xcopy /S ..\include\* %~dp0\..\rtree\include\
 rmdir /Q /S bin
 
 dir %~dp0\..\rtree\
 dir %~dp0\..\rtree\lib
+dir %~dp0\..\rtree\include

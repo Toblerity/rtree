@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import os
+import sys
+from pathlib import Path
 
 from setuptools import setup
 from setuptools.command.install import install
@@ -7,7 +8,7 @@ from setuptools.dist import Distribution
 from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 # current working directory of this setup.py file
-_cwd = os.path.abspath(os.path.split(__file__)[0])
+_cwd = Path(__file__).resolve().parent
 
 
 class bdist_wheel(_bdist_wheel):  # type: ignore[misc]
@@ -26,54 +27,54 @@ class BinaryDistribution(Distribution):  # type: ignore[misc]
 class InstallPlatlib(install):  # type: ignore[misc]
     def finalize_options(self) -> None:
         """
-        Copy the shared libraries into the wheel. Note that this
-        will *only* check in `rtree/lib` rather than anywhere on
-        the system so if you are building a wheel you *must* copy or
-        symlink the `.so`/`.dll`/`.dylib` files into `rtree/lib`.
+        Copy the shared libraries and header files into the wheel. Note that
+        this will *only* check in `rtree/lib` and `include` rather than
+        anywhere on the system so if you are building a wheel you *must* copy
+        or symlink the `.so`/`.dll`/`.dylib` files into `rtree/lib` and
+        `.h` into `rtree/include`.
         """
-        # use for checking extension types
-        from fnmatch import fnmatch
-
         install.finalize_options(self)
         if self.distribution.has_ext_modules():
             self.install_lib = self.install_platlib
-        # now copy over libspatialindex
-        # get the location of the shared library on the filesystem
 
-        # where we're putting the shared library in the build directory
-        target_dir = os.path.join(self.build_lib, "rtree", "lib")
-        # where are we checking for shared libraries
-        source_dir = os.path.join(_cwd, "rtree", "lib")
+        # source files to copy
+        source_dir = _cwd / "rtree"
 
-        # what patterns represent shared libraries
-        patterns = {"*.so", "libspatialindex*dylib", "*.dll"}
+        # destination for the files in the build directory
+        target_dir = Path(self.build_lib) / "rtree"
 
-        if not os.path.isdir(source_dir):
-            # no copying of binary parts to library
-            # this is so `pip install .` works even
-            # if `rtree/lib` isn't populated
-            return
+        source_lib = source_dir / "lib"
+        target_lib = target_dir / "lib"
+        if source_lib.is_dir():
+            # what patterns represent shared libraries for supported platforms
+            if sys.platform.startswith("win"):
+                lib_pattern = "*.dll"
+            elif sys.platform.startswith("linux"):
+                lib_pattern = "*.so*"
+            elif sys.platform == "darwin":
+                lib_pattern = "libspatialindex*dylib"
+            else:
+                raise ValueError(f"unhandled platform {sys.platform!r}")
 
-        for file_name in os.listdir(source_dir):
-            # make sure file name is lower case
-            check = file_name.lower()
-            # use filename pattern matching to see if it is
-            # a shared library format file
-            if not any(fnmatch(check, p) for p in patterns):
-                continue
+            target_lib.mkdir(parents=True, exist_ok=True)
+            for pth in source_lib.glob(lib_pattern):
+                # if the source isn't a file skip it
+                if not pth.is_file():
+                    continue
 
-            # if the source isn't a file skip it
-            if not os.path.isfile(os.path.join(source_dir, file_name)):
-                continue
+                # copy the source file to the target directory
+                self.copy_file(str(pth), str(target_lib / pth.name))
 
-            # make build directory if it doesn't exist yet
-            if not os.path.isdir(target_dir):
-                os.makedirs(target_dir)
+        source_include = source_dir / "include"
+        target_include = target_dir / "include"
+        if source_include.is_dir():
+            for pth in source_include.rglob("*.h"):
+                rpth = pth.relative_to(source_include)
 
-            # copy the source file to the target directory
-            self.copy_file(
-                os.path.join(source_dir, file_name), os.path.join(target_dir, file_name)
-            )
+                # copy the source file to the target directory
+                target_subdir = target_include / rpth.parent
+                target_subdir.mkdir(parents=True, exist_ok=True)
+                self.copy_file(str(pth), str(target_subdir))
 
 
 # See pyproject.toml for other project metadata
