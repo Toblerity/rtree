@@ -34,7 +34,7 @@ Documentation
 * :ref:`modindex`
 * :ref:`search`
 
-.. _`R-trees`: http://en.wikipedia.org/wiki/R-tree
-.. _`ctypes`: http://docs.python.org/library/ctypes.html
-.. _`libspatialindex`: https://libspatialindex.org/
-.. _`Rtree`: http://toblerity.github.com/rtree/
+.. _`R-trees`: https://en.wikipedia.org/wiki/R-tree
+.. _`ctypes`: https://docs.python.org/3/library/ctypes.html
+.. _`libspatialindex`: https://libspatialindex.org
+.. _`Rtree`: https://rtree.readthedocs.io

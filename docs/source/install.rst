@@ -39,7 +39,5 @@ is as easy as::
   c:\python2x\scripts\easy_install.exe Rtree
 
 
-.. _`PyPI`: http://pypi.python.org/pypi/Rtree/
-.. _`Rtree`: http://pypi.python.org/pypi/Rtree/
-
-.. _`libspatialindex`: https://libspatialindex.org/
+.. _`PyPI`: https://pypi.org/project/Rtree/
+.. _`libspatialindex`: https://libspatialindex.org
