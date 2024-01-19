@@ -1,3 +1,9 @@
+1.2.0: 2024-01-19
+=================
+
+- Fix test failure with built library (:PR:`291` by :user:`sebastic`)
+- Include spatialindex headers and add :py:meth:`~rtree.finder.get_include` (:PR:`292` by :user:`JDBetteridge`)
+
 1.1.0: 2023-10-17
 =================
 
