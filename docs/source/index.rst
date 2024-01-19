@@ -25,6 +25,7 @@ Documentation
    install
    tutorial
    class
+   misc
    changes
    performance
    history
