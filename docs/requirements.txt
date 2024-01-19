@@ -1,1 +1,2 @@
 sphinx>=4
+sphinx-issues

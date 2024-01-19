@@ -26,6 +26,7 @@ extensions = [
     "sphinx.ext.todo",
     "sphinx.ext.coverage",
     "sphinx.ext.ifconfig",
+    "sphinx_issues",
 ]
 
 templates_path = ["_templates"]
@@ -59,3 +60,7 @@ intersphinx_mapping = {"python": ("http://docs.python.org/3", None)}
 # sphinx.ext.autodoc
 autodoc_typehints = "description"
 autodoc_typehints_description_target = "documented"
+
+# sphinx-issues
+issues_github_path = "Toblerity/rtree"
+issues_commit_prefix = ""
