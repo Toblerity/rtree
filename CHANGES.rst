@@ -1,3 +1,30 @@
+1.1.0: 2023-10-17
+=================
+
+- Python 3.8+ is now required (:PR:`273`)
+- Move project metadata to pyproject.toml (:PR:`269`)
+- Refactor built wheels for PyPI (:PR:`276`)
+- Fix memory leak when breaking mid-way in _get_objects and _get_ids (:PR:`266`) (thanks :user:`akariv`!)
+
+1.0.1: 2022-10-12
+=================
+
+- Fix up type hints :PR:`243` (thanks :user:`oderby`)
+- Python 3.11 wheels :PR:`250` (thanks :user:`ewouth`)
+
+1.0.0: 2022-04-05
+=================
+
+- Python 3.7+ is now required (:PR:`212`) (thanks :user:`adamjstewart`!)
+- Type hints (:PR:`215` and others) (thanks :user:`adamjstewart`!)
+- Python 3.10 wheels, including osx-arm64 :PR:`224`
+- Clean up libspatialindex C API mismatches :PR:`222` (thanks :user:`musicinmybrain`!)
+- Many doc updates, fixes, and type hints (thanks :user:`adamjstewart`!) :PR:`212` :PR:`221` :PR:`217` :PR:`215`
+- __len__ method for index :PR:`194`
+- Prevent get_coordinate_pointers from mutating inputs #205 (thanks :user:`sjones94549`!)
+- linux-aarch64 wheels :PR:`183` (thanks :user:`odidev`!)
+- black (:PR:`218`) and flake8 (:PR:`145`) linting
+
 0.9.3: 2019-12-10
 =================
 

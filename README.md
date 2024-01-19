@@ -24,29 +24,4 @@ Wheels are available for most major platforms, and `rtree` with bundled `libspat
 pip install rtree
 ```
 
-# Changes
-
-## 1.1.0
-
-* Python 3.8+ is now required (#273)
-* Move project metadata to pyproject.toml (#269)
-* Refactor built wheels for PyPI (#276)
-* Fix memory leak when breaking mid-way in `_get_objects` and `_get_ids` (#266) (thanks @akariv!)
-
-## 1.0.1
-
-* Fix up type hints #243 (thanks @oderby)
-* Python 3.11 wheels #250 (thanks @ewouth)
-
-## 1.0.0
-
-
-* Python 3.7+ is now required (#212) (thanks @adamjstewart!)
-* Type hints (#215 and others) (thanks @adamjstewart!)
-* Python 3.10 wheels, including osx-arm64 #224
-* Clean up libspatialindex C API mismatches #222 (thanks @musicinmybrain!)
-* Many doc updates, fixes, and type hints (thanks @adamjstewart!) #212 #221 #217 #215
-* __len__ method for index #194
-* Prevent get_coordinate_pointers from mutating inputs #205 (thanks @sjones94549!)
-* linux-aarch64 wheels #183 (thanks @odidev!)
-* black (#218) and flake8 (#145) linting
+See [changes](https://rtree.readthedocs.io/en/latest/changes.html) for all versions.
