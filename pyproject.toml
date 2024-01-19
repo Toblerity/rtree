@@ -101,5 +101,6 @@ skip_gitignore = true
 color_output = true
 
 [tool.mypy]
+exclude = ["docs", "build"]
 ignore_missing_imports = true
 show_error_codes = true

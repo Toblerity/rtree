@@ -10,3 +10,4 @@ lib
 .coverage
 .tox
 wheelhouse
+.vscode/
