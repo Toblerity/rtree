@@ -9,6 +9,7 @@ authors = [
 ]
 maintainers = [
     {name = "Howard Butler", email = "howard@hobu.co"},
+    {name = "Mike Taves", email = "mwtoews@gmail.com"},
 ]
 description = "R-Tree spatial index for Python GIS"
 readme = "README.md"
