@@ -1,4 +1,4 @@
-include *.md *.txt
+include *.md *.rst *.txt
 include MANIFEST.in
 recursive-include benchmarks *
 recursive-include tests *

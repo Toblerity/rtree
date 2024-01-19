@@ -11,3 +11,4 @@ lib
 .tox
 wheelhouse
 .vscode/
+*venv*
