@@ -5,6 +5,11 @@ repos:
     -   id: check-yaml
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.27.3
+    hooks:
+    -   id: check-github-workflows
+        args: ["--verbose"]
   - repo: https://github.com/psf/black
     rev: 23.9.1
     hooks:
