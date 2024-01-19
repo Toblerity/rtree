@@ -10,3 +10,5 @@ lib
 .coverage
 .tox
 wheelhouse
+.vscode/
+*venv*

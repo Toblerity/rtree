@@ -1,8 +1,5 @@
 """
-finder.py
-------------
-
-Locate `libspatialindex` shared library by any means necessary.
+Locate `libspatialindex` shared library and header files.
 """
 from __future__ import annotations
 

@@ -1,36 +1,57 @@
-.. _changes:
+1.1.0: 2023-10-17
+=================
 
-Changes
-..............................................................................
+- Python 3.8+ is now required (:PR:`273`)
+- Move project metadata to pyproject.toml (:PR:`269`)
+- Refactor built wheels for PyPI (:PR:`276`)
+- Fix memory leak when breaking mid-way in _get_objects and _get_ids (:PR:`266`) (thanks :user:`akariv`!)
+
+1.0.1: 2022-10-12
+=================
+
+- Fix up type hints :PR:`243` (thanks :user:`oderby`)
+- Python 3.11 wheels :PR:`250` (thanks :user:`ewouth`)
+
+1.0.0: 2022-04-05
+=================
+
+- Python 3.7+ is now required (:PR:`212`) (thanks :user:`adamjstewart`!)
+- Type hints (:PR:`215` and others) (thanks :user:`adamjstewart`!)
+- Python 3.10 wheels, including osx-arm64 :PR:`224`
+- Clean up libspatialindex C API mismatches :PR:`222` (thanks :user:`musicinmybrain`!)
+- Many doc updates, fixes, and type hints (thanks :user:`adamjstewart`!) :PR:`212` :PR:`221` :PR:`217` :PR:`215`
+- __len__ method for index :PR:`194`
+- Prevent get_coordinate_pointers from mutating inputs #205 (thanks :user:`sjones94549`!)
+- linux-aarch64 wheels :PR:`183` (thanks :user:`odidev`!)
+- black (:PR:`218`) and flake8 (:PR:`145`) linting
 
 0.9.3: 2019-12-10
 =================
 
-- find_library and libspatialindex library loading https://github.com/Toblerity/rtree/pull/131
+- find_library and libspatialindex library loading :PR:`131`
 
 0.9.2: 2019-12-09
 =================
 
-- Refactored tests to be based on unittest https://github.com/Toblerity/rtree/pull/129
-- Update libspatialindex library loading code to adapt previous behavior https://github.com/Toblerity/rtree/pull/128
-- Empty data streams throw exceptions and do not partially construct indexes https://github.com/Toblerity/rtree/pull/127
+- Refactored tests to be based on unittest :PR:`129`
+- Update libspatialindex library loading code to adapt previous behavior :PR:`128`
+- Empty data streams throw exceptions and do not partially construct indexes :PR:`127`
 
 0.9.0: 2019-11-24
 =================
 
 - Add Index.GetResultSetOffset()
-- Add Index.contains() method for object and id (requires libspatialindex 1.9.3+) #116
-- Add Index.Flush() #107
-- Add TPRTree index support (thanks @sdhiscocks #117 )
-- Return container sizes without returning objects #90
-- Add set_result_limit and set_result_offset for Index paging  44ad21aecd3f7b49314b9be12f3334d8bae7e827
+- Add Index.contains() method for object and id (requires libspatialindex 1.9.3+) :PR:`116`
+- Add Index.Flush() :PR:`107`
+- Add TPRTree index support (thanks :user:`sdhiscocks` :PR:`117`)
+- Return container sizes without returning objects :PR:`90`
+- Add set_result_limit and set_result_offset for Index paging :commit:`44ad21aecd3f7b49314b9be12f3334d8bae7e827`
 
 Bug fixes:
 
-- Better exceptions in cases where stream functions throw #80
+- Better exceptions in cases where stream functions throw :PR:`80`
 - Migrated CI platform to Azure Pipelines  https://dev.azure.com/hobuinc/rtree/_build?definitionId=5
 - Minor test enhancements and fixups. Both libspatialindex 1.8.5 and libspatialindex 1.9.3 are tested with CI
-
 
 
 0.8: 2014-07-17
@@ -69,7 +90,7 @@ Bug fixes:
 - Many more docstrings, sphinx docs, etc
 
 
-0.5.0: 2009-08-XX
+0.5.0: 2009-08-06
 =================
 
 0.5.0 was a complete refactoring to use libsidx - a C API for libspatialindex.
@@ -112,8 +133,8 @@ available as a result of this refactoring.
 - Reraise index query errors as Python exceptions.
 - Improved persistence.
 
-0.2:
-==================
+0.2: 19 May 2007
+================
 - Link spatialindex system library.
 
 0.1: 13 April 2007
