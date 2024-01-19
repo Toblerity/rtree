@@ -55,7 +55,7 @@ pdf_fit_mode = "overflow"
 
 # -- Extension configuration -------------------------------------------------
 
-intersphinx_mapping = {"python": ("http://docs.python.org/3", None)}
+intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
 
 # sphinx.ext.autodoc
 autodoc_typehints = "description"

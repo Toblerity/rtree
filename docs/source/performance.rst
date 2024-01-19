@@ -3,10 +3,10 @@
 Performance
 ------------------------------------------------------------------------------
 
-See the `tests/benchmarks.py`_ file for a comparison of various query methods
+See the `benchmarks.py`_ file for a comparison of various query methods
 and how much acceleration can be obtained from using Rtree.
 
-.. _tests/benchmarks.py: https://raw.github.com/Rtree/Rtree/master/tests/benchmarks.py
+.. _benchmarks.py: https://github.com/Toblerity/rtree/blob/master/benchmarks/benchmarks.py
 
 There are a few simple things that will improve performance.
 

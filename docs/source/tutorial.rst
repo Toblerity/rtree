@@ -205,8 +205,6 @@ storage backend for `ZODB`_ and you can find example python code `here`_. Note
 that the code was written in 2011, hasn't been updated and was only an alpha
 version.
 
-.. _here: https://github.com/Toblerity/zope.index.rtree
-
-.. _ZODB: http://www.zodb.org/
-
-.. _`libspatialindex`: https://libspatialindex.org/
+.. _`here`: https://github.com/Toblerity/zope.index.rtree
+.. _`ZODB`: https://zodb.org
+.. _`libspatialindex`: https://libspatialindex.org

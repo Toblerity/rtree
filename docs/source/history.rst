@@ -34,14 +34,14 @@ is part of that source tree. The code bases are independent from each other
 and can now evolve separately. Rtree is pure Python as of 0.6.0+.
 
 
-.. _`Sean Gillies`: http://sgillies.net/blog/
-.. _`Howard Butler`: http://hobu.co
-.. _`Brent Pedersen`: http://hackmap.blogspot.com/
-.. _`QGIS`: http://qgis.org
+.. _`Sean Gillies`: https://sgillies.net
+.. _`Howard Butler`: https://hobu.co
+.. _`Brent Pedersen`: https://github.com/brentp
+.. _`QGIS`: https://qgis.org
 
 
-.. _`ZODB`: http://www.zodb.org/
-.. _`R-trees`: http://en.wikipedia.org/wiki/R-tree
-.. _`ctypes`: http://docs.python.org/library/ctypes.html
-.. _`libspatialindex`: https://libspatialindex.org/
-.. _`Rtree`: http://rtree.github.com
+.. _`ZODB`: https://zodb.org
+.. _`R-trees`: https://en.wikipedia.org/wiki/R-tree
+.. _`ctypes`: https://docs.python.org/3/library/ctypes.html
+.. _`libspatialindex`: https://libspatialindex.org
+.. _`Rtree`: https://rtree.readthedocs.io

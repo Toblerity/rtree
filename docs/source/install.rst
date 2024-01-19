@@ -8,26 +8,29 @@ Installation
 
 First, download and install version 1.8.5+ of the `libspatialindex`_ library from:
 
-https://libspatialindex.org/
+https://libspatialindex.org
 
-The library is a GNU-style build, so it is a matter of::
+The library supports CMake builds, so it is a matter of::
 
-  $ ./configure; make; make install
+  $ mkdir build && cd build
+  $ cmake ..
+  $ cmake --build . -j
+  $ cmake --install .
 
 You may need to run the ``ldconfig`` command after installing the library to
 ensure that applications can find it at startup time.
 
-At this point you can get Rtree 0.7.0 via easy_install::
+Rtree can be easily installed via pip::
 
-  $ easy_install Rtree
+  $ pip install Rtree
 
-or by running the local setup.py::
+or by running in a local source directory::
 
-  $ python setup.py install
+  $ pip install -e .
 
 You can build and test in place like::
 
-  $ python setup.py test
+  $ pytest
 
 Windows
 ..............................................................................
@@ -36,10 +39,8 @@ The Windows DLLs of `libspatialindex`_ are pre-compiled in
 windows installers that are available from `PyPI`_.  Installation on Windows
 is as easy as::
 
-  c:\python2x\scripts\easy_install.exe Rtree
+  pip install Rtree
 
 
-.. _`PyPI`: http://pypi.python.org/pypi/Rtree/
-.. _`Rtree`: http://pypi.python.org/pypi/Rtree/
-
-.. _`libspatialindex`: https://libspatialindex.org/
+.. _`PyPI`: https://pypi.org/project/Rtree/
+.. _`libspatialindex`: https://libspatialindex.org
