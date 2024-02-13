@@ -14,7 +14,7 @@ user.  These features include:
 * Clustered indexes (store Python pickles directly with index entries)
 * Bulk loading
 * Deletion
-* Disk serialization
+* ~~Disk serialization~~ [currently broken as of Jan 2024](https://github.com/Toblerity/rtree/pull/197)
 * Custom storage implementation (to implement spatial indexing in ZODB, for example)
 
 
