@@ -16,6 +16,20 @@ user.  These features include:
 * Disk serialization
 * Custom storage implementation (to implement spatial indexing in ZODB, for example)
 
+These features do not include:
+
+* Multithread safety (for reading or writing)
+* Multiprocess safety (for reading or writing)
+
+For either of these, we recommend using:
+
+* A PostGIS database, or
+* GeoPandas + spatial joining, or
+* Building an rtree from scratch in each thread/process (using [generator syntax](https://rtree.readthedocs.io/en/latest/performance.html#use-stream-loading))
+
+Note that since rtree is written in C, it can be orders of magnitude faster than a
+database even if running sequentially.
+
 Documentation
 ..............................................................................
 
