@@ -13,7 +13,7 @@ user.  These features include:
 * Clustered indexes (store Python pickles directly with index entries)
 * Bulk loading
 * Deletion
-* Disk serialization
+* Disk serialization (`currently broken as of Jan 2024`_)
 * Custom storage implementation (to implement spatial indexing in ZODB, for example)
 
 These features do not include:
@@ -48,6 +48,7 @@ Documentation
 * :ref:`modindex`
 * :ref:`search`
 
+.. _`currently broken as of Jan 2024`: https://github.com/Toblerity/rtree/pull/197
 .. _`R-trees`: https://en.wikipedia.org/wiki/R-tree
 .. _`ctypes`: https://docs.python.org/3/library/ctypes.html
 .. _`libspatialindex`: https://libspatialindex.org
