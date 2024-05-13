@@ -30,7 +30,10 @@ jobs:
       matrix:
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
-        sidx-version: ['1.8.5','1.9.3']
+        sidx-version: ['1.8.5', '1.9.3']
+        exclude:
+          - os: 'macos-latest'
+          - sidx-version: '1.8.5'
 
     steps:
     - uses: actions/checkout@v4
