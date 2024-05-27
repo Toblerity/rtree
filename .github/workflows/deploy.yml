@@ -34,6 +34,9 @@ jobs:
       with:
         python-version: '3.11'
 
+    - name: Setup
+      run: pip install wheel
+
     - uses: ilammy/msvc-dev-cmd@v1
       if: startsWith(matrix.os, 'windows')
 
@@ -44,7 +47,7 @@ jobs:
         ci\install_libspatialindex.bat
 
     - name: Build wheels
-      uses: pypa/cibuildwheel@v2.17.0
+      uses: pypa/cibuildwheel@v2.18.0
 
     - uses: actions/upload-artifact@v4
       with:
