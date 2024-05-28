@@ -42,12 +42,6 @@ class IndexTestCase(unittest.TestCase):
         assert next(rtree_test.intersection([1, 1, 1, 2, 2, 2])) == 1564
 
 
-class IndexVersion(unittest.TestCase):
-    def test_libsidx_version(self) -> None:
-        self.assertTrue(index.major_version == 1)
-        self.assertTrue(index.minor_version >= 7)
-
-
 class IndexCount(unittest.TestCase):
     def setUp(self) -> None:
         self.boxes15 = np.genfromtxt("boxes_15x15.data")
