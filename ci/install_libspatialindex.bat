@@ -26,8 +26,8 @@ cmake -G Ninja ^
 ninja install
 
 :: remove unneeded libdir
-rmdir %INSTALL_PREFIX%\libdir /s
+rmdir %INSTALL_PREFIX%\libdir /s /q
 
-dir %~dp0\..\rtree\
-dir %~dp0\..\rtree\lib
-dir %~dp0\..\rtree\include
+dir %INSTALL_PREFIX%
+dir %INSTALL_PREFIX%\lib
+dir %INSTALL_PREFIX%\include /s
