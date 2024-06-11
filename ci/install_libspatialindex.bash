@@ -2,8 +2,8 @@
 set -xe
 
 # A simple script to install libspatialindex from a Github Release
-VERSION=1.9.3
-SHA256=63a03bfb26aa65cf0159f925f6c3491b6ef79bc0e3db5a631d96772d6541187e
+VERSION=2.0.0
+SHA256=8caa4564c4592824acbf63a2b883aa2d07e75ccd7e9bf64321c455388a560579
 
 # where to copy resulting files
 # this has to be run before `cd`-ing anywhere
@@ -52,8 +52,6 @@ cd libspatialindex-${VERSION}
 
 mkdir build
 cd build
-
-cp "${SL}/CMakeLists.txt" ..
 
 printenv
 

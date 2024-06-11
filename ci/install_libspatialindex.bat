@@ -1,13 +1,11 @@
 python -c "import sys; print(sys.version)"
 
-set SIDX_VERSION=1.9.3
+set SIDX_VERSION=2.0.0
 
 curl -OL "https://github.com/libspatialindex/libspatialindex/archive/%SIDX_VERSION%.zip"
 
 tar xvf "%SIDX_VERSION%.zip"
 
-REM unzip 1.9.3.zip
-REM copy %~dp0\CMakeLists.txt libspatialindex-1.9.3\CMakeLists.txt
 cd libspatialindex-%SIDX_VERSION%
 
 mkdir build
