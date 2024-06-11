@@ -85,11 +85,6 @@ def main():
                 break
         else:
             raise RuntimeError("subdirectory not found")
-        if os_ == "linux":
-            # remove duplicated dir
-            assert len(list((unpackdir / "Rtree.libs").glob("*.so*"))) >= 1
-            lib_dir = unpackdir / "rtree" / "lib"
-            shutil.rmtree(lib_dir)
         # re-pack
         subprocess.run(["wheel", "pack", str(unpackdir.name)], cwd=tmpdir, check=True)
         files = list(tmpdir.glob("*.whl"))
