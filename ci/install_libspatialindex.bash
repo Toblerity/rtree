@@ -7,21 +7,10 @@ SHA256=8caa4564c4592824acbf63a2b883aa2d07e75ccd7e9bf64321c455388a560579
 
 # where to copy resulting files
 # this has to be run before `cd`-ing anywhere
-libtarget() {
+install_prefix() {
   OURPWD=$PWD
   cd "$(dirname "$0")"
-  mkdir -p ../rtree/lib
-  cd ../rtree/lib
-  arr=$(pwd)
-  cd "$OURPWD"
-  echo $arr
-}
-
-headertarget() {
-  OURPWD=$PWD
-  cd "$(dirname "$0")"
-  mkdir -p ../rtree/include
-  cd ../rtree/include
+  cd ../rtree
   arr=$(pwd)
   cd "$OURPWD"
   echo $arr
@@ -36,8 +25,7 @@ scriptloc() {
 }
 # note that we're doing this convoluted thing to get
 # an absolute path so mac doesn't yell at us
-LIBTARGET=`libtarget`
-HEADERTARGET=`headertarget`
+INSTALL_PREFIX=`install_prefix`
 SL=`scriptloc`
 
 rm $VERSION.zip || true
@@ -59,23 +47,25 @@ if [ "$(uname)" == "Darwin" ]; then
     CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=${ARCHFLAGS##* }"
 fi
 
-cmake -DCMAKE_BUILD_TYPE=Release ${CMAKE_ARGS} ..
+cmake ${CMAKE_ARGS} \
+  -D CMAKE_BUILD_TYPE=Release \
+  -D BUILD_SHARED_LIBS=ON \
+  -D CMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
+  -D CMAKE_INSTALL_LIBDIR=lib \
+  ..
 make -j 4
 
 # copy built libraries relative to path of this script
-# -d means copy links as links rather than duplicate files
-# macos uses "bsd cp" and needs special handling
-if [ "$(uname)" == "Darwin" ]; then
-    # change the rpath in the dylib to point to the same directory
-    install_name_tool -change @rpath/libspatialindex.6.dylib @loader_path/libspatialindex.dylib bin/libspatialindex_c.dylib
-    # copy the dylib files to the target director
-    cp bin/libspatialindex.dylib $LIBTARGET
-    cp bin/libspatialindex_c.dylib $LIBTARGET
-    cp -r ../include/* $HEADERTARGET
-else
-    cp -L bin/* $LIBTARGET
-    cp -r ../include/* $HEADERTARGET
-fi
+make install
 
-ls $LIBTARGET
-ls -R $HEADERTARGET
+# remove unneeded extras in lib
+rm -rfv $INSTALL_PREFIX/lib/cmake
+rm -rfv $INSTALL_PREFIX/lib/pkgconfig
+
+#if [ "$(uname)" == "Darwin" ]; then
+    # change the rpath in the dylib to point to the same directory
+    # install_name_tool -change @rpath/libspatialindex.7.dylib @loader_path/libspatialindex.dylib lib/libspatialindex_c.dylib
+#fi
+
+ls -R $INSTALL_PREFIX/lib
+ls -R $INSTALL_PREFIX/include

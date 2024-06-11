@@ -13,14 +13,22 @@ cd build
 
 pip install ninja
 
-cmake -D CMAKE_BUILD_TYPE=Release -G Ninja ..
+set INSTALL_PREFIX=%~dp0\..\rtree
 
-ninja
+cmake -G Ninja ^
+      -D CMAKE_BUILD_TYPE=Release ^
+      -D BUILD_SHARED_LIBS="ON" ^
+      -D CMAKE_INSTALL_PREFIX="%INSTALL_PREFIX%" ^
+      -D CMAKE_INSTALL_BINDIR=lib ^
+      -D CMAKE_INSTALL_LIBDIR=libdir ^
+      ..
+if errorlevel 1 exit 1
 
-mkdir %~dp0\..\rtree\lib
-copy bin\*.dll %~dp0\..\rtree\lib
-xcopy /S ..\include\* %~dp0\..\rtree\include\
-rmdir /Q /S bin
+cmake --build . --config Release --target install
+if errorlevel 1 exit 1
+
+:: remove unneeded libdir
+rmdir %INSTALL_PREFIX%\libdir /s
 
 dir %~dp0\..\rtree\
 dir %~dp0\..\rtree\lib
