@@ -22,10 +22,8 @@ cmake -G Ninja ^
       -D CMAKE_INSTALL_BINDIR=lib ^
       -D CMAKE_INSTALL_LIBDIR=libdir ^
       ..
-if errorlevel 1 exit 1
 
-cmake --build . --config Release --target install
-if errorlevel 1 exit 1
+ninja install
 
 :: remove unneeded libdir
 rmdir %INSTALL_PREFIX%\libdir /s

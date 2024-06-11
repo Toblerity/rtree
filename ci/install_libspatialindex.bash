@@ -45,6 +45,10 @@ printenv
 
 if [ "$(uname)" == "Darwin" ]; then
     CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=${ARCHFLAGS##* }"
+    INSTALL_RPATH="@loader_path"
+    # install_name_tool -change @rpath/libspatialindex.7.dylib @loader_path/libspatialindex.dylib lib/libspatialindex_c.dylib
+else
+    INSTALL_RPATH="\$ORIGIN"
 fi
 
 cmake ${CMAKE_ARGS} \
@@ -52,6 +56,7 @@ cmake ${CMAKE_ARGS} \
   -D BUILD_SHARED_LIBS=ON \
   -D CMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
   -D CMAKE_INSTALL_LIBDIR=lib \
+  -D CMAKE_INSTALL_RPATH="${INSTALL_RPATH}" \
   ..
 make -j 4
 
@@ -61,11 +66,6 @@ make install
 # remove unneeded extras in lib
 rm -rfv $INSTALL_PREFIX/lib/cmake
 rm -rfv $INSTALL_PREFIX/lib/pkgconfig
-
-#if [ "$(uname)" == "Darwin" ]; then
-    # change the rpath in the dylib to point to the same directory
-    # install_name_tool -change @rpath/libspatialindex.7.dylib @loader_path/libspatialindex.dylib lib/libspatialindex_c.dylib
-#fi
 
 ls -R $INSTALL_PREFIX/lib
 ls -R $INSTALL_PREFIX/include
