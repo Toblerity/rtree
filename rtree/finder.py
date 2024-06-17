@@ -70,21 +70,6 @@ def load() -> ctypes.CDLL:
             # linux shared libraries are `.so`
             lib_name = "libspatialindex_c.so"
 
-            # add path for binary wheel prepared with cibuildwheel/auditwheel
-            try:
-                pkg_files = importlib.metadata.files("rtree")
-                if pkg_files is not None:
-                    for file in pkg_files:  # type: ignore
-                        if (
-                            file.parent.name == "Rtree.libs"
-                            and file.stem.startswith("libspatialindex")
-                            and ".so" in file.suffixes
-                        ):
-                            _candidates.insert(1, Path(file.locate()))
-                            break
-            except importlib.metadata.PackageNotFoundError:
-                pass
-
         # get the starting working directory
         cwd = os.getcwd()
         for cand in _candidates:
