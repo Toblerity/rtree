@@ -256,7 +256,7 @@ class IndexIntersection(IndexTestCase):
         hit = [h for h in hits if h.id == 4321][0]
         self.assertEqual(hit.id, 4321)
         self.assertEqual(hit.object, 42)
-        box = ["%.10f" % t for t in hit.bbox]
+        box = [f"{t:.10f}" for t in hit.bbox]
         expected = ["34.3776829412", "26.7375853734", "49.3776829412", "41.7375853734"]
         self.assertEqual(box, expected)
 
