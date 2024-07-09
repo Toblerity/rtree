@@ -1,3 +1,11 @@
+1.3.0: 2024-07-10
+=================
+
+- Upgrade binary wheels with libspatialindex-2.0.0 (:PR:`316`)
+- Fix binary wheels for musllinux wheels (:PR:`316`)
+- Update code style, replace isort and black with ruff, modern numpy rng (:PR:`319`)
+- Remove libsidx version testing (:PR:`313`)
+
 1.2.0: 2024-01-19
 =================
 
