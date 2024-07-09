@@ -29,7 +29,7 @@ INSTALL_PREFIX=`install_prefix`
 SL=`scriptloc`
 
 rm $VERSION.zip || true
-curl -L -O https://github.com/libspatialindex/libspatialindex/archive/$VERSION.zip
+curl -LO --retry 5 --retry-max-time 120 https://github.com/libspatialindex/libspatialindex/archive/$VERSION.zip
 
 # check the file hash
 echo "${SHA256}  ${VERSION}.zip" | sha256sum -c -
