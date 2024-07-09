@@ -17,7 +17,7 @@ def main():
         os_ = "windows"
     else:
         raise NotImplementedError(
-            "sys.platform '{}' is not supported yet.".format(sys.platform)
+            f"sys.platform '{sys.platform}' is not supported yet."
         )
 
     p = argparse.ArgumentParser(

@@ -1,6 +1,7 @@
 """
 Locate `libspatialindex` shared library and header files.
 """
+
 from __future__ import annotations
 
 import ctypes
