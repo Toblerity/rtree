@@ -44,9 +44,8 @@ cd build
 printenv
 
 if [ "$(uname)" == "Darwin" ]; then
-    CMAKE_ARGS=\
-      "-D CMAKE_OSX_ARCHITECTURES=${ARCHFLAGS##* } "\
-      "-D CMAKE_INSTALL_RPATH=@loader_path"
+    CMAKE_ARGS="-D CMAKE_OSX_ARCHITECTURES=${ARCHFLAGS##* } \
+                -D CMAKE_INSTALL_RPATH=@loader_path"
 fi
 
 cmake ${CMAKE_ARGS} \
