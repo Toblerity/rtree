@@ -53,13 +53,14 @@ target-version = ["py38", "py39", "py310", "py311", "py312"]
 color = true
 
 [tool.cibuildwheel]
-build = "cp39-*"
+build = "cp38-*"
 build-verbosity = 3
 repair-wheel-command = "python scripts/repair_wheel.py -w {dest_dir} {wheel}"
 test-requires = "tox"
 test-command = "tox --conf {project} --installpkg {wheel}"
 test-skip = [
     "*aarch64",  # slow!
+    "*-macosx_arm64",
 ]
 
 [tool.cibuildwheel.linux]
