@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
 import shutil
 import subprocess
 import sys
@@ -43,6 +44,13 @@ def main():
         tmpdir = Path(tmpdir_)
         # use the platform specific repair tool first
         if os_ == "linux":
+            # use path from cibuildwheel which allows auditwheel to create
+            # Rtree.libs/libspatialindex-*.so.*
+            cibw_lib_path = "/project/rtree/lib"
+            if os.environ.get("LD_LIBRARY_PATH"):  # append path
+                os.environ["LD_LIBRARY_PATH"] += f"{os.pathsep}{cibw_lib_path}"
+            else:
+                os.environ["LD_LIBRARY_PATH"] = cibw_lib_path
             subprocess.run(
                 ["auditwheel", "repair", "-w", str(tmpdir), str(file)], check=True
             )
@@ -85,9 +93,15 @@ def main():
                 break
         else:
             raise RuntimeError("subdirectory not found")
+
         if os_ == "linux":
+            # This is auditwheel's libs, which needs post-processing
+            libs_dir = unpackdir / "Rtree.libs"
+            lsidx_list = list(libs_dir.glob("libspatialindex*.so*"))
+            assert len(lsidx_list) == 1, list(libs_dir.iterdir())
+            lsidx = lsidx_list[0]
+            subprocess.run(["patchelf", "--set-rpath", "$ORIGIN", lsidx], check=True)
             # remove duplicated dir
-            assert len(list((unpackdir / "Rtree.libs").glob("*.so*"))) >= 1
             lib_dir = unpackdir / "rtree" / "lib"
             shutil.rmtree(lib_dir)
         # re-pack

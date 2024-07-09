@@ -2,26 +2,15 @@
 set -xe
 
 # A simple script to install libspatialindex from a Github Release
-VERSION=1.9.3
-SHA256=63a03bfb26aa65cf0159f925f6c3491b6ef79bc0e3db5a631d96772d6541187e
+VERSION=2.0.0
+SHA256=8caa4564c4592824acbf63a2b883aa2d07e75ccd7e9bf64321c455388a560579
 
 # where to copy resulting files
 # this has to be run before `cd`-ing anywhere
-libtarget() {
+install_prefix() {
   OURPWD=$PWD
   cd "$(dirname "$0")"
-  mkdir -p ../rtree/lib
-  cd ../rtree/lib
-  arr=$(pwd)
-  cd "$OURPWD"
-  echo $arr
-}
-
-headertarget() {
-  OURPWD=$PWD
-  cd "$(dirname "$0")"
-  mkdir -p ../rtree/include
-  cd ../rtree/include
+  cd ../rtree
   arr=$(pwd)
   cd "$OURPWD"
   echo $arr
@@ -36,48 +25,44 @@ scriptloc() {
 }
 # note that we're doing this convoluted thing to get
 # an absolute path so mac doesn't yell at us
-LIBTARGET=`libtarget`
-HEADERTARGET=`headertarget`
+INSTALL_PREFIX=`install_prefix`
 SL=`scriptloc`
 
-rm $VERSION.zip || true
-curl -L -O https://github.com/libspatialindex/libspatialindex/archive/$VERSION.zip
+rm -f $VERSION.zip
+curl -LOs --retry 5 --retry-max-time 120 https://github.com/libspatialindex/libspatialindex/archive/${VERSION}.zip
 
 # check the file hash
 echo "${SHA256}  ${VERSION}.zip" | sha256sum -c -
 
-rm -rf "libspatialindex-${VERSION}" || true
+rm -rf "libspatialindex-${VERSION}"
 unzip -q $VERSION
 cd libspatialindex-${VERSION}
 
 mkdir build
 cd build
 
-cp "${SL}/CMakeLists.txt" ..
-
 printenv
 
 if [ "$(uname)" == "Darwin" ]; then
-    CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=${ARCHFLAGS##* }"
+    CMAKE_ARGS="-D CMAKE_OSX_ARCHITECTURES=${ARCHFLAGS##* } \
+                -D CMAKE_INSTALL_RPATH=@loader_path"
 fi
 
-cmake -DCMAKE_BUILD_TYPE=Release ${CMAKE_ARGS} ..
+cmake ${CMAKE_ARGS} \
+  -D CMAKE_BUILD_TYPE=Release \
+  -D BUILD_SHARED_LIBS=ON \
+  -D CMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
+  -D CMAKE_INSTALL_LIBDIR=lib \
+  -D CMAKE_PLATFORM_NO_VERSIONED_SONAME=ON \
+  ..
 make -j 4
 
 # copy built libraries relative to path of this script
-# -d means copy links as links rather than duplicate files
-# macos uses "bsd cp" and needs special handling
-if [ "$(uname)" == "Darwin" ]; then
-    # change the rpath in the dylib to point to the same directory
-    install_name_tool -change @rpath/libspatialindex.6.dylib @loader_path/libspatialindex.dylib bin/libspatialindex_c.dylib
-    # copy the dylib files to the target director
-    cp bin/libspatialindex.dylib $LIBTARGET
-    cp bin/libspatialindex_c.dylib $LIBTARGET
-    cp -r ../include/* $HEADERTARGET
-else
-    cp -L bin/* $LIBTARGET
-    cp -r ../include/* $HEADERTARGET
-fi
+make install
 
-ls $LIBTARGET
-ls -R $HEADERTARGET
+# remove unneeded extras in lib
+rm -rfv ${INSTALL_PREFIX}/lib/cmake
+rm -rfv ${INSTALL_PREFIX}/lib/pkgconfig
+
+ls -R ${INSTALL_PREFIX}/lib
+ls -R ${INSTALL_PREFIX}/include

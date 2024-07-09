@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import sys
 from pathlib import Path
 
 from setuptools import setup
@@ -43,38 +42,17 @@ class InstallPlatlib(install):  # type: ignore[misc]
         # destination for the files in the build directory
         target_dir = Path(self.build_lib) / "rtree"
 
+        # copy lib tree
         source_lib = source_dir / "lib"
-        target_lib = target_dir / "lib"
         if source_lib.is_dir():
-            # what patterns represent shared libraries for supported platforms
-            if sys.platform.startswith("win"):
-                lib_pattern = "*.dll"
-            elif sys.platform.startswith("linux"):
-                lib_pattern = "*.so*"
-            elif sys.platform == "darwin":
-                lib_pattern = "libspatialindex*dylib"
-            else:
-                raise ValueError(f"unhandled platform {sys.platform!r}")
+            target_lib = target_dir / "lib"
+            self.copy_tree(str(source_lib), str(target_lib))
 
-            target_lib.mkdir(parents=True, exist_ok=True)
-            for pth in source_lib.glob(lib_pattern):
-                # if the source isn't a file skip it
-                if not pth.is_file():
-                    continue
-
-                # copy the source file to the target directory
-                self.copy_file(str(pth), str(target_lib / pth.name))
-
+        # copy include tree
         source_include = source_dir / "include"
-        target_include = target_dir / "include"
         if source_include.is_dir():
-            for pth in source_include.rglob("*.h"):
-                rpth = pth.relative_to(source_include)
-
-                # copy the source file to the target directory
-                target_subdir = target_include / rpth.parent
-                target_subdir.mkdir(parents=True, exist_ok=True)
-                self.copy_file(str(pth), str(target_subdir))
+            target_include = target_dir / "include"
+            self.copy_tree(str(source_include), str(target_include))
 
 
 # See pyproject.toml for other project metadata

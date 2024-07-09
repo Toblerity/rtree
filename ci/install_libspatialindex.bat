@@ -1,13 +1,11 @@
 python -c "import sys; print(sys.version)"
 
-set SIDX_VERSION=1.9.3
+set SIDX_VERSION=2.0.0
 
-curl -OL "https://github.com/libspatialindex/libspatialindex/archive/%SIDX_VERSION%.zip"
+curl -LO --retry 5 --retry-max-time 120 "https://github.com/libspatialindex/libspatialindex/archive/%SIDX_VERSION%.zip"
 
 tar xvf "%SIDX_VERSION%.zip"
 
-REM unzip 1.9.3.zip
-REM copy %~dp0\CMakeLists.txt libspatialindex-1.9.3\CMakeLists.txt
 cd libspatialindex-%SIDX_VERSION%
 
 mkdir build
@@ -15,15 +13,21 @@ cd build
 
 pip install ninja
 
-cmake -D CMAKE_BUILD_TYPE=Release -G Ninja ..
+set INSTALL_PREFIX=%~dp0\..\rtree
 
-ninja
+cmake -G Ninja ^
+      -D CMAKE_BUILD_TYPE=Release ^
+      -D BUILD_SHARED_LIBS="ON" ^
+      -D CMAKE_INSTALL_PREFIX="%INSTALL_PREFIX%" ^
+      -D CMAKE_INSTALL_BINDIR=lib ^
+      -D CMAKE_INSTALL_LIBDIR=libdir ^
+      ..
 
-mkdir %~dp0\..\rtree\lib
-copy bin\*.dll %~dp0\..\rtree\lib
-xcopy /S ..\include\* %~dp0\..\rtree\include\
-rmdir /Q /S bin
+ninja install
 
-dir %~dp0\..\rtree\
-dir %~dp0\..\rtree\lib
-dir %~dp0\..\rtree\include
+:: remove unneeded libdir
+rmdir %INSTALL_PREFIX%\libdir /s /q
+
+dir %INSTALL_PREFIX%
+dir %INSTALL_PREFIX%\lib
+dir %INSTALL_PREFIX%\include /s

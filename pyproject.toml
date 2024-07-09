@@ -50,14 +50,17 @@ rtree = ["py.typed"]
 
 [tool.cibuildwheel]
 build = "cp38-*"
-build-verbosity = "3"
+build-verbosity = 3
 repair-wheel-command = "python scripts/repair_wheel.py -w {dest_dir} {wheel}"
 test-requires = "tox"
 test-command = "tox --conf {project} --installpkg {wheel}"
+test-skip = [
+    "*aarch64",  # slow!
+    "*-macosx_arm64",
+]
 
 [tool.cibuildwheel.linux]
 archs = ["auto", "aarch64"]
-test-skip = "*aarch64"  # slow!
 before-build = [
     "yum install -y cmake libffi-devel",
     "bash {project}/ci/install_libspatialindex.bash",
@@ -72,7 +75,6 @@ before-build = [
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
-test-skip = "*-macosx_arm64"
 environment = { MACOSX_DEPLOYMENT_TARGET="10.9" }
 before-build = [
     "brew install coreutils cmake",
