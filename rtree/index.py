@@ -246,7 +246,7 @@ class Index:
 
             d = os.path.dirname(p)
             if not os.access(d, os.W_OK):
-                message = "Unable to open file '%s' for index storage" % f
+                message = f"Unable to open file '{f}' for index storage"
                 raise OSError(message)
         elif storage:
             self.properties.storage = RT_Custom
@@ -296,9 +296,7 @@ class Index:
             return 0
 
     def __repr__(self) -> str:
-        return "rtree.index.Index(bounds={}, size={})".format(
-            self.bounds, self.get_size()
-        )
+        return f"rtree.index.Index(bounds={self.bounds}, size={self.get_size()})"
 
     def __getstate__(self) -> dict[str, Any]:
         state = self.__dict__.copy()
@@ -575,18 +573,17 @@ class Index:
         return p_num_results.value
 
     @overload
-    def contains(self, coordinates: Any, objects: Literal[True]) -> Iterator[Item]:
-        ...
+    def contains(self, coordinates: Any, objects: Literal[True]) -> Iterator[Item]: ...
 
     @overload
     def contains(
         self, coordinates: Any, objects: Literal[False] = False
-    ) -> Iterator[int] | None:
-        ...
+    ) -> Iterator[int] | None: ...
 
     @overload
-    def contains(self, coordinates: Any, objects: Literal["raw"]) -> Iterator[object]:
-        ...
+    def contains(
+        self, coordinates: Any, objects: Literal["raw"]
+    ) -> Iterator[object]: ...
 
     def contains(
         self, coordinates: Any, objects: bool | Literal["raw"] = False
@@ -724,20 +721,19 @@ class Index:
         return new_idx
 
     @overload
-    def intersection(self, coordinates: Any, objects: Literal[True]) -> Iterator[Item]:
-        ...
+    def intersection(
+        self, coordinates: Any, objects: Literal[True]
+    ) -> Iterator[Item]: ...
 
     @overload
     def intersection(
         self, coordinates: Any, objects: Literal[False] = False
-    ) -> Iterator[int]:
-        ...
+    ) -> Iterator[int]: ...
 
     @overload
     def intersection(
         self, coordinates: Any, objects: Literal["raw"]
-    ) -> Iterator[object]:
-        ...
+    ) -> Iterator[object]: ...
 
     def intersection(
         self, coordinates: Any, objects: bool | Literal["raw"] = False
@@ -952,20 +948,17 @@ class Index:
     @overload
     def nearest(
         self, coordinates: Any, num_results: int, objects: Literal[True]
-    ) -> Iterator[Item]:
-        ...
+    ) -> Iterator[Item]: ...
 
     @overload
     def nearest(
         self, coordinates: Any, num_results: int, objects: Literal[False] = False
-    ) -> Iterator[int]:
-        ...
+    ) -> Iterator[int]: ...
 
     @overload
     def nearest(
         self, coordinates: Any, num_results: int, objects: Literal["raw"]
-    ) -> Iterator[object]:
-        ...
+    ) -> Iterator[object]: ...
 
     def nearest(
         self,
@@ -2104,7 +2097,7 @@ class RtreeContainer(Rtree):
                 or isinstance(args[0], bytes)
                 or isinstance(args[0], ICustomStorage)
             ):
-                raise ValueError("%s supports only in-memory indexes" % self.__class__)
+                raise ValueError(f"{self.__class__} supports only in-memory indexes")
         self._objects: dict[int, tuple[int, object]] = {}
         return super().__init__(*args, **kwargs)
 
@@ -2171,14 +2164,12 @@ class RtreeContainer(Rtree):
     add = insert  # type: ignore[assignment]
 
     @overload  # type: ignore[override]
-    def intersection(self, coordinates: Any, bbox: Literal[True]) -> Iterator[Item]:
-        ...
+    def intersection(self, coordinates: Any, bbox: Literal[True]) -> Iterator[Item]: ...
 
     @overload
     def intersection(
         self, coordinates: Any, bbox: Literal[False] = False
-    ) -> Iterator[object]:
-        ...
+    ) -> Iterator[object]: ...
 
     def intersection(
         self, coordinates: Any, bbox: bool = False
@@ -2252,14 +2243,12 @@ class RtreeContainer(Rtree):
     @overload  # type: ignore[override]
     def nearest(
         self, coordinates: Any, num_results: int = 1, bbox: Literal[True] = True
-    ) -> Iterator[Item]:
-        ...
+    ) -> Iterator[Item]: ...
 
     @overload
     def nearest(
         self, coordinates: Any, num_results: int = 1, bbox: Literal[False] = False
-    ) -> Iterator[object]:
-        ...
+    ) -> Iterator[object]: ...
 
     def nearest(
         self, coordinates: Any, num_results: int = 1, bbox: bool = False
@@ -2367,5 +2356,5 @@ class RtreeContainer(Rtree):
                 [self._objects[child_id][1] for child_id in child_ids],
                 bounds,
             )
-            for id, child_ids, bounds in super(RtreeContainer, self).leaves()
+            for id, child_ids, bounds in super().leaves()
         ]

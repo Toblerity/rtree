@@ -48,10 +48,6 @@ version = {attr = "rtree.__version__"}
 [tool.setuptools.package-data]
 rtree = ["py.typed"]
 
-[tool.black]
-target-version = ["py38", "py39", "py310", "py311", "py312"]
-color = true
-
 [tool.cibuildwheel]
 build = "cp38-*"
 build-verbosity = 3
@@ -96,11 +92,14 @@ exclude_lines = [
     "@overload",
 ]
 
-[tool.isort]
-profile = "black"
-known_first_party = ["rtree"]
-skip_gitignore = true
-color_output = true
+[tool.ruff.lint]
+select = [
+    "E", "W",  # pycodestyle
+    "F",   # Pyflakes
+    "UP",  # pyupgrade
+    "I",   # isort
+    "NPY",  # NumPy-specific
+]
 
 [tool.mypy]
 exclude = ["docs", "build"]

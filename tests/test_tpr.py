@@ -7,6 +7,7 @@ from math import ceil
 from typing import Any, Iterator
 
 import numpy as np
+from numpy.random import default_rng
 
 from rtree.index import Index, Property, RT_TPRTree
 
@@ -79,16 +80,18 @@ def data_generator(
     max_x: int = 1,
     max_y: int = 1,
 ) -> Iterator[tuple[str, int, Any]]:
+    rng = default_rng()
+
     def create_object(
         id_: float, time: float, x: float | None = None, y: float | None = None
     ) -> Cartesian:
         # Create object with random or defined x, y and random velocity
         if x is None:
-            x = np.random.uniform(min_x, max_x)
+            x = rng.uniform(min_x, max_x)
         if y is None:
-            y = np.random.uniform(min_y, max_y)
-        speed = np.random.uniform(min_speed, max_speed)
-        angle = np.random.uniform(-np.pi, np.pi)
+            y = rng.uniform(min_y, max_y)
+        speed = rng.uniform(min_speed, max_speed)
+        angle = rng.uniform(-np.pi, np.pi)
         x_vel, y_vel = speed * np.cos(angle), speed * np.sin(angle)
 
         # Set update time for when out of bounds, or max interval
@@ -123,9 +126,9 @@ def data_generator(
                     continue
                 kill = object_.out_of_bounds
             else:
-                id_ = np.random.randint(0, dataset_size)
+                id_ = rng.integers(0, dataset_size)
                 while id_ in updated_ids:
-                    id_ = np.random.randint(0, dataset_size)
+                    id_ = rng.integers(0, dataset_size)
                 object_ = objects[id_]
 
             updated_ids.add(object_.id)
@@ -144,12 +147,12 @@ def data_generator(
             yield "INSERT", t_now, object_
 
         for _ in range(queries_per_time_step):
-            x = np.random.uniform(min_x, max_x)
-            y = np.random.uniform(min_y, max_y)
-            dx = np.random.uniform(min_query_extent, max_query_extent)
-            dy = np.random.uniform(min_query_extent, max_query_extent)
-            dt = np.random.randint(min_query_interval, max_query_interval + 1)
-            t = np.random.randint(t_now, t_now + horizon - dt)
+            x = rng.uniform(min_x, max_x)
+            y = rng.uniform(min_y, max_y)
+            dx = rng.uniform(min_query_extent, max_query_extent)
+            dy = rng.uniform(min_query_extent, max_query_extent)
+            dt = rng.integers(min_query_interval, max_query_interval + 1)
+            t = rng.integers(t_now, t_now + horizon - dt)
 
             yield "QUERY", t_now, QueryCartesian(t, t + dt, x, y, dx, dy)
 
