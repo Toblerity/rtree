@@ -3,5 +3,5 @@ channels:
 - defaults
 - conda-forge
 dependencies:
-- python>=3.8
+- python>=3.9
 - libspatialindex>=1.8.5
