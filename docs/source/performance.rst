@@ -40,7 +40,7 @@ Override :py:data:`~rtree.index.Index.dumps` to use the highest pickle protocol
 
 .. topic:: Update from January 2024
 
-   Pickling is currently broken and awaiting a pull requst to fix it.
+   Pickling is currently broken and awaiting a pull request to fix it.
    For more information, see the `pull request on GitHub`_.
 
 .. _pull request on GitHub: https://github.com/Toblerity/rtree/pull/197

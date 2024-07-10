@@ -34,4 +34,4 @@ Adam Stewart
 Mike Taves <mwtoews@gmail.com>
 
 * cibuildwheel configuration
-* general maintanance
+* general maintenance
