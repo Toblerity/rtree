@@ -3,8 +3,9 @@ from __future__ import annotations
 import os
 import unittest
 from collections import defaultdict, namedtuple
+from collections.abc import Iterator
 from math import ceil
-from typing import Any, Iterator
+from typing import Any
 
 import numpy as np
 from numpy.random import default_rng

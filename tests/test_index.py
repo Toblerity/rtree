@@ -5,7 +5,7 @@ import pickle
 import sys
 import tempfile
 import unittest
-from typing import Iterator
+from collections.abc import Iterator
 
 import numpy as np
 import pytest
