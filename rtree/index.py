@@ -6,7 +6,8 @@ import os.path
 import pickle
 import pprint
 import warnings
-from typing import Any, Iterator, Literal, Sequence, overload
+from collections.abc import Iterator, Sequence
+from typing import Any, Literal, overload
 
 from . import core
 from .exceptions import RTreeError
