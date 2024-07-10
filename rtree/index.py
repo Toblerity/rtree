@@ -297,7 +297,7 @@ class Index:
             return 0
 
     def __repr__(self) -> str:
-        return f"rtree.index.Index(bounds={self.bounds}, size={self.get_size()})"
+        return f"rtree.index.Index(bounds={self.bounds}, size={len(self)})"
 
     def __getstate__(self) -> dict[str, Any]:
         state = self.__dict__.copy()
