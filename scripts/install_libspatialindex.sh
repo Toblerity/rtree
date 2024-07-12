@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -xe
 
 # A simple script to install libspatialindex from a Github Release

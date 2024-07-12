@@ -50,6 +50,7 @@ rtree = ["py.typed"]
 [tool.cibuildwheel]
 build = "cp39-*"
 build-verbosity = 3
+before-all = "pip install wheel"
 repair-wheel-command = "python scripts/repair_wheel.py -w {dest_dir} {wheel}"
 test-requires = "tox"
 test-command = "tox --conf {project} --installpkg {wheel}"
@@ -62,14 +63,14 @@ test-skip = [
 archs = ["auto", "aarch64"]
 before-build = [
     "yum install -y cmake libffi-devel",
-    "bash {project}/ci/install_libspatialindex.bash",
+    "sh {project}/scripts/install_libspatialindex.sh",
 ]
 
 [[tool.cibuildwheel.overrides]]
 select = "*-musllinux*"
 before-build = [
     "apk add cmake libffi-dev",
-    "bash {project}/ci/install_libspatialindex.bash",
+    "sh {project}/scripts/install_libspatialindex.sh",
 ]
 
 [tool.cibuildwheel.macos]
@@ -77,11 +78,14 @@ archs = ["x86_64", "arm64"]
 environment = { MACOSX_DEPLOYMENT_TARGET="10.9" }
 before-build = [
     "brew install coreutils cmake",
-    "bash {project}/ci/install_libspatialindex.bash",
+    "sh {project}/scripts/install_libspatialindex.sh",
 ]
 
 [tool.cibuildwheel.windows]
 archs = ["AMD64"]
+before-build = [
+    "call {project}\\scripts\\install_libspatialindex.bat",
+]
 
 [tool.coverage.report]
 # Ignore warnings for overloads
