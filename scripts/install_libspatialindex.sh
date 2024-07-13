@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -xe
 
 # A simple script to install libspatialindex from a Github Release
@@ -32,7 +32,12 @@ rm -f $VERSION.zip
 curl -LOs --retry 5 --retry-max-time 120 https://github.com/libspatialindex/libspatialindex/archive/${VERSION}.zip
 
 # check the file hash
-echo "${SHA256}  ${VERSION}.zip" | sha256sum -c -
+if [ "$(uname)" = "Darwin" ]
+then
+    echo "${SHA256}  ${VERSION}.zip" | shasum -a 256 -c -
+else
+    echo "${SHA256}  ${VERSION}.zip" | sha256sum -c -
+fi
 
 rm -rf "libspatialindex-${VERSION}"
 unzip -q $VERSION
@@ -43,7 +48,7 @@ cd build
 
 printenv
 
-if [ "$(uname)" == "Darwin" ]; then
+if [ "$(uname)" = "Darwin" ]; then
     CMAKE_ARGS="-D CMAKE_OSX_ARCHITECTURES=${ARCHFLAGS##* } \
                 -D CMAKE_INSTALL_RPATH=@loader_path"
 fi
