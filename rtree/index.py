@@ -360,7 +360,7 @@ class Index:
             if not p <= q:
                 raise RTreeError(
                     "Coordinates must not have minimums more than maximums"
-            )
+                )
 
         return mins, maxs
 
