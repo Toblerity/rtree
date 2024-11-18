@@ -1507,7 +1507,8 @@ class Property:
         try:
             return self._type
         except AttributeError:
-            self._type = type = core.rt.IndexProperty_GetIndexType(self.handle)
+            type = core.rt.IndexProperty_GetIndexType(self.handle)
+            self._type: int = type
             return type
 
     def set_index_type(self, value: int) -> None:
@@ -1534,7 +1535,7 @@ class Property:
             return self._dimension
         except AttributeError:
             dim = core.rt.IndexProperty_GetDimension(self.handle)
-            self._dimension = dim
+            self._dimension: int = dim
             return dim
 
     def set_dimension(self, value: int) -> None:
