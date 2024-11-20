@@ -331,42 +331,38 @@ class Index:
     def get_coordinate_pointers(
         self, coordinates: Sequence[float]
     ) -> tuple[float, float]:
-        try:
-            iter(coordinates)
-        except TypeError:
-            raise TypeError("Bounds must be a sequence")
         dimension = self.properties.dimension
+        coordinates = list(coordinates)
 
-        mins = ctypes.c_double * dimension
-        maxs = ctypes.c_double * dimension
+        arr = ctypes.c_double * dimension
+        mins = arr()
 
-        if not self.interleaved:
-            coordinates = Index.interleave(coordinates)
-
-        # it's a point make it into a bbox. [x, y] => [x, y, x, y]
+        # Point
         if len(coordinates) == dimension:
-            coordinates = *coordinates, *coordinates
+            mins[:] = coordinates
+            maxs = mins
+        # Bounding box
+        else:
+            maxs = arr()
 
-        if len(coordinates) != dimension * 2:
-            raise RTreeError(
-                "Coordinates must be in the form "
-                "(minx, miny, maxx, maxy) or (x, y) for 2D indexes"
-            )
+            # Interleaved box
+            if self.interleaved:
+                p = coordinates[:dimension]
+                q = coordinates[dimension:]
+            # Non-interleaved box
+            else:
+                p = coordinates[::2]
+                q = coordinates[1::2]
 
-        # so here all coords are in the form:
-        # [xmin, ymin, zmin, xmax, ymax, zmax]
-        for i in range(dimension):
-            if not coordinates[i] <= coordinates[i + dimension]:
+            mins[:] = p
+            maxs[:] = q
+
+            if not p <= q:
                 raise RTreeError(
                     "Coordinates must not have minimums more than maximums"
                 )
 
-        p_mins = mins(*[ctypes.c_double(coordinates[i]) for i in range(dimension)])
-        p_maxs = maxs(
-            *[ctypes.c_double(coordinates[i + dimension]) for i in range(dimension)]
-        )
-
-        return (p_mins, p_maxs)
+        return mins, maxs
 
     @staticmethod
     def _get_time_doubles(times):
@@ -1231,16 +1227,14 @@ class Index:
                 return -1
 
             if self.interleaved:
-                coordinates = Index.deinterleave(coordinates)
+                mins[:] = coordinates[:dimension]
+                maxs[:] = coordinates[dimension:]
+            else:
+                mins[:] = coordinates[::2]
+                maxs[:] = coordinates[1::2]
 
-            # this code assumes the coords are not interleaved.
-            # xmin, xmax, ymin, ymax, zmin, zmax
-            for i in range(dimension):
-                mins[i] = coordinates[i * 2]
-                maxs[i] = coordinates[(i * 2) + 1]
-
-            p_mins[0] = ctypes.cast(mins, ctypes.POINTER(ctypes.c_double))
-            p_maxs[0] = ctypes.cast(maxs, ctypes.POINTER(ctypes.c_double))
+            p_mins[0] = mins
+            p_maxs[0] = maxs
 
             # set the dimension
             p_dimension[0] = dimension
@@ -1510,9 +1504,15 @@ class Property:
         return pprint.pformat(self.as_dict())
 
     def get_index_type(self) -> int:
-        return core.rt.IndexProperty_GetIndexType(self.handle)
+        try:
+            return self._type
+        except AttributeError:
+            type = core.rt.IndexProperty_GetIndexType(self.handle)
+            self._type: int = type
+            return type
 
     def set_index_type(self, value: int) -> None:
+        self._type = value
         return core.rt.IndexProperty_SetIndexType(self.handle, value)
 
     type = property(get_index_type, set_index_type)
@@ -1531,11 +1531,17 @@ class Property:
     :data:`RT_Linear`, :data:`RT_Quadratic`, and :data:`RT_Star`"""
 
     def get_dimension(self) -> int:
-        return core.rt.IndexProperty_GetDimension(self.handle)
+        try:
+            return self._dimension
+        except AttributeError:
+            dim = core.rt.IndexProperty_GetDimension(self.handle)
+            self._dimension: int = dim
+            return dim
 
     def set_dimension(self, value: int) -> None:
         if value <= 0:
             raise RTreeError("Negative or 0 dimensional indexes are not allowed")
+        self._dimension = value
         return core.rt.IndexProperty_SetDimension(self.handle, value)
 
     dimension = property(get_dimension, set_dimension)
