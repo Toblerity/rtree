@@ -291,8 +291,7 @@ class Index:
                 for item in stream:
                     self.insert(*item)
             elif arrays:
-                raise NotImplementedError("Bulk insert only supported for "
-                                          "RTrees")
+                raise NotImplementedError("Bulk insert only supported for " "RTrees")
 
     def get_size(self) -> int:
         warnings.warn(
@@ -1282,9 +1281,17 @@ class Index:
         d_i_stri = minbuf.strides[0] // 8
         d_j_stri = minbuf.strides[1] // 8
 
-        return IndexArrayHandle(self.properties.handle, n, d, i_stri,
-                                d_i_stri, d_j_stri, ibuf.ctypes.data,
-                                minbuf.ctypes.data, maxbuf.ctypes.data)
+        return IndexArrayHandle(
+            self.properties.handle,
+            n,
+            d,
+            i_stri,
+            d_i_stri,
+            d_j_stri,
+            ibuf.ctypes.data,
+            minbuf.ctypes.data,
+            maxbuf.ctypes.data,
+        )
 
     def leaves(self):
         leaf_node_count = ctypes.c_uint32()
