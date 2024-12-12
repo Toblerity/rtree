@@ -285,7 +285,7 @@ class Index:
 
             try:
                 self.handle = self._create_idx_from_array(*arrays)
-            except AttributeError:
+            except NameError:
                 raise NotImplementedError(
                     "libspatialindex >= 2.1 needed for bulk insert"
                 )
@@ -1481,8 +1481,11 @@ class IndexStreamHandle(IndexHandle):
     _create = core.rt.Index_CreateWithStream
 
 
-class IndexArrayHandle(IndexHandle):
-    _create = core.rt.Index_CreateWithArray
+try:
+    class IndexArrayHandle(IndexHandle):
+        _create = core.rt.Index_CreateWithArray
+except AttributeError:
+        pass
 
 
 class PropertyHandle(Handle):
