@@ -135,7 +135,7 @@ try:
         ctypes.c_uint64,
         ctypes.c_void_p,
         ctypes.c_void_p,
-        ctypes.c_void_p
+        ctypes.c_void_p,
     ]
     rt.Index_CreateWithArray.restype = ctypes.c_void_p
     rt.Index_CreateWithArray.errcheck = check_void  # type: ignore

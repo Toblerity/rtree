@@ -286,7 +286,9 @@ class Index:
             try:
                 self.handle = self._create_idx_from_array(*arrays)
             except AttributeError:
-                raise NotImplementedError("libspatialindex >= 2.1 needed for bulk insert")
+                raise NotImplementedError(
+                    "libspatialindex >= 2.1 needed for bulk insert"
+                )
 
             if self._exception:
                 raise self._exception
@@ -1286,9 +1288,17 @@ class Index:
         d_i_stri = minbuf.strides[0] // 8
         d_j_stri = minbuf.strides[1] // 8
 
-        return IndexArrayHandle(self.properties.handle, n, d, i_stri,
-                                d_i_stri, d_j_stri, ibuf.ctypes.data,
-                                minbuf.ctypes.data, maxbuf.ctypes.data)
+        return IndexArrayHandle(
+            self.properties.handle,
+            n,
+            d,
+            i_stri,
+            d_i_stri,
+            d_j_stri,
+            ibuf.ctypes.data,
+            minbuf.ctypes.data,
+            maxbuf.ctypes.data,
+        )
 
     def leaves(self):
         leaf_node_count = ctypes.c_uint32()
