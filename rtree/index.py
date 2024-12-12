@@ -1482,10 +1482,11 @@ class IndexStreamHandle(IndexHandle):
 
 
 try:
+
     class IndexArrayHandle(IndexHandle):
         _create = core.rt.Index_CreateWithArray
 except AttributeError:
-        pass
+    pass
 
 
 class PropertyHandle(Handle):
