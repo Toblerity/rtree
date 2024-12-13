@@ -125,6 +125,23 @@ rt.Index_CreateWithStream.argtypes = [ctypes.c_void_p, NEXTFUNC]
 rt.Index_CreateWithStream.restype = ctypes.c_void_p
 rt.Index_CreateWithStream.errcheck = check_void  # type: ignore
 
+try:
+    rt.Index_CreateWithArray.argtypes = [
+        ctypes.c_void_p,
+        ctypes.c_uint64,
+        ctypes.c_uint32,
+        ctypes.c_uint64,
+        ctypes.c_uint64,
+        ctypes.c_uint64,
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+    ]
+    rt.Index_CreateWithArray.restype = ctypes.c_void_p
+    rt.Index_CreateWithArray.errcheck = check_void  # type: ignore
+except AttributeError:
+    pass
+
 rt.Index_Destroy.argtypes = [ctypes.c_void_p]
 rt.Index_Destroy.restype = None
 rt.Index_Destroy.errcheck = check_void_done  # type: ignore

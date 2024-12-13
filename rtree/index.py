@@ -207,20 +207,26 @@ class Index:
         self.interleaved = bool(kwargs.get("interleaved", True))
 
         stream = None
+        arrays = None
         basename = None
         storage = None
         if args:
             if isinstance(args[0], str) or isinstance(args[0], bytes):
                 # they sent in a filename
                 basename = args[0]
-                # they sent in a filename, stream
+                # they sent in a filename, stream or filename, buffers
                 if len(args) > 1:
-                    stream = args[1]
+                    if isinstance(args[1], tuple):
+                        arrays = args[1]
+                    else:
+                        stream = args[1]
             elif isinstance(args[0], ICustomStorage):
                 storage = args[0]
                 # they sent in a storage, stream
                 if len(args) > 1:
                     stream = args[1]
+            elif isinstance(args[0], tuple):
+                arrays = args[0]
             else:
                 stream = args[0]
 
@@ -274,11 +280,25 @@ class Index:
             self.handle = self._create_idx_from_stream(stream)
             if self._exception:
                 raise self._exception
+        elif arrays and self.properties.type == RT_RTree:
+            self._exception = None
+
+            try:
+                self.handle = self._create_idx_from_array(*arrays)
+            except NameError:
+                raise NotImplementedError(
+                    "libspatialindex >= 2.1 needed for bulk insert"
+                )
+
+            if self._exception:
+                raise self._exception
         else:
             self.handle = IndexHandle(self.properties.handle)
             if stream:  # Bulk insert not supported, so add one by one
                 for item in stream:
                     self.insert(*item)
+            elif arrays:
+                raise NotImplementedError("Bulk insert only supported for RTrees")
 
     def get_size(self) -> int:
         warnings.warn(
@@ -1250,6 +1270,36 @@ class Index:
         stream = core.NEXTFUNC(py_next_item)
         return IndexStreamHandle(self.properties.handle, stream)
 
+    def _create_idx_from_array(self, ibuf, minbuf, maxbuf):
+        assert len(ibuf) == len(minbuf)
+        assert len(ibuf) == len(maxbuf)
+        assert minbuf.strides == maxbuf.strides
+
+        # Cast
+        ibuf = ibuf.astype(int)
+        minbuf = minbuf.astype(float)
+        maxbuf = maxbuf.astype(float)
+
+        # Extract counts
+        n, d = minbuf.shape
+
+        # Compute strides
+        i_stri = ibuf.strides[0] // 8
+        d_i_stri = minbuf.strides[0] // 8
+        d_j_stri = minbuf.strides[1] // 8
+
+        return IndexArrayHandle(
+            self.properties.handle,
+            n,
+            d,
+            i_stri,
+            d_i_stri,
+            d_j_stri,
+            ibuf.ctypes.data,
+            minbuf.ctypes.data,
+            maxbuf.ctypes.data,
+        )
+
     def leaves(self):
         leaf_node_count = ctypes.c_uint32()
         p_leafsizes = ctypes.pointer(ctypes.c_uint32())
@@ -1429,6 +1479,14 @@ class IndexHandle(Handle):
 
 class IndexStreamHandle(IndexHandle):
     _create = core.rt.Index_CreateWithStream
+
+
+try:
+
+    class IndexArrayHandle(IndexHandle):
+        _create = core.rt.Index_CreateWithArray
+except AttributeError:
+    pass
 
 
 class PropertyHandle(Handle):
