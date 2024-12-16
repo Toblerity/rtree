@@ -238,6 +238,44 @@ rt.Index_NearestNeighbors_id.argtypes = [
 rt.Index_NearestNeighbors_id.restype = ctypes.c_int
 rt.Index_NearestNeighbors_id.errcheck = check_return  # type: ignore
 
+try:
+    rt.Index_NearestNeighbors_id_v.argtypes = [
+        ctypes.c_void_p,
+        ctypes.c_int64,
+        ctypes.c_int64,
+        ctypes.c_uint32,
+        ctypes.c_uint64,
+        ctypes.c_uint64,
+        ctypes.c_uint64,
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        ctypes.POINTER(ctypes.c_int64),
+    ]
+    rt.Index_NearestNeighbors_id_v.restype = ctypes.c_int
+    rt.Index_NearestNeighbors_id_v.errcheck = check_return  # type: ignore
+
+    rt.Index_Intersects_id_v.argtypes = [
+        ctypes.c_void_p,
+        ctypes.c_int64,
+        ctypes.c_uint32,
+        ctypes.c_uint64,
+        ctypes.c_uint64,
+        ctypes.c_uint64,
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        ctypes.POINTER(ctypes.c_int64),
+    ]
+    rt.Index_Intersects_id_v.restype = ctypes.c_int
+    rt.Index_Intersects_id_v.errcheck = check_return  # type: ignore
+except AttributeError:
+    pass
+
+
 rt.Index_GetLeaves.argtypes = [
     ctypes.c_void_p,
     ctypes.POINTER(ctypes.c_uint32),
