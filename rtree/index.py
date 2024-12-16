@@ -1640,7 +1640,7 @@ class Property:
                 setattr(self, k, v)
 
         # Consistency checks
-        if 'near_minimum_overlap_factor' not in state:
+        if "near_minimum_overlap_factor" not in state:
             nmof = self.near_minimum_overlap_factor
             ilc = min(self.index_capacity, self.leaf_capacity)
             if nmof >= ilc:
