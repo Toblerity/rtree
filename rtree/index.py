@@ -1063,7 +1063,7 @@ class Index:
         d_i_stri = mins.strides[0] // mins.itemsize
         d_j_stri = mins.strides[1] // mins.itemsize
 
-        ids = np.empty(2*n, dtype=np.int64)
+        ids = np.empty(2 * n, dtype=np.int64)
         counts = np.empty(n, dtype=np.uint64)
         nr = ctypes.c_int64(0)
         offn, offi = 0, 0
@@ -1080,21 +1080,22 @@ class Index:
                 maxs[offn:].ctypes.data,
                 ids[offi:].ctypes.data,
                 counts[offn:].ctypes.data,
-                ctypes.byref(nr)
+                ctypes.byref(nr),
             )
 
             # If we got the expected nuber of results then return
             if nr.value == n - offn:
-                return ids[:counts.sum()], counts
+                return ids[: counts.sum()], counts
             # Otherwise, if our array is too small then resize
             else:
-                offi += counts[offn:offn + nr.value].sum()
+                offi += counts[offn : offn + nr.value].sum()
                 offn += nr.value
 
-                ids = ids.resize(2*len(ids), refcheck=False)
+                ids = ids.resize(2 * len(ids), refcheck=False)
 
-    def nearest_v(self, mins, maxs, num_results=1, strict=False,
-                  return_max_dists=False):
+    def nearest_v(
+        self, mins, maxs, num_results=1, strict=False, return_max_dists=False
+    ):
         import numpy as np
 
         assert mins.shape == maxs.shape
@@ -1111,7 +1112,7 @@ class Index:
         d_i_stri = mins.strides[0] // mins.itemsize
         d_j_stri = mins.strides[1] // mins.itemsize
 
-        ids = np.empty(n*num_results, dtype=np.int64)
+        ids = np.empty(n * num_results, dtype=np.int64)
         counts = np.empty(n, dtype=np.uint64)
         dists = np.empty(n) if return_max_dists else None
         nr = ctypes.c_int64(0)
@@ -1131,21 +1132,21 @@ class Index:
                 ids[offi:].ctypes.data,
                 counts[offn:].ctypes.data,
                 dists[offn:].ctypes.data if return_max_dists else None,
-                ctypes.byref(nr)
+                ctypes.byref(nr),
             )
 
             # If we got the expected nuber of results then return
             if nr.value == n - offn:
                 if return_max_dists:
-                    return ids[:counts.sum()], counts, dists
+                    return ids[: counts.sum()], counts, dists
                 else:
-                    return ids[:counts.sum()], counts
+                    return ids[: counts.sum()], counts
             # Otherwise, if our array is too small then resize
             else:
-                offi += counts[offn:offn + nr.value].sum()
+                offi += counts[offn : offn + nr.value].sum()
                 offn += nr.value
 
-                ids = ids.resize(2*len(ids), refcheck=False)
+                ids = ids.resize(2 * len(ids), refcheck=False)
 
     def _nearestTP(self, coordinates, velocities, times, num_results=1, objects=False):
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
