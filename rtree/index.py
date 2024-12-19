@@ -1093,8 +1093,15 @@ class Index:
 
                 ids = ids.resize(2 * len(ids), refcheck=False)
 
-    def nearest_v(self, mins, maxs, num_results=1, max_dists=None,
-                  strict=False, return_max_dists=False):
+    def nearest_v(
+        self,
+        mins,
+        maxs,
+        num_results=1,
+        max_dists=None,
+        strict=False,
+        return_max_dists=False,
+    ):
         import numpy as np
 
         assert mins.shape == maxs.shape
@@ -1139,7 +1146,7 @@ class Index:
                 ids[offi:].ctypes.data,
                 counts[offn:].ctypes.data,
                 dists[offn:].ctypes.data if dists is not None else None,
-                ctypes.byref(nr)
+                ctypes.byref(nr),
             )
 
             # If we got the expected nuber of results then return
