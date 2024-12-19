@@ -1093,9 +1093,8 @@ class Index:
 
                 ids = ids.resize(2 * len(ids), refcheck=False)
 
-    def nearest_v(
-        self, mins, maxs, num_results=1, strict=False, return_max_dists=False
-    ):
+    def nearest_v(self, mins, maxs, num_results=1, max_dists=None,
+                  strict=False, return_max_dists=False):
         import numpy as np
 
         assert mins.shape == maxs.shape
@@ -1114,9 +1113,17 @@ class Index:
 
         ids = np.empty(n * num_results, dtype=np.int64)
         counts = np.empty(n, dtype=np.uint64)
-        dists = np.empty(n) if return_max_dists else None
         nr = ctypes.c_int64(0)
         offn, offi = 0, 0
+
+        if max_dists is not None:
+            assert len(max_dists) == n
+
+            dists = max_dists.astype(np.float64).copy()
+        elif return_max_dists:
+            dists = np.zeros(n)
+        else:
+            dists = None
 
         while True:
             core.rt.Index_NearestNeighbors_id_v(
@@ -1131,8 +1138,8 @@ class Index:
                 maxs[offn:].ctypes.data,
                 ids[offi:].ctypes.data,
                 counts[offn:].ctypes.data,
-                dists[offn:].ctypes.data if return_max_dists else None,
-                ctypes.byref(nr),
+                dists[offn:].ctypes.data if dists is not None else None,
+                ctypes.byref(nr)
             )
 
             # If we got the expected nuber of results then return
