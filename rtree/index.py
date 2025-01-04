@@ -7,7 +7,7 @@ import pickle
 import pprint
 import warnings
 from collections.abc import Iterator, Sequence
-from typing import Any, Generator, Literal, overload
+from typing import Any, Literal, overload
 
 from . import core
 from .exceptions import RTreeError
@@ -196,7 +196,6 @@ class Index:
             raise RuntimeError(
                 "TPR-Tree type not supported with version of libspatialindex"
             )
-
 
         if filename:
             self.properties.storage = RT_Disk
