@@ -711,7 +711,8 @@ class IndexStream(IndexTestCase):
 
     def test_empty_stream(self) -> None:
         """Assert empty stream raises exception"""
-        self.assertRaises(RTreeError, index.Index, iter(()))
+        with self.assertRaises(RTreeError):
+            index.Index(stream=iter(()))
 
     def test_exception_in_generator(self) -> None:
         """Assert exceptions raised in callbacks are raised in main thread"""
@@ -856,6 +857,7 @@ class IndexCustomStorage(unittest.TestCase):
         del r1
         self.assertTrue(storage.hasData)
 
+        settings.overwrite = False
         r2 = index.Index(storage=storage, properties=settings)
         count = r2.count((0, 0, 10, 10))
         self.assertEqual(count, 1)
