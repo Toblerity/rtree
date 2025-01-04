@@ -36,7 +36,7 @@ class IndexTestCase(unittest.TestCase):
         # some versions of libspatialindex screw up indexes on stream loading
         # so do a very simple index check
         rtree_test = rtree.index.Index(
-            [(1564, [0, 0, 0, 10, 10, 10], None)],
+            stream=[(1564, [0, 0, 0, 10, 10, 10], None)],
             properties=rtree.index.Property(dimension=3),
         )
         assert next(rtree_test.intersection([1, 1, 1, 2, 2, 2])) == 1564
@@ -600,7 +600,7 @@ class IndexSerialization(unittest.TestCase):
 
         idx = index.Index(tname)
         del idx
-        idx = index.Index(tname, overwrite=True)
+        idx = index.Index(tname, properties=index.Property(overwrite=True))
         assert isinstance(idx, index.Index)
 
 
@@ -700,7 +700,7 @@ class IndexMoreDimensions(IndexTestCase):
 class IndexStream(IndexTestCase):
     def test_stream_input(self) -> None:
         p = index.Property()
-        sindex = index.Index(self.boxes15_stream(), properties=p)
+        sindex = index.Index(stream=self.boxes15_stream(), properties=p)
         bounds = (0, 0, 60, 60)
         hits = sindex.intersection(bounds)
         self.assertEqual(sorted(hits), [0, 4, 16, 27, 35, 40, 47, 50, 76, 80])
@@ -726,7 +726,7 @@ class IndexStream(IndexTestCase):
                     yield (i, (1, 2, 3, 4), None)
                 raise TestException("raising here")
 
-            return index.Index(gen())
+            return index.Index(stream=gen())
 
         self.assertRaises(TestException, create_index)
 
@@ -810,7 +810,7 @@ class IndexCustomStorage(unittest.TestCase):
         # we just use it here for illustrative and testing purposes.
 
         storage = DictStorage()
-        r = index.Index(storage, properties=settings)
+        r = index.Index(storage=storage, properties=settings)
 
         # Interestingly enough, if we take a look at the contents of our
         # storage now, we can see the Rtree has already written two pages
@@ -849,12 +849,13 @@ class IndexCustomStorage(unittest.TestCase):
         settings = index.Property()
         settings.writethrough = True
         settings.buffering_capacity = 1
+        settings.overwrite = True
 
-        r1 = index.Index(storage, properties=settings, overwrite=True)
+        r1 = index.Index(storage=storage, properties=settings)
         r1.add(555, (2, 2))
         del r1
         self.assertTrue(storage.hasData)
 
-        r2 = index.Index(storage, properly=settings, overwrite=False)
+        r2 = index.Index(storage=storage, properties=settings)
         count = r2.count((0, 0, 10, 10))
         self.assertEqual(count, 1)

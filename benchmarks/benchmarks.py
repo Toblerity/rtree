@@ -31,6 +31,7 @@ from pathlib import Path
 
 import rtree
 from rtree import Rtree as _Rtree
+from rtree.index import Property
 
 print(f"Benchmarking Rtree-{rtree.__version__} from {Path(rtree.__file__).parent}")
 print(f"Using {rtree.core.rt._name} version {rtree.core.rt.SIDX_Version().decode()}")
@@ -66,7 +67,7 @@ insert_object = {
 }
 
 index = Rtree()
-disk_index = Rtree("test", overwrite=1)
+disk_index = Rtree("test", properties=Property(overwrite=1))
 
 coordinates = []
 random.seed("Rtree", version=2)
