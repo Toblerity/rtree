@@ -80,4 +80,5 @@ Use the correct query method
 
 Use :py:meth:`~rtree.index.Index.count` if you only need a count and
 :py:meth:`~rtree.index.Index.intersection` if you only need the ids.
-Otherwise, lots of data may potentially be copied.
+Otherwise, lots of data may potentially be copied.  If possible also
+make use of the bulk query methods suffixed with `_v`.
