@@ -400,7 +400,7 @@ class IndexSerialization(unittest.TestCase):
         """Unicode filenames work as expected"""
         tname = tempfile.mktemp()
         filename = tname + "gilename\u4500abc"
-        idx = index.Index(filename)
+        idx = index.Index(filename=filename)
         idx.insert(
             4321, (34.3776829412, 26.7375853734, 49.3776829412, 41.7375853734), obj=42
         )
@@ -431,7 +431,7 @@ class IndexSerialization(unittest.TestCase):
         p.dat_extension = "data"
         p.idx_extension = "index"
         tname = tempfile.mktemp()
-        idx = index.Index(tname, properties=p)
+        idx = index.Index(filename=tname, properties=p)
         for i, coords in enumerate(self.boxes15):
             idx.add(i, coords)
 
@@ -441,7 +441,7 @@ class IndexSerialization(unittest.TestCase):
         del idx
 
         # Check we can reopen the index and get the same results
-        idx2 = index.Index(tname, properties=p)
+        idx2 = index.Index(filename=tname, properties=p)
         hits = list(idx2.intersection((0, 0, 60, 60)))
         self.assertEqual(len(hits), 10)
         self.assertEqual(hits, [0, 4, 16, 27, 35, 40, 47, 50, 76, 80])
@@ -462,7 +462,10 @@ class IndexSerialization(unittest.TestCase):
         p = index.Property()
         tname = tempfile.mktemp()
         idx = index.Index(
-            tname, data_gen(interleaved=False), properties=p, interleaved=False
+            filename=tname,
+            stream=data_gen(interleaved=False),
+            properties=p,
+            interleaved=False,
         )
         hits1 = sorted(list(idx.intersection((0, 60, 0, 60))))
         self.assertEqual(len(hits1), 10)
@@ -598,9 +601,9 @@ class IndexSerialization(unittest.TestCase):
         """Index overwrite works as expected"""
         tname = tempfile.mktemp()
 
-        idx = index.Index(tname)
+        idx = index.Index(filename=tname)
         del idx
-        idx = index.Index(tname, properties=index.Property(overwrite=True))
+        idx = index.Index(filename=tname, properties=index.Property(overwrite=True))
         assert isinstance(idx, index.Index)
 
 
@@ -744,7 +747,7 @@ class IndexStream(IndexTestCase):
             def gen() -> None:
                 raise TestException("raising here")
 
-            return index.Index(gen())  # type: ignore[func-returns-value]
+            return index.Index(stream=gen())  # type: ignore[func-returns-value]
 
         self.assertRaises(TestException, create_index)
 

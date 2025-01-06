@@ -80,6 +80,7 @@ class Index:
 
     def __init__(
         self,
+        *args: Any,
         filename: str | bytes | None = None,
         stream: Any | None = None,
         storage: ICustomStorage | None = None,
@@ -89,10 +90,10 @@ class Index:
     ) -> None:
         """Creates a new index
 
-        :param filename: a filename determining that a file-based storage for the index
+        :param filename: A filename determining that a file-based storage for the index
             should be used.
 
-        :param stream: an iterable stream of data that will raise a StopIteration.
+        :param stream: An iterable stream of data that will raise a StopIteration.
             It must be in the form defined by the :attr:`interleaved` attribute of the
             index. The following example would assume :attr:`interleaved` is False::
 
@@ -196,6 +197,29 @@ class Index:
             raise RuntimeError(
                 "TPR-Tree type not supported with version of libspatialindex"
             )
+
+        if args:
+            msg = "Index() parameters without keyword arguments are deprecated"
+            warnings.warn(msg, DeprecationWarning)
+
+            if isinstance(args[0], str) or isinstance(args[0], bytes):
+                # they sent in a filename
+                filename = args[0]
+                # they sent in a filename, stream or filename, buffers
+                if len(args) > 1:
+                    if isinstance(args[1], tuple):
+                        arrays = args[1]
+                    else:
+                        stream = args[1]
+            elif isinstance(args[0], ICustomStorage):
+                storage = args[0]
+                # they sent in a storage, stream
+                if len(args) > 1:
+                    stream = args[1]
+            elif isinstance(args[0], tuple):
+                arrays = args[0]
+            else:
+                stream = args[0]
 
         if filename:
             self.properties.storage = RT_Disk
