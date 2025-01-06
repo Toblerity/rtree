@@ -1117,7 +1117,7 @@ class Index:
         """Bulk ``k``-nearest query for the given bounding boxes.  The
         return value is a tuple consisting of, by default, two 1D NumPy
         arrays: one of intersecting ids and another containing the
-        counts for each bounding box.  
+        counts for each bounding box.
 
         :param mins: A NumPy array of shape `(n, d)` containing the
             minima to query.
