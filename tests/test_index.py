@@ -846,15 +846,11 @@ class IndexCustomStorage(unittest.TestCase):
         """Reopening custom index storage works as expected"""
 
         storage = DictStorage()
-        settings = index.Property()
-        settings.writethrough = True
-        settings.buffering_capacity = 1
-
-        r1 = index.Index(storage, properties=settings, overwrite=True)
+        r1 = index.Index(storage, overwrite=True)
         r1.add(555, (2, 2))
         del r1
         self.assertTrue(storage.hasData)
 
-        r2 = index.Index(storage, properties=settings, overwrite=False)
+        r2 = index.Index(storage, overwrite=False)
         count = r2.count((0, 0, 10, 10))
         self.assertEqual(count, 1)
