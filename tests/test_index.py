@@ -240,7 +240,7 @@ class IndexIntersection(IndexTestCase):
         self.assertTrue(0 in self.idx.intersection((0, 0, 60, 60)))
         hits = list(self.idx.intersection((0, 0, 60, 60)))
 
-        self.assertTrue(len(hits), 10)
+        self.assertEqual(len(hits), 10)
         self.assertEqual(hits, [0, 4, 16, 27, 35, 40, 47, 50, 76, 80])
 
     def test_objects(self) -> None:
@@ -436,14 +436,14 @@ class IndexSerialization(unittest.TestCase):
             idx.add(i, coords)
 
         hits = list(idx.intersection((0, 0, 60, 60)))
-        self.assertTrue(len(hits), 10)
+        self.assertEqual(len(hits), 10)
         self.assertEqual(hits, [0, 4, 16, 27, 35, 40, 47, 50, 76, 80])
         del idx
 
         # Check we can reopen the index and get the same results
         idx2 = index.Index(tname, properties=p)
         hits = list(idx2.intersection((0, 0, 60, 60)))
-        self.assertTrue(len(hits), 10)
+        self.assertEqual(len(hits), 10)
         self.assertEqual(hits, [0, 4, 16, 27, 35, 40, 47, 50, 76, 80])
 
     @pytest.mark.skipif(not sys.maxsize > 2**32, reason="Fails on 32bit systems")
@@ -465,7 +465,7 @@ class IndexSerialization(unittest.TestCase):
             tname, data_gen(interleaved=False), properties=p, interleaved=False
         )
         hits1 = sorted(list(idx.intersection((0, 60, 0, 60))))
-        self.assertTrue(len(hits1), 10)
+        self.assertEqual(len(hits1), 10)
         self.assertEqual(hits1, [0, 4, 16, 27, 35, 40, 47, 50, 76, 80])
 
         leaves = idx.leaves()
@@ -591,7 +591,7 @@ class IndexSerialization(unittest.TestCase):
         )
 
         hits2 = sorted(list(idx.intersection((0, 60, 0, 60), objects=True)))
-        self.assertTrue(len(hits2), 10)
+        self.assertEqual(len(hits2), 10)
         self.assertEqual(hits2[0].object, 42)
 
     def test_overwrite(self) -> None:
@@ -846,15 +846,11 @@ class IndexCustomStorage(unittest.TestCase):
         """Reopening custom index storage works as expected"""
 
         storage = DictStorage()
-        settings = index.Property()
-        settings.writethrough = True
-        settings.buffering_capacity = 1
-
-        r1 = index.Index(storage, properties=settings, overwrite=True)
+        r1 = index.Index(storage, overwrite=True)
         r1.add(555, (2, 2))
         del r1
         self.assertTrue(storage.hasData)
 
-        r2 = index.Index(storage, properly=settings, overwrite=False)
+        r2 = index.Index(storage, overwrite=False)
         count = r2.count((0, 0, 10, 10))
         self.assertEqual(count, 1)
