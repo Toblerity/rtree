@@ -45,7 +45,7 @@ def main():
         # use the platform specific repair tool first
         if os_ == "linux":
             # use path from cibuildwheel which allows auditwheel to create
-            # Rtree.libs/libspatialindex-*.so.*
+            # rtree.libs/libspatialindex-*.so.*
             cibw_lib_path = "/project/rtree/lib"
             if os.environ.get("LD_LIBRARY_PATH"):  # append path
                 os.environ["LD_LIBRARY_PATH"] += f"{os.pathsep}{cibw_lib_path}"
@@ -96,7 +96,7 @@ def main():
 
         if os_ == "linux":
             # This is auditwheel's libs, which needs post-processing
-            libs_dir = unpackdir / "Rtree.libs"
+            libs_dir = unpackdir / "rtree.libs"
             lsidx_list = list(libs_dir.glob("libspatialindex*.so*"))
             assert len(lsidx_list) == 1, list(libs_dir.iterdir())
             lsidx = lsidx_list[0]
