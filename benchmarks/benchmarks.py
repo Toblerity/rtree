@@ -164,7 +164,7 @@ hits = disk_index.intersection(bbox, objects="raw")
     t = timeit.Timer(
         stmt=s, setup="from __main__ import points, disk_index, bbox, insert_object"
     )
-    print("Disk-based Rtree Intersection " "without Item() wrapper (objects='raw'):")
+    print("Disk-based Rtree Intersection without Item() wrapper (objects='raw'):")
     result = list(disk_index.intersection(bbox, objects="raw"))
     print(len(result), "raw hits")
     print(f"{1e6 * t.timeit(number=TEST_TIMES) / TEST_TIMES:.2f} usec/pass")
