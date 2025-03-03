@@ -1047,6 +1047,18 @@ class Index:
         return self._get_ids(it, p_num_results.contents.value)
 
     def intersection_v(self, mins, maxs):
+        """Bulk intersection query for obtaining the ids of entries
+        which intersect with the provided bounding boxes.  The return
+        value is a tuple consisting of two 1D NumPy arrays: one of
+        intersecting ids and another containing the counts for each
+        bounding box.
+
+        :param mins: A NumPy array of shape `(n, d)` containing the
+            minima to query.
+
+        :param maxs: A NumPy array of shape `(n, d)` containing the
+            maxima to query.
+        """
         import numpy as np
 
         assert mins.shape == maxs.shape
@@ -1102,6 +1114,34 @@ class Index:
         strict=False,
         return_max_dists=False,
     ):
+        """Bulk ``k``-nearest query for the given bounding boxes.  The
+        return value is a tuple consisting of, by default, two 1D NumPy
+        arrays: one of intersecting ids and another containing the
+        counts for each bounding box.
+
+        :param mins: A NumPy array of shape `(n, d)` containing the
+            minima to query.
+
+        :param maxs: A NumPy array of shape `(n, d)` containing the
+            maxima to query.
+
+        :param num_results: The maximum number of neighbors to return
+            for each bounding box.  If there are multiple equidistant
+            furthest neighbors then, by default, they are *all*
+            returned.  Hence, the actual number of results can be
+            greater than requested.
+
+        :param max_dists: Optional; a NumPy array of shape `(n,)`
+            containing the maximum distance to consider for each
+            bounding box.
+
+        :param strict: If True then each point will never return more
+            than `num_results` even in cases of equidistant furthest
+            neighbors.
+
+        :param return_max_dists: If True, the distance of the furthest
+            neighbor for each bounding box will also be returned.
+        """
         import numpy as np
 
         assert mins.shape == maxs.shape
