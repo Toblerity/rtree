@@ -77,7 +77,7 @@ def load() -> ctypes.CDLL:
                 if pkg_files is not None:
                     for file in pkg_files:  # type: ignore
                         if (
-                            file.parent.name == "Rtree.libs"
+                            file.parent.name == "rtree.libs"
                             and file.stem.startswith("libspatialindex")
                             and ".so" in file.suffixes
                         ):
