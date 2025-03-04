@@ -20,9 +20,9 @@ jobs:
       fail-fast: false
       matrix:
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
-        python-version: ['3.9', '3.10', '3.11', '3.12']
-        # test oldest and newest libspatialindex versions
-        sidx-version: ['1.8.5', '2.0.0']
+        # test oldest and newest versions of python and libspatialindex
+        python-version: ['3.9', '3.13']
+        sidx-version: ['1.8.5', '2.1.0']
         exclude:
           - os: 'macos-latest'
           - sidx-version: '1.8.5'

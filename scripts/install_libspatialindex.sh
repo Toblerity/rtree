@@ -2,8 +2,8 @@
 set -xe
 
 # A simple script to install libspatialindex from a Github Release
-VERSION=2.0.0
-SHA256=8caa4564c4592824acbf63a2b883aa2d07e75ccd7e9bf64321c455388a560579
+VERSION=2.1.0
+SHA256=86aa0925dd151ff9501a5965c4f8d7fb3dcd8accdc386a650dbdd62660399926
 
 # where to copy resulting files
 # this has to be run before `cd`-ing anywhere
