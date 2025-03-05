@@ -6,7 +6,7 @@ Performance
 See the `benchmarks.py`_ file for a comparison of various query methods
 and how much acceleration can be obtained from using Rtree.
 
-.. _benchmarks.py: https://github.com/Toblerity/rtree/blob/master/benchmarks/benchmarks.py
+.. _benchmarks.py: https://github.com/Toblerity/rtree/blob/main/benchmarks/benchmarks.py
 
 There are a few simple things that will improve performance.
 
