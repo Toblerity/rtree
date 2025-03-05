@@ -1,3 +1,11 @@
+1.4.0: 2025-03-06
+=================
+
+- Python 3.9+ is now required (:PR:`321`)
+- Add support for array-based bulk insert with NumPy (:PR:`340` by :user:`FreddieWitherden`)
+- Upgrade binary wheels with libspatialindex-2.1.0 (:PR:`353`)
+- Rename project and other build components to "rtree" (:PR:`350`)
+
 1.3.0: 2024-07-10
 =================
 
