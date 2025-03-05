@@ -4,7 +4,7 @@ Class Documentation
 ------------------------------------------------------------------------------
 
 .. autoclass:: rtree.index.Index
-    :members: __init__, insert, intersection, nearest, delete, bounds, count, close, dumps, loads
+    :members: __init__, insert, intersection, intersection_v, nearest, nearest_v, delete, bounds, count, close, dumps, loads
 
 .. autoclass:: rtree.index.Property
     :members:
