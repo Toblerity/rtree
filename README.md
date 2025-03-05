@@ -1,7 +1,7 @@
 # Rtree: Spatial indexing for Python
 
 ![Build](https://github.com/Toblerity/rtree/workflows/Build/badge.svg)
-[![PyPI version](https://badge.fury.io/py/Rtree.svg)](https://badge.fury.io/py/Rtree)
+[![PyPI version](https://badge.fury.io/py/rtree.svg)](https://badge.fury.io/py/rtree)
 
 
 Rtree is a [ctypes](https://docs.python.org/3/library/ctypes.html) Python wrapper of [libspatialindex](https://libspatialindex.org/) that provides a

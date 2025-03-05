@@ -22,7 +22,7 @@ ensure that applications can find it at startup time.
 
 Rtree can be easily installed via pip::
 
-  $ pip install Rtree
+  $ pip install rtree
 
 or by running in a local source directory::
 
@@ -39,8 +39,8 @@ The Windows DLLs of `libspatialindex`_ are pre-compiled in
 windows installers that are available from `PyPI`_.  Installation on Windows
 is as easy as::
 
-  pip install Rtree
+  pip install rtree
 
 
-.. _`PyPI`: https://pypi.org/project/Rtree/
+.. _`PyPI`: https://pypi.org/project/rtree/
 .. _`libspatialindex`: https://libspatialindex.org
