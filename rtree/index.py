@@ -1103,7 +1103,7 @@ class Index:
                 offi += counts[offn : offn + nr.value].sum()
                 offn += nr.value
 
-                ids = ids.resize(2 * len(ids), refcheck=False)
+                ids.resize(2 * len(ids), refcheck=False)
 
     def nearest_v(
         self,
@@ -1200,7 +1200,7 @@ class Index:
                 offi += counts[offn : offn + nr.value].sum()
                 offn += nr.value
 
-                ids = ids.resize(2 * len(ids), refcheck=False)
+                ids.resize(2 * len(ids), refcheck=False)
 
     def _nearestTP(self, coordinates, velocities, times, num_results=1, objects=False):
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
