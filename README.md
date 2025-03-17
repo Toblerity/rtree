@@ -1,6 +1,6 @@
 # Rtree: Spatial indexing for Python
 
-![Build](https://github.com/Toblerity/rtree/workflows/Build/badge.svg)
+[![Test](https://github.com/Toblerity/rtree/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/Toblerity/rtree/actions/workflows/test.yml)
 [![PyPI version](https://badge.fury.io/py/rtree.svg)](https://badge.fury.io/py/rtree)
 
 
