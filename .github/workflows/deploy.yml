@@ -36,7 +36,7 @@ jobs:
       if: startsWith(matrix.os, 'windows')
 
     - name: Build wheels
-      uses: pypa/cibuildwheel@v2.23.0
+      uses: pypa/cibuildwheel@v2.23.1
 
     - uses: actions/upload-artifact@v4
       with:
