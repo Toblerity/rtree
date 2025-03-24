@@ -3,6 +3,8 @@ name: Build and upload to PyPI
 on:
   workflow_dispatch:
   pull_request:
+    paths:
+      - '.github/workflows/deploy.yml'
   push:
     branches:
       - main
