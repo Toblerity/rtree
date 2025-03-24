@@ -95,6 +95,11 @@ exclude_lines = [
     "@overload",
 ]
 
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--import-mode=importlib"
+testpaths = ["tests"]
+
 [tool.ruff.lint]
 select = [
     "E", "W",  # pycodestyle
