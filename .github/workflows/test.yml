@@ -11,7 +11,7 @@ on:
 
 jobs:
   conda:
-    name: Conda ${{ matrix.python-version }} - ${{ matrix.os }}
+    name: Conda Python ${{ matrix.python-version }}, SIDX-${{ matrix.sidx-version }}, ${{ matrix.os }}
     defaults:
       run:
         shell: bash -l {0}
@@ -25,7 +25,7 @@ jobs:
         sidx-version: ['1.8.5', '2.1.0']
         exclude:
           - os: 'macos-latest'
-          - sidx-version: '1.8.5'
+            sidx-version: '1.8.5'
 
     steps:
     - uses: actions/checkout@v4
@@ -36,7 +36,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Setup
-      run: conda install -c conda-forge numpy pytest libspatialindex=${{ matrix.sidx-version }} -y
+      run: conda install -c conda-forge pip numpy pytest libspatialindex=${{ matrix.sidx-version }} -y
 
     - name: Install
       run: pip install -e .
