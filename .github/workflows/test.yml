@@ -11,7 +11,7 @@ on:
 
 jobs:
   conda:
-    name: Conda ${{ matrix.python-version }} - ${{ matrix.os }}
+    name: Conda Python ${{ matrix.python-version }}, SIDX-${{ matrix.sidx-version }}, ${{ matrix.os }}
     defaults:
       run:
         shell: bash -l {0}
