@@ -1061,12 +1061,16 @@ class Index:
         """
         import numpy as np
 
-        assert mins.shape == maxs.shape
-        assert mins.strides == maxs.strides
+        # Ensure inputs are 2D float arrays
+        mins = np.atleast_2d(mins).astype(np.float64).copy()
+        maxs = np.atleast_2d(maxs).astype(np.float64).copy()
 
-        # Cast
-        mins = mins.astype(np.float64)
-        maxs = maxs.astype(np.float64)
+        if mins.ndim != 2 or maxs.ndim != 2:
+            raise ValueError("mins/maxs must have 2 dimensions: (n, d)")
+        if mins.shape != maxs.shape:
+            raise ValueError("mins and maxs shapes not equal")
+        if mins.strides != maxs.strides:
+            raise ValueError("mins and maxs strides not equal")
 
         # Extract counts
         n, d = mins.shape
@@ -1109,6 +1113,7 @@ class Index:
         self,
         mins,
         maxs,
+        *,
         num_results=1,
         max_dists=None,
         strict=False,
@@ -1144,12 +1149,16 @@ class Index:
         """
         import numpy as np
 
-        assert mins.shape == maxs.shape
-        assert mins.strides == maxs.strides
+        # Ensure inputs are 2D float arrays
+        mins = np.atleast_2d(mins).astype(np.float64).copy()
+        maxs = np.atleast_2d(maxs).astype(np.float64).copy()
 
-        # Cast
-        mins = mins.astype(np.float64)
-        maxs = maxs.astype(np.float64)
+        if mins.ndim != 2 or maxs.ndim != 2:
+            raise ValueError("mins/maxs must have 2 dimensions: (n, d)")
+        if mins.shape != maxs.shape:
+            raise ValueError("mins and maxs shapes not equal")
+        if mins.strides != maxs.strides:
+            raise ValueError("mins and maxs strides not equal")
 
         # Extract counts
         n, d = mins.shape
@@ -1164,9 +1173,11 @@ class Index:
         offn, offi = 0, 0
 
         if max_dists is not None:
-            assert len(max_dists) == n
-
-            dists = max_dists.astype(np.float64).copy()
+            dists = np.atleast_1d(max_dists).astype(np.float64).copy()
+            if dists.ndim != 1:
+                raise ValueError("max_dists must have 1 dimension")
+            if len(dists) != n:
+                raise ValueError(f"max_dists must have length {n}")
         elif return_max_dists:
             dists = np.zeros(n)
         else:
@@ -1189,7 +1200,7 @@ class Index:
                 ctypes.byref(nr),
             )
 
-            # If we got the expected nuber of results then return
+            # If we got the expected number of results then return
             if nr.value == n - offn:
                 if return_max_dists:
                     return ids[: counts.sum()], counts, dists
