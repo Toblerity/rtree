@@ -17,12 +17,14 @@ This will substantially (orders of magnitude in many cases) improve
 performance over :py:meth:`~rtree.index.Index.insert` by allowing the data to
 be pre-sorted
 
-::
+.. code-block:: pycon
 
+   >>> from rtree import index
    >>> def generator_function(somedata):
-   ...    for i, obj in enumerate(somedata):
-   ...        yield (i, (obj.xmin, obj.ymin, obj.xmax, obj.ymax), obj)
-   >>> r = index.Index(generator_function(somedata))
+   ...     for i, obj in enumerate(somedata):
+   ...         yield (i, (obj.xmin, obj.ymin, obj.xmax, obj.ymax), obj)
+   ...
+   >>> r = index.Index(generator_function(somedata))  # doctest: +SKIP
 
 After bulk loading the index, you can then insert additional records into
 the index using :py:meth:`~rtree.index.Index.insert`
@@ -30,12 +32,14 @@ the index using :py:meth:`~rtree.index.Index.insert`
 Override :py:data:`~rtree.index.Index.dumps` to use the highest pickle protocol
 ...............................................................................
 
-::
+.. code-block:: pycon
 
-    >>> import cPickle, rtree
+    >>> import pickle
+    >>> import rtree
     >>> class FastRtree(rtree.Rtree):
     ...     def dumps(self, obj):
-    ...         return cPickle.dumps(obj, -1)
+    ...         return pickle.dumps(obj, -1)
+    ...
     >>> r = FastRtree()
 
 .. topic:: Update from January 2024
@@ -45,13 +49,16 @@ Override :py:data:`~rtree.index.Index.dumps` to use the highest pickle protocol
 
 .. _pull request on GitHub: https://github.com/Toblerity/rtree/pull/197
 
-Use objects='raw'
+Use objects="raw"
 ...............................................................................
 
 In any :py:meth:`~rtree.index.Index.intersection` or
-:py:meth:`~rtree.index.Index.nearest` or query, use objects='raw' keyword
-argument ::
+:py:meth:`~rtree.index.Index.nearest` or query, use ``objects="raw"`` keyword
+argument:
 
+.. code-block:: pycon
+
+    >>> xmin, ymin, xmax, ymax = 0.0, 0.0, 1.0, 1.0
     >>> objs = r.intersection((xmin, ymin, xmax, ymax), objects="raw")
 
 

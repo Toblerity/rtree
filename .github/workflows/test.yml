@@ -42,7 +42,7 @@ jobs:
       run: pip install -e .
 
     - name: Test with pytest
-      run: pytest --import-mode=importlib -Werror -v --doctest-modules rtree tests
+      run: pytest -Werror -v --doctest-modules rtree tests
 
   ubuntu:
     name: Ubuntu Python ${{ matrix.python-version }}
@@ -73,4 +73,7 @@ jobs:
       run: pip install --user .
 
     - name: Test with pytest
-      run: pytest --import-mode=importlib -Werror -v --doctest-modules rtree tests
+      run: pytest -Werror -v --doctest-modules rtree tests
+
+    - name: Run doctests
+      run: pytest -Werror -v --doctest-modules docs/source/*.rst
