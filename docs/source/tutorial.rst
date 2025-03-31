@@ -18,7 +18,9 @@ Import
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 After :ref:`installing <installation>` :ref:`Rtree <home>`, you should be able to
-open up a Python prompt and issue the following::
+open up a Python prompt and issue the following:
+
+.. code-block:: pycon
 
   >>> from rtree import index
 
@@ -31,7 +33,9 @@ Construct an instance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 After importing the index module, construct an index with the default
-construction::
+construction:
+
+.. code-block:: pycon
 
   >>> idx = index.Index()
 
@@ -45,7 +49,9 @@ Create a bounding box
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 After instantiating the index, create a bounding box that we can
-insert into the index::
+insert into the index:
+
+.. code-block:: pycon
 
   >>> left, bottom, right, top = (0.0, 0.0, 1.0, 1.0)
 
@@ -61,7 +67,9 @@ insert into the index::
 Insert records into the index
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Insert an entry into the index::
+Insert an entry into the index:
+
+.. code-block:: pycon
 
   >>> idx.insert(0, (left, bottom, right, top))
 
@@ -90,13 +98,17 @@ There are three primary methods for querying the index.
 Intersection
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Given a query window, return ids that are contained within the window::
+Given a query window, return ids that are contained within the window:
+
+.. code-block:: pycon
 
   >>> list(idx.intersection((1.0, 1.0, 2.0, 2.0)))
   [0]
 
 Given a query window that is beyond the bounds of data we have in the
-index::
+index:
+
+.. code-block:: pycon
 
   >>> list(idx.intersection((1.0000001, 1.0000001, 2.0, 2.0)))
   []
@@ -105,7 +117,9 @@ Nearest Neighbors
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 The following finds the 1 nearest item to the given bounds. If multiple items
-are of equal distance to the bounds, both are returned::
+are of equal distance to the bounds, both are returned:
+
+.. code-block:: pycon
 
   >>> idx.insert(1, (left, bottom, right, top))
   >>> list(idx.nearest((1.0000001, 1.0000001, 2.0, 2.0), 1))
@@ -119,12 +133,16 @@ Using Rtree as a cheapo spatial database
 
 Rtree also supports inserting any object you can pickle into the index (called
 a clustered index in `libspatialindex`_ parlance). The following inserts the
-picklable object ``42`` into the index with the given id::
+picklable object ``42`` into the index with the given id ``2``:
 
-  >>> idx.insert(id=id, coordinates=(left, bottom, right, top), obj=42)
+.. code-block:: pycon
+
+  >>> idx.insert(id=2, coordinates=(left, bottom, right, top), obj=42)
 
 You can then return a list of objects by giving the ``objects=True`` flag
-to intersection::
+to intersection:
+
+.. code-block:: pycon
 
   >>> [n.object for n in idx.intersection((left, bottom, right, top), objects=True)]
   [None, None, 42]
@@ -140,17 +158,28 @@ Serializing your index to a file
 
 One of :ref:`Rtree <home>`'s most useful properties is the ability to
 serialize Rtree indexes to disk. These include the clustered indexes
-described :ref:`here <clustered>`::
+described :ref:`here <clustered>`:
 
-  >>> file_idx = index.Rtree('rtree')
+.. code-block:: pycon
+
+  >>> import os
+  >>> from tempfile import TemporaryDirectory
+  >>> prev_dir = os.getcwd()
+  >>> temp_dir = TemporaryDirectory()
+  >>> os.chdir(temp_dir.name)
+  >>> file_idx = index.Rtree("myidx")
   >>> file_idx.insert(1, (left, bottom, right, top))
   >>> file_idx.insert(2, (left - 1.0, bottom - 1.0, right + 1.0, top + 1.0))
   >>> [n for n in file_idx.intersection((left, bottom, right, top))]
   [1, 2]
+  >>> os.listdir()
+  ['myidx.dat', 'myidx.idx']
+  >>> os.chdir(prev_dir)
+  >>> temp_dir.cleanup()
 
 .. note::
 
-    By default, if an index file with the given name `rtree` in the example
+    By default, if an index file with the given name ``myidx`` in the example
     above already exists on the file system, it will be opened in append mode
     and not be re-created. You can control this behavior with the
     :py:attr:`rtree.index.Property.overwrite` property of the index property
@@ -170,12 +199,12 @@ that are created when serializing index data to disk. These file extensions
 are controllable using the :py:attr:`rtree.index.Property.dat_extension` and
 :py:attr:`rtree.index.Property.idx_extension` index properties.
 
-::
+.. code-block:: pycon
 
-    >>> p = rtree.index.Property()
-    >>> p.dat_extension = 'data'
-    >>> p.idx_extension = 'index'
-    >>> file_idx = index.Index('rtree', properties = p)
+  >>> p = index.Property()
+  >>> p.dat_extension = "data"
+  >>> p.idx_extension = "index"
+  >>> file_idx = index.Index("rtree", properties=p)  # doctest: +SKIP
 
 3D indexes
 ..............................................................................
@@ -185,17 +214,23 @@ following is a 3D index that is to be stored on disk. Persisted indexes are
 stored on disk using two files -- an index file (.idx) and a data (.dat) file.
 You can modify the extensions these files use by altering the properties of
 the index at instantiation time. The following creates a 3D index that is
-stored on disk as the files ``3d_index.data`` and ``3d_index.index``::
+stored on disk as the files ``3d_index.data`` and ``3d_index.index``:
+
+.. code-block:: pycon
 
   >>> from rtree import index
+  >>> temp_dir = TemporaryDirectory()
+  >>> os.chdir(temp_dir.name)
   >>> p = index.Property()
   >>> p.dimension = 3
-  >>> p.dat_extension = 'data'
-  >>> p.idx_extension = 'index'
-  >>> idx3d = index.Index('3d_index',properties=p)
+  >>> p.dat_extension = "data"
+  >>> p.idx_extension = "index"
+  >>> idx3d = index.Index("3d_index", properties=p)
   >>> idx3d.insert(1, (0, 60, 23.0, 0, 60, 42.0))
-  >>> idx3d.intersection( (-1, 62, 22, -1, 62, 43))
-  [1L]
+  >>> list(idx3d.intersection((-1, 60, 22, 1, 62, 43)))
+  [1]
+  >>> os.chdir(prev_dir)
+  >>> temp_dir.cleanup()
 
 ZODB and Custom Storages
 ..............................................................................
