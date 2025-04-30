@@ -14,6 +14,8 @@ import rtree
 from rtree import core, index
 from rtree.exceptions import RTreeError
 
+from .common import skip_sidx_lt_210
+
 
 class IndexTestCase(unittest.TestCase):
     def setUp(self) -> None:
@@ -240,7 +242,7 @@ class IndexIntersection(IndexTestCase):
         self.assertTrue(0 in self.idx.intersection((0, 0, 60, 60)))
         hits = list(self.idx.intersection((0, 0, 60, 60)))
 
-        self.assertTrue(len(hits), 10)
+        self.assertEqual(len(hits), 10)
         self.assertEqual(hits, [0, 4, 16, 27, 35, 40, 47, 50, 76, 80])
 
     def test_objects(self) -> None:
@@ -267,6 +269,26 @@ class IndexIntersection(IndexTestCase):
         idx.add(1, (3, 3))
 
         self.assertEqual([1, 1], list(idx.intersection((0, 0, 5, 5))))
+
+    @skip_sidx_lt_210
+    def test_intersection_v(self) -> None:
+        mins = np.array([[0, 1]] * 2).T
+        maxs = np.array([[60, 50]] * 2).T
+        ret = self.idx.intersection_v(mins, maxs)
+        assert type(ret) is tuple
+        ids, counts = ret
+        assert ids.dtype == np.int64
+        ids0 = [0, 4, 16, 27, 35, 40, 47, 50, 76, 80]
+        ids1 = [0, 16, 27, 35, 47, 76]
+        assert ids.tolist() == ids0 + ids1
+        assert counts.dtype == np.uint64
+        assert counts.tolist() == [len(ids0), len(ids1)]
+
+        # errors
+        with pytest.raises(ValueError, match="must have 2 dimensions"):
+            self.idx.intersection_v(np.ones((2, 3, 4)), 4)
+        with pytest.raises(ValueError, match="shapes not equal"):
+            self.idx.intersection_v([0], [10, 12])
 
 
 class TestIndexIntersectionUnion:
@@ -314,6 +336,17 @@ class TestIndexIntersectionUnion:
             else:
                 assert False
 
+    @skip_sidx_lt_210
+    def test_intersection_v_interleaved(
+        self, index_a_interleaved: index.Index, index_b_interleaved: index.Index
+    ) -> None:
+        index_c_interleaved = index_a_interleaved & index_b_interleaved
+        mins = index_c_interleaved.bounds[0:2]
+        maxs = index_c_interleaved.bounds[2:4]
+        idxs, counts = index_c_interleaved.intersection_v(mins, maxs)
+        assert idxs.tolist() == [0, 1]
+        assert counts.tolist() == [2]
+
     def test_intersection_uninterleaved(
         self, index_a_uninterleaved: index.Index, index_b_uninterleaved: index.Index
     ) -> None:
@@ -329,6 +362,17 @@ class TestIndexIntersectionUnion:
                 assert hit.object == ("a_2", "b_3")
             else:
                 assert False
+
+    @skip_sidx_lt_210
+    def test_intersection_v_uninterleaved(
+        self, index_a_uninterleaved: index.Index, index_b_uninterleaved: index.Index
+    ) -> None:
+        index_c_uninterleaved = index_a_uninterleaved & index_b_uninterleaved
+        mins = index_c_uninterleaved.bounds[0::2]
+        maxs = index_c_uninterleaved.bounds[1::2]
+        idxs, counts = index_c_uninterleaved.intersection_v(mins, maxs)
+        assert idxs.tolist() == [0, 1]
+        assert counts.tolist() == [2]
 
     def test_intersection_mismatch(
         self, index_a_interleaved: index.Index, index_b_uninterleaved: index.Index
@@ -436,14 +480,14 @@ class IndexSerialization(unittest.TestCase):
             idx.add(i, coords)
 
         hits = list(idx.intersection((0, 0, 60, 60)))
-        self.assertTrue(len(hits), 10)
+        self.assertEqual(len(hits), 10)
         self.assertEqual(hits, [0, 4, 16, 27, 35, 40, 47, 50, 76, 80])
         del idx
 
         # Check we can reopen the index and get the same results
         idx2 = index.Index(tname, properties=p)
         hits = list(idx2.intersection((0, 0, 60, 60)))
-        self.assertTrue(len(hits), 10)
+        self.assertEqual(len(hits), 10)
         self.assertEqual(hits, [0, 4, 16, 27, 35, 40, 47, 50, 76, 80])
 
     @pytest.mark.skipif(not sys.maxsize > 2**32, reason="Fails on 32bit systems")
@@ -465,7 +509,7 @@ class IndexSerialization(unittest.TestCase):
             tname, data_gen(interleaved=False), properties=p, interleaved=False
         )
         hits1 = sorted(list(idx.intersection((0, 60, 0, 60))))
-        self.assertTrue(len(hits1), 10)
+        self.assertEqual(len(hits1), 10)
         self.assertEqual(hits1, [0, 4, 16, 27, 35, 40, 47, 50, 76, 80])
 
         leaves = idx.leaves()
@@ -591,7 +635,7 @@ class IndexSerialization(unittest.TestCase):
         )
 
         hits2 = sorted(list(idx.intersection((0, 60, 0, 60), objects=True)))
-        self.assertTrue(len(hits2), 10)
+        self.assertEqual(len(hits2), 10)
         self.assertEqual(hits2[0].object, 42)
 
     def test_overwrite(self) -> None:
@@ -616,6 +660,46 @@ class IndexNearest(IndexTestCase):
             idx.add(i, (start, 1, stop, 1))
         hits = sorted(idx.nearest((13, 0, 20, 2), 3))
         self.assertEqual(hits, [3, 4, 5])
+
+    @skip_sidx_lt_210
+    def test_nearest_v_basic(self) -> None:
+        mins = np.array([[0, 5]] * 2).T
+        maxs = np.array([[10, 15]] * 2).T
+        ret = self.idx.nearest_v(mins, maxs, num_results=3)
+        assert type(ret) is tuple
+        ids, counts = ret
+        assert ids.dtype == np.int64
+        ids0 = [76, 48, 19]
+        ids1 = [76, 47, 48]
+        assert ids.tolist() == ids0 + ids1
+        assert counts.dtype == np.uint64
+        assert counts.tolist() == [3, 3]
+
+        ret = self.idx.nearest_v(mins, maxs, num_results=3, return_max_dists=True)
+        assert type(ret) is tuple
+        ids, counts, max_dists = ret
+        assert ids.tolist() == ids0 + ids1
+        assert counts.tolist() == [3, 3]
+        assert max_dists.dtype == np.float64
+        np.testing.assert_allclose(max_dists, [7.54938045, 11.05686397])
+
+        ret = self.idx.nearest_v(
+            mins, maxs, num_results=3, max_dists=[10, 10], return_max_dists=True
+        )
+        ids, counts, max_dists = ret
+        assert ids.tolist() == ids0 + ids1[:2]
+        assert counts.tolist() == [3, 2]
+        np.testing.assert_allclose(max_dists, [7.54938045, 3.92672575])
+
+        # errors
+        with pytest.raises(ValueError, match="must have 2 dimensions"):
+            self.idx.nearest_v(np.ones((2, 3, 4)), 4)
+        with pytest.raises(ValueError, match="shapes not equal"):
+            self.idx.nearest_v([0], [10, 12])
+        with pytest.raises(ValueError, match="max_dists must have 1 dimension"):
+            self.idx.nearest_v(maxs, mins, max_dists=[[10]])
+        with pytest.raises(ValueError, match="max_dists must have length 2"):
+            self.idx.nearest_v(maxs, mins, max_dists=[10])
 
     def test_nearest_equidistant(self) -> None:
         """Test that if records are equidistant, both are returned."""
@@ -677,24 +761,46 @@ class IndexDelete(IndexTestCase):
         self.assertEqual(hits, [])
 
 
-class IndexMoreDimensions(IndexTestCase):
-    def test_3d(self) -> None:
-        """Test we make and query a 3D index"""
+class Index3d(IndexTestCase):
+    """Test we make and query a 3D index"""
+
+    def setUp(self) -> None:
         p = index.Property()
         p.dimension = 3
-        idx = index.Index(properties=p, interleaved=False)
-        idx.insert(1, (0, 0, 60, 60, 22, 22.0))
-        hits = idx.intersection((-1, 1, 58, 62, 22, 24))
+        self.idx = index.Index(properties=p, interleaved=False)
+        self.idx.insert(1, (0, 0, 60, 60, 22, 22.0))
+        self.coords = (-1, 1, 58, 62, 22, 24)
+
+    def test_intersection(self) -> None:
+        hits = self.idx.intersection(self.coords)
         self.assertEqual(list(hits), [1])
 
-    def test_4d(self) -> None:
-        """Test we make and query a 4D index"""
+    @skip_sidx_lt_210
+    def test_intersection_v(self) -> None:
+        idxs, counts = self.idx.intersection_v(self.coords[0::2], self.coords[1::2])
+        assert idxs.tolist() == [1]
+        assert counts.tolist() == [1]
+
+
+class Index4d(IndexTestCase):
+    """Test we make and query a 4D index"""
+
+    def setUp(self) -> None:
         p = index.Property()
         p.dimension = 4
-        idx = index.Index(properties=p, interleaved=False)
-        idx.insert(1, (0, 0, 60, 60, 22, 22.0, 128, 142))
-        hits = idx.intersection((-1, 1, 58, 62, 22, 24, 120, 150))
+        self.idx = index.Index(properties=p, interleaved=False)
+        self.idx.insert(1, (0, 0, 60, 60, 22, 22.0, 128, 142))
+        self.coords = (-1, 1, 58, 62, 22, 24, 120, 150)
+
+    def test_intersection(self) -> None:
+        hits = self.idx.intersection(self.coords)
         self.assertEqual(list(hits), [1])
+
+    @skip_sidx_lt_210
+    def test_intersection_v(self) -> None:
+        idxs, counts = self.idx.intersection_v(self.coords[0::2], self.coords[1::2])
+        assert idxs.tolist() == [1]
+        assert counts.tolist() == [1]
 
 
 class IndexStream(IndexTestCase):
@@ -846,15 +952,11 @@ class IndexCustomStorage(unittest.TestCase):
         """Reopening custom index storage works as expected"""
 
         storage = DictStorage()
-        settings = index.Property()
-        settings.writethrough = True
-        settings.buffering_capacity = 1
-
-        r1 = index.Index(storage, properties=settings, overwrite=True)
+        r1 = index.Index(storage, overwrite=True)
         r1.add(555, (2, 2))
         del r1
         self.assertTrue(storage.hasData)
 
-        r2 = index.Index(storage, properly=settings, overwrite=False)
+        r2 = index.Index(storage, overwrite=False)
         count = r2.count((0, 0, 10, 10))
         self.assertEqual(count, 1)

@@ -3,7 +3,7 @@ requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "Rtree"
+name = "rtree"
 authors = [
     {name = "Sean Gillies", email = "sean.gillies@gmail.com"},
 ]
@@ -56,12 +56,11 @@ repair-wheel-command = "python scripts/repair_wheel.py -w {dest_dir} {wheel}"
 test-requires = "tox"
 test-command = "tox --conf {project} --installpkg {wheel}"
 test-skip = [
-    "*aarch64",  # slow!
     "*-macosx_arm64",
 ]
 
 [tool.cibuildwheel.linux]
-archs = ["auto", "aarch64"]
+archs = ["auto"]
 before-build = [
     "yum install -y cmake libffi-devel",
     "sh {project}/scripts/install_libspatialindex.sh",
@@ -95,6 +94,11 @@ exclude_lines = [
     "pragma: no cover",
     "@overload",
 ]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--import-mode=importlib"
+testpaths = ["tests"]
 
 [tool.ruff.lint]
 select = [

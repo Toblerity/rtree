@@ -3,7 +3,7 @@ name: Test
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
   workflow_dispatch:
   schedule:
@@ -11,7 +11,7 @@ on:
 
 jobs:
   conda:
-    name: Conda ${{ matrix.python-version }} - ${{ matrix.os }}
+    name: Conda Python ${{ matrix.python-version }}, SIDX-${{ matrix.sidx-version }}, ${{ matrix.os }}
     defaults:
       run:
         shell: bash -l {0}
@@ -20,12 +20,12 @@ jobs:
       fail-fast: false
       matrix:
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
-        python-version: ['3.9', '3.10', '3.11', '3.12']
-        # test oldest and newest libspatialindex versions
-        sidx-version: ['1.8.5', '2.0.0']
+        # test oldest and newest versions of python and libspatialindex
+        python-version: ['3.9', '3.13']
+        sidx-version: ['1.8.5', '2.1.0']
         exclude:
           - os: 'macos-latest'
-          - sidx-version: '1.8.5'
+            sidx-version: '1.8.5'
 
     steps:
     - uses: actions/checkout@v4
@@ -36,13 +36,13 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Setup
-      run: conda install -c conda-forge numpy pytest libspatialindex=${{ matrix.sidx-version }} -y
+      run: conda install -c conda-forge pip numpy pytest libspatialindex=${{ matrix.sidx-version }} -y
 
     - name: Install
       run: pip install -e .
 
     - name: Test with pytest
-      run: pytest --import-mode=importlib -Werror -v --doctest-modules rtree tests
+      run: pytest -Werror -v --doctest-modules rtree tests
 
   ubuntu:
     name: Ubuntu Python ${{ matrix.python-version }}
@@ -73,4 +73,7 @@ jobs:
       run: pip install --user .
 
     - name: Test with pytest
-      run: pytest --import-mode=importlib -Werror -v --doctest-modules rtree tests
+      run: pytest -Werror -v --doctest-modules rtree tests
+
+    - name: Run doctests
+      run: pytest -Werror -v --doctest-modules docs/source/*.rst

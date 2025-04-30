@@ -4,8 +4,11 @@ import os
 import shutil
 from collections.abc import Iterator
 
+import numpy
 import py
 import pytest
+
+from .common import sidx_version_string
 
 data_files = ["boxes_15x15.data"]
 
@@ -17,3 +20,12 @@ def temporary_working_directory(tmpdir: py.path.local) -> Iterator[None]:
         shutil.copy(filename, str(tmpdir))
     with tmpdir.as_cwd():
         yield
+
+
+def pytest_report_header(config):
+    """Header for pytest."""
+    vers = [
+        f"SIDX version: {sidx_version_string}",
+        f"NumPy version: {numpy.__version__}",
+    ]
+    return "\n".join(vers)
