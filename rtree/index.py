@@ -1176,8 +1176,7 @@ class Index:
         offn, offi = 0, 0
 
         if max_dists is not None:
-            dists = np.ascontiguousarray(np.atleast_1d(max_dists),
-                                         dtype=np.float64)
+            dists = np.ascontiguousarray(np.atleast_1d(max_dists), dtype=np.float64)
             if dists.ndim != 1:
                 raise ValueError("max_dists must have 1 dimension")
             if len(dists) != n:
