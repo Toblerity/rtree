@@ -1061,9 +1061,9 @@ class Index:
         """
         import numpy as np
 
-        # Ensure inputs are 2D float arrays
-        mins = np.atleast_2d(mins).astype(np.float64).copy()
-        maxs = np.atleast_2d(maxs).astype(np.float64).copy()
+        # Ensure inputs are 2D float64 arrays
+        mins = np.atleast_2d(mins).astype(np.float64)
+        maxs = np.atleast_2d(maxs).astype(np.float64)
 
         if mins.ndim != 2 or maxs.ndim != 2:
             raise ValueError("mins/maxs must have 2 dimensions: (n, d)")
@@ -1149,9 +1149,12 @@ class Index:
         """
         import numpy as np
 
-        # Ensure inputs are 2D float arrays
-        mins = np.atleast_2d(mins).astype(np.float64).copy()
-        maxs = np.atleast_2d(maxs).astype(np.float64).copy()
+        # Ensure inputs are 2D float64 arrays
+        if mins is maxs:
+            mins = maxs = np.atleast_2d(mins).astype(np.float64)
+        else:
+            mins = np.atleast_2d(mins).astype(np.float64)
+            maxs = np.atleast_2d(maxs).astype(np.float64)
 
         if mins.ndim != 2 or maxs.ndim != 2:
             raise ValueError("mins/maxs must have 2 dimensions: (n, d)")
@@ -1173,7 +1176,8 @@ class Index:
         offn, offi = 0, 0
 
         if max_dists is not None:
-            dists = np.atleast_1d(max_dists).astype(np.float64).copy()
+            dists = np.ascontiguousarray(np.atleast_1d(max_dists),
+                                         dtype=np.float64)
             if dists.ndim != 1:
                 raise ValueError("max_dists must have 1 dimension")
             if len(dists) != n:
