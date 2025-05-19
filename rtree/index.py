@@ -1061,16 +1061,7 @@ class Index:
         """
         import numpy as np
 
-        # Ensure inputs are 2D float64 arrays
-        mins = np.atleast_2d(mins).astype(np.float64)
-        maxs = np.atleast_2d(maxs).astype(np.float64)
-
-        if mins.ndim != 2 or maxs.ndim != 2:
-            raise ValueError("mins/maxs must have 2 dimensions: (n, d)")
-        if mins.shape != maxs.shape:
-            raise ValueError("mins and maxs shapes not equal")
-        if mins.strides != maxs.strides:
-            raise ValueError("mins and maxs strides not equal")
+        mins, maxs = self._prepare_v_arrays(mins, maxs)
 
         # Extract counts
         n, d = mins.shape
@@ -1149,19 +1140,7 @@ class Index:
         """
         import numpy as np
 
-        # Ensure inputs are 2D float64 arrays
-        if mins is maxs:
-            mins = maxs = np.atleast_2d(mins).astype(np.float64)
-        else:
-            mins = np.atleast_2d(mins).astype(np.float64)
-            maxs = np.atleast_2d(maxs).astype(np.float64)
-
-        if mins.ndim != 2 or maxs.ndim != 2:
-            raise ValueError("mins/maxs must have 2 dimensions: (n, d)")
-        if mins.shape != maxs.shape:
-            raise ValueError("mins and maxs shapes not equal")
-        if mins.strides != maxs.strides:
-            raise ValueError("mins and maxs strides not equal")
+        mins, maxs = self._prepare_v_arrays(mins, maxs)
 
         # Extract counts
         n, d = mins.shape
@@ -1215,6 +1194,33 @@ class Index:
                 offn += nr.value
 
                 ids.resize(2 * len(ids) + counts[offn], refcheck=False)
+
+    def _prepare_v_arrays(self, mins, maxs):
+        import numpy as np
+
+        # Ensure inputs are 2D float64 arrays
+        if mins is maxs:
+            mins = maxs = np.atleast_2d(mins).astype(np.float64)
+        else:
+            mins = np.atleast_2d(mins).astype(np.float64)
+            maxs = np.atleast_2d(maxs).astype(np.float64)
+
+        if mins.ndim != 2 or maxs.ndim != 2:
+            raise ValueError("mins/maxs must have 2 dimensions: (n, d)")
+        if mins.shape != maxs.shape:
+            raise ValueError("mins and maxs shapes not equal")
+        if mins.strides != maxs.strides:
+            raise ValueError("mins and maxs strides not equal")
+
+        # Handle invalid strides
+        if any(s % mins.itemsize for s in mins.strides):
+            if mins is maxs:
+                mins = maxs = mins.copy()
+            else:
+                mins = mins.copy()
+                maxs = maxs.copy()
+
+        return mins, maxs
 
     def _nearestTP(self, coordinates, velocities, times, num_results=1, objects=False):
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
