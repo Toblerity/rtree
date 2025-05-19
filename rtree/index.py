@@ -1061,16 +1061,7 @@ class Index:
         """
         import numpy as np
 
-        # Ensure inputs are 2D float arrays
-        mins = np.atleast_2d(mins).astype(np.float64).copy()
-        maxs = np.atleast_2d(maxs).astype(np.float64).copy()
-
-        if mins.ndim != 2 or maxs.ndim != 2:
-            raise ValueError("mins/maxs must have 2 dimensions: (n, d)")
-        if mins.shape != maxs.shape:
-            raise ValueError("mins and maxs shapes not equal")
-        if mins.strides != maxs.strides:
-            raise ValueError("mins and maxs strides not equal")
+        mins, maxs = self._prepare_v_arrays(mins, maxs)
 
         # Extract counts
         n, d = mins.shape
@@ -1089,7 +1080,7 @@ class Index:
                 self.handle,
                 n - offn,
                 d,
-                len(ids),
+                len(ids) - offi,
                 d_i_stri,
                 d_j_stri,
                 mins[offn:].ctypes.data,
@@ -1107,7 +1098,7 @@ class Index:
                 offi += counts[offn : offn + nr.value].sum()
                 offn += nr.value
 
-                ids.resize(2 * len(ids), refcheck=False)
+                ids.resize(2 * len(ids) + counts[offn], refcheck=False)
 
     def nearest_v(
         self,
@@ -1149,16 +1140,7 @@ class Index:
         """
         import numpy as np
 
-        # Ensure inputs are 2D float arrays
-        mins = np.atleast_2d(mins).astype(np.float64).copy()
-        maxs = np.atleast_2d(maxs).astype(np.float64).copy()
-
-        if mins.ndim != 2 or maxs.ndim != 2:
-            raise ValueError("mins/maxs must have 2 dimensions: (n, d)")
-        if mins.shape != maxs.shape:
-            raise ValueError("mins and maxs shapes not equal")
-        if mins.strides != maxs.strides:
-            raise ValueError("mins and maxs strides not equal")
+        mins, maxs = self._prepare_v_arrays(mins, maxs)
 
         # Extract counts
         n, d = mins.shape
@@ -1173,7 +1155,7 @@ class Index:
         offn, offi = 0, 0
 
         if max_dists is not None:
-            dists = np.atleast_1d(max_dists).astype(np.float64).copy()
+            dists = np.ascontiguousarray(np.atleast_1d(max_dists), dtype=np.float64)
             if dists.ndim != 1:
                 raise ValueError("max_dists must have 1 dimension")
             if len(dists) != n:
@@ -1189,7 +1171,7 @@ class Index:
                 num_results if not strict else -num_results,
                 n - offn,
                 d,
-                len(ids),
+                len(ids) - offi,
                 d_i_stri,
                 d_j_stri,
                 mins[offn:].ctypes.data,
@@ -1211,7 +1193,34 @@ class Index:
                 offi += counts[offn : offn + nr.value].sum()
                 offn += nr.value
 
-                ids.resize(2 * len(ids), refcheck=False)
+                ids.resize(2 * len(ids) + counts[offn], refcheck=False)
+
+    def _prepare_v_arrays(self, mins, maxs):
+        import numpy as np
+
+        # Ensure inputs are 2D float64 arrays
+        if mins is maxs:
+            mins = maxs = np.atleast_2d(mins).astype(np.float64)
+        else:
+            mins = np.atleast_2d(mins).astype(np.float64)
+            maxs = np.atleast_2d(maxs).astype(np.float64)
+
+        if mins.ndim != 2 or maxs.ndim != 2:
+            raise ValueError("mins/maxs must have 2 dimensions: (n, d)")
+        if mins.shape != maxs.shape:
+            raise ValueError("mins and maxs shapes not equal")
+        if mins.strides != maxs.strides:
+            raise ValueError("mins and maxs strides not equal")
+
+        # Handle invalid strides
+        if any(s % mins.itemsize for s in mins.strides):
+            if mins is maxs:
+                mins = maxs = mins.copy()
+            else:
+                mins = mins.copy()
+                maxs = maxs.copy()
+
+        return mins, maxs
 
     def _nearestTP(self, coordinates, velocities, times, num_results=1, objects=False):
         p_mins, p_maxs = self.get_coordinate_pointers(coordinates)
@@ -1438,22 +1447,26 @@ class Index:
         return IndexStreamHandle(self.properties.handle, stream)
 
     def _create_idx_from_array(self, ibuf, minbuf, maxbuf):
-        assert len(ibuf) == len(minbuf)
-        assert len(ibuf) == len(maxbuf)
-        assert minbuf.strides == maxbuf.strides
+        import numpy as np
 
-        # Cast
-        ibuf = ibuf.astype(int)
-        minbuf = minbuf.astype(float)
-        maxbuf = maxbuf.astype(float)
+        # Prepare the arrays
+        ibuf = ibuf.astype(np.int64)
+        minbuf, maxbuf = self._prepare_v_arrays(minbuf, maxbuf)
+
+        if len(ibuf) != len(minbuf):
+            raise ValueError("index and point counts different")
+
+        # Handle misaligned data
+        if ibuf.strides[0] % ibuf.itemsize:
+            ibuf = ibuf.copy()
 
         # Extract counts
         n, d = minbuf.shape
 
         # Compute strides
-        i_stri = ibuf.strides[0] // 8
-        d_i_stri = minbuf.strides[0] // 8
-        d_j_stri = minbuf.strides[1] // 8
+        i_stri = ibuf.strides[0] // ibuf.itemsize
+        d_i_stri = minbuf.strides[0] // minbuf.itemsize
+        d_j_stri = minbuf.strides[1] // minbuf.itemsize
 
         return IndexArrayHandle(
             self.properties.handle,

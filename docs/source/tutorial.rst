@@ -172,7 +172,7 @@ described :ref:`here <clustered>`:
   >>> file_idx.insert(2, (left - 1.0, bottom - 1.0, right + 1.0, top + 1.0))
   >>> [n for n in file_idx.intersection((left, bottom, right, top))]
   [1, 2]
-  >>> os.listdir()
+  >>> sorted(os.listdir())
   ['myidx.dat', 'myidx.idx']
   >>> os.chdir(prev_dir)
   >>> temp_dir.cleanup()
