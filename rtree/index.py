@@ -1447,22 +1447,26 @@ class Index:
         return IndexStreamHandle(self.properties.handle, stream)
 
     def _create_idx_from_array(self, ibuf, minbuf, maxbuf):
-        assert len(ibuf) == len(minbuf)
-        assert len(ibuf) == len(maxbuf)
-        assert minbuf.strides == maxbuf.strides
+        import numpy as np
 
-        # Cast
-        ibuf = ibuf.astype(int)
-        minbuf = minbuf.astype(float)
-        maxbuf = maxbuf.astype(float)
+        # Prepare the arrays
+        ibuf = ibuf.astype(np.int64)
+        minbuf, maxbuf = self._prepare_v_arrays(minbuf, maxbuf)
+
+        if len(ibuf) != len(minbuf):
+            raise ValueError("index and point counts different")
+
+        # Handle misaligned data
+        if ibuf.strides[0] % ibuf.itemsize:
+            ibuf = ibuf.copy()
 
         # Extract counts
         n, d = minbuf.shape
 
         # Compute strides
-        i_stri = ibuf.strides[0] // 8
-        d_i_stri = minbuf.strides[0] // 8
-        d_j_stri = minbuf.strides[1] // 8
+        i_stri = ibuf.strides[0] // ibuf.itemsize
+        d_i_stri = minbuf.strides[0] // minbuf.itemsize
+        d_j_stri = minbuf.strides[1] // minbuf.itemsize
 
         return IndexArrayHandle(
             self.properties.handle,
