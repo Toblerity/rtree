@@ -103,7 +103,9 @@ def load() -> ctypes.CDLL:
 
             try:
                 # try loading the target file candidate
-                rt = ctypes.cdll.LoadLibrary(os.path.join(path, target))
+                # These should be fully specified paths to
+                # files
+                rt = ctypes.cdll.LoadLibrary(target)
                 if rt is not None:
                     return rt
             except BaseException as err:
