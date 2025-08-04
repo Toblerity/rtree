@@ -86,8 +86,6 @@ def load() -> ctypes.CDLL:
             except importlib.metadata.PackageNotFoundError:
                 pass
 
-        # get the starting working directory
-        cwd = os.getcwd()
         for cand in _candidates:
             if cand.is_dir():
                 # if our candidate is a directory use best guess
@@ -104,9 +102,9 @@ def load() -> ctypes.CDLL:
                 continue
 
             try:
-                # move to the location we're checking
-                os.chdir(path)
                 # try loading the target file candidate
+                # These should be fully specified paths to
+                # files
                 rt = ctypes.cdll.LoadLibrary(str(target))
                 if rt is not None:
                     return rt
@@ -115,8 +113,6 @@ def load() -> ctypes.CDLL:
                     f"rtree.finder ({target}) unexpected error: {err!s}",
                     file=sys.stderr,
                 )
-            finally:
-                os.chdir(cwd)
 
     try:
         # try loading library using LD path search
