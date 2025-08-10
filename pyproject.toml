@@ -49,7 +49,6 @@ version = {attr = "rtree.__version__"}
 rtree = ["py.typed"]
 
 [tool.cibuildwheel]
-build = "cp39-*"
 build-verbosity = 3
 before-all = "pip install wheel"
 repair-wheel-command = "python scripts/repair_wheel.py -w {dest_dir} {wheel}"
@@ -82,7 +81,7 @@ before-build = [
 ]
 
 [tool.cibuildwheel.windows]
-archs = ["AMD64"]
+archs = ["auto64"]
 before-build = [
     "call {project}\\scripts\\install_libspatialindex.bat",
 ]
