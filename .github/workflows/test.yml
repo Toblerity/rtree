@@ -9,7 +9,7 @@ on:
 
 jobs:
   conda:
-    name: Conda Python ${{ matrix.python-version }}, SIDX-${{ matrix.sidx-version }}, ${{ matrix.os }}
+    name: Test Conda Python ${{ matrix.python-version }}, SIDX-${{ matrix.sidx-version }}, ${{ matrix.os }}
     defaults:
       run:
         shell: bash -l {0}
@@ -43,7 +43,7 @@ jobs:
       run: pytest -Werror -v --doctest-modules rtree tests
 
   ubuntu:
-    name: Ubuntu Python ${{ matrix.python-version }}
+    name: Test Ubuntu Python ${{ matrix.python-version }}
     defaults:
       run:
         shell: bash -l {0}
@@ -77,7 +77,7 @@ jobs:
       run: pytest -Werror -v --doctest-modules docs/source/*.rst
 
   build_wheels:
-    name: Build ${{ matrix.os }} wheel
+    name: Wheel ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     needs: [ build_sdist]
     strategy:
