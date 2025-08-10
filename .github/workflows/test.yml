@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   conda:
-    name: Test Conda Python ${{ matrix.python-version }}, SIDX-${{ matrix.sidx-version }}, ${{ matrix.os }}
+    name: Conda Python ${{ matrix.python-version }}, SIDX-${{ matrix.sidx-version }}, ${{ matrix.os }}
     defaults:
       run:
         shell: bash -l {0}
@@ -35,6 +35,7 @@ jobs:
       with:
         channels: conda-forge
         auto-update-conda: true
+        conda-remove-defaults: true
         python-version: ${{ matrix.python-version }}
 
     - name: Setup
@@ -47,7 +48,7 @@ jobs:
       run: pytest -Werror -v --doctest-modules rtree tests
 
   ubuntu:
-    name: Test Ubuntu Python ${{ matrix.python-version }}
+    name: Ubuntu Python ${{ matrix.python-version }}
     defaults:
       run:
         shell: bash -l {0}
