@@ -7,9 +7,13 @@ on:
   schedule:
     - cron: '0 6 * * 1'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   conda:
-    name: Conda Python ${{ matrix.python-version }}, SIDX-${{ matrix.sidx-version }}, ${{ matrix.os }}
+    name: Test Conda Python ${{ matrix.python-version }}, SIDX-${{ matrix.sidx-version }}, ${{ matrix.os }}
     defaults:
       run:
         shell: bash -l {0}
@@ -43,7 +47,7 @@ jobs:
       run: pytest -Werror -v --doctest-modules rtree tests
 
   ubuntu:
-    name: Ubuntu Python ${{ matrix.python-version }}
+    name: Test Ubuntu Python ${{ matrix.python-version }}
     defaults:
       run:
         shell: bash -l {0}
@@ -75,3 +79,75 @@ jobs:
 
     - name: Run doctests
       run: pytest -Werror -v --doctest-modules docs/source/*.rst
+
+  build_wheels:
+    name: Wheel ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    needs: [ build_sdist]
+    strategy:
+      matrix:
+        os:
+          - windows-latest
+          - ubuntu-latest
+          - ubuntu-24.04-arm
+          - macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-python@v5
+      name: Install Python
+      with:
+        python-version: '3.13'
+
+    - uses: ilammy/msvc-dev-cmd@v1
+      if: startsWith(matrix.os, 'windows')
+
+    - name: Build wheels
+      uses: pypa/cibuildwheel@v3.1.3
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: cibw-wheels-${{ matrix.os }}
+        path: ./wheelhouse/*.whl
+
+  build_sdist:
+    name: Source Distribution
+    runs-on: ubuntu-latest
+    needs: [ conda, ubuntu ]
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build sdist
+      run: pipx run build --sdist
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: cibw-sdist
+        path: dist/*.tar.gz
+
+  attest:
+    name: "Attest Artifacts"
+    runs-on: ubuntu-latest
+    needs: [build_wheels]
+    permissions:
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-*
+          path: dist
+          merge-multiple: true
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: 'dist/**/*'
+
+  publish:
+    name: "Publish to PyPI"
+    runs-on: ubuntu-latest
+    needs: [attest]
+    environment: pypi
+    if: github.event_name == 'release' && github.event.action == 'published'
+    steps:
+      - uses: pypa/gh-action-pypi-publish@release/v1
