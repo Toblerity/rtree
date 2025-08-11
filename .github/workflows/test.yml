@@ -151,10 +151,37 @@ jobs:
         with:
           subject-path: 'dist/**/*'
 
+  release:
+    name: Gather ${{ github.ref_name }} release
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    needs: [attest]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v5
+        name: Download release artifacts
+        with:
+          pattern: cibw-*
+          path: dist
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        name: Publish release as draft
+        with:
+          make_latest: false
+          fail_on_unmatched_files: true
+          prerelease: true
+          generate_release_notes: true
+          draft: true
+          files: |
+           dist/*
+
   publish:
     name: "Publish to PyPI"
     runs-on: ubuntu-latest
-    needs: [attest]
+    needs: [release]
     environment: pypi
     if: github.event_name == 'release' && github.event.action == 'published'
     steps:
