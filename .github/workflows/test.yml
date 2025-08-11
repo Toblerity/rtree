@@ -7,7 +7,7 @@ on:
   schedule:
     - cron: '0 6 * * 1'
   release:
-    types: [published]
+    types: [published, prereleased, released]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -182,5 +182,5 @@ jobs:
            dist/*
 
       - uses: pypa/gh-action-pypi-publish@release/v1
-        if: github.event_name == 'release' && github.event.action == 'published'
+        if: github.event_name == 'release' && github.event.action == 'released'
         name: "Publish to PyPI"
