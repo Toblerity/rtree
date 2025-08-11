@@ -6,6 +6,8 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 6 * * 1'
+  release:
+    types: [published]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
