@@ -1,3 +1,17 @@
+1.4.1: 2025-08-13
+=================
+
+- Rename main branch references by :user:`mwtoews` in :PR:`356`
+- Fixing an incorrect reassignment in nearest_v and intersection_v by :user:`Atilleusz` in :PR:`358`
+- Add spatialindex version to tests, add common pytest configuration by :user:`mwtoews` in :PR:`360`
+- Refactor array-loading methods, add tests by :user:`mwtoews` in :PR:`361`
+- Minor refactor of code blocks in docs by :user:`mwtoews` in :PR:`362`
+- Resolve some issues in the batch API by :user:`FreddieWitherden` in :PR:`367`
+- fix #369 (load libspatialindex without changing cwd) by :user:`remicres` in :PR:`370`
+- arm64 wheels on windows by @w8sl in :PR:`378` and :PR:`371`
+
+`Full Changelog <https://github.com/Toblerity/rtree/compare/1.4.0...1.4.1>`__
+
 1.4.0: 2025-03-06
 =================
 
