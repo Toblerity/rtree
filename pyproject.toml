@@ -75,7 +75,9 @@ before-build = [
 archs = ["x86_64", "arm64"]
 environment = { MACOSX_DEPLOYMENT_TARGET="10.9" }
 before-build = [
-    "brew install coreutils cmake",
+    "brew bundle add cmake",
+    "brew bundle add coreutils",
+    "brew bundle install",
     "sh {project}/scripts/install_libspatialindex.sh",
 ]
 
