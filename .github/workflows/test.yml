@@ -149,7 +149,7 @@ jobs:
           pattern: cibw-*
           path: dist
           merge-multiple: true
-      - uses: actions/attest-build-provenance@v2
+      - uses: actions/attest-build-provenance@v3
         with:
           subject-path: 'dist/**/*'
 
