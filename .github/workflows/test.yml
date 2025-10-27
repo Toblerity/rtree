@@ -116,7 +116,7 @@ jobs:
       env:
          CIBW_BUILD: ${{ runner.os == 'Windows' && runner.arch == 'ARM64' && 'cp311-*' || 'cp39-*' }}
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       with:
         name: cibw-wheels-${{ matrix.os }}
         path: ./wheelhouse/*.whl
@@ -131,7 +131,7 @@ jobs:
     - name: Build sdist
       run: pipx run build --sdist
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       with:
         name: cibw-sdist
         path: dist/*.tar.gz
