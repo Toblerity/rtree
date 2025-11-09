@@ -143,6 +143,7 @@ jobs:
     needs: [build_wheels]
     permissions:
       id-token: write
+      contents: read
       attestations: write
     steps:
       - uses: actions/download-artifact@v6
