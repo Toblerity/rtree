@@ -2,7 +2,7 @@ python -c "import sys; print(sys.version)"
 
 set SIDX_VERSION=2.1.0
 
-curl -LO --retry 5 --retry-max-time 120 "https://github.com/libspatialindex/libspatialindex/archive/%SIDX_VERSION%.zip"
+curl -LO --retry 5 --retry-max-time 120 "https://github.com/libspatialindex/libspatialindex/archive/%SIDX_VERSION%.tar.gz"
 
 tar xvf "%SIDX_VERSION%.zip"
 
