@@ -29,7 +29,7 @@ INSTALL_PREFIX=`install_prefix`
 SL=`scriptloc`
 
 rm -f $VERSION.zip
-curl -LOs --retry 5 --retry-max-time 120 https://github.com/libspatialindex/libspatialindex/archive/${VERSION}.zip
+curl -LOSs --retry 5 --retry-max-time 120 https://github.com/libspatialindex/libspatialindex/archive/${VERSION}.zip
 
 # check the file hash
 if [ "$(uname)" = "Darwin" ]
