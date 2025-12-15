@@ -147,7 +147,7 @@ jobs:
       contents: read
       attestations: write
     steps:
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           pattern: cibw-*
           path: dist
@@ -165,7 +165,7 @@ jobs:
       contents: write
       id-token: write
     steps:
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         name: Download release artifacts
         with:
           pattern: cibw-*
