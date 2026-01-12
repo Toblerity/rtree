@@ -113,7 +113,7 @@ jobs:
       if: startsWith(matrix.os, 'windows')
 
     - name: Build wheels
-      uses: pypa/cibuildwheel@v3.3.0
+      uses: pypa/cibuildwheel@v3.3.1
       env:
          CIBW_BUILD: ${{ runner.os == 'Windows' && runner.arch == 'ARM64' && 'cp311-*' || 'cp39-*' }}
 
