@@ -1,4 +1,3 @@
-import sys
 from ctypes import CDLL
 from pathlib import Path
 from unittest import mock
