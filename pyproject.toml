@@ -13,7 +13,7 @@ maintainers = [
 ]
 description = "R-Tree spatial index for Python GIS"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 keywords = ["gis", "spatial", "index", "r-tree"]
 license = "MIT"
 classifiers = [
@@ -22,7 +22,6 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -97,7 +96,7 @@ exclude_lines = [
 ]
 
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "7.0"
 addopts = "--import-mode=importlib"
 testpaths = ["tests"]
 
