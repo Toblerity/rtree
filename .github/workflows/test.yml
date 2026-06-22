@@ -41,7 +41,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Setup
-      run: conda install -c conda-forge pip numpy pytest libspatialindex=${{ matrix.sidx-version }} -y
+      run: conda install -c conda-forge pip numpy "pytest<9.1" libspatialindex=${{ matrix.sidx-version }} -y
 
     - name: Install
       run: pip install -e .
