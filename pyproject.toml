@@ -36,6 +36,22 @@ dynamic = ["version"]
 Documentation = "https://rtree.readthedocs.io"
 Repository = "https://github.com/Toblerity/rtree"
 
+[dependency-groups]
+dev = [
+    "coverage",
+    "pre-commit",
+    "tox>=4.22",
+    {include-group = "test"},
+]
+docs = [
+    "sphinx>=5.0",
+    "sphinx-issues",
+]
+test = [
+    "numpy",
+    "pytest>=7.0",
+]
+
 [tool.setuptools]
 packages = ["rtree"]
 zip-safe = false
