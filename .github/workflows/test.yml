@@ -25,15 +25,15 @@ jobs:
       matrix:
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
         # test oldest and newest versions of python and libspatialindex
-        python-version: ['3.9', '3.14']
+        python-version: ['3.10', '3.14']
         sidx-version: ['1.8.5', '2.1.0']
         exclude:
           - os: 'macos-latest'
             sidx-version: '1.8.5'
 
     steps:
-    - uses: actions/checkout@v6
-    - uses: conda-incubator/setup-miniconda@v3
+    - uses: actions/checkout@v7
+    - uses: conda-incubator/setup-miniconda@v4
       with:
         channels: conda-forge
         auto-update-conda: true
@@ -41,7 +41,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Setup
-      run: conda install -c conda-forge pip numpy pytest libspatialindex=${{ matrix.sidx-version }} -y
+      run: conda install -c conda-forge pip numpy "pytest<9.1" libspatialindex=${{ matrix.sidx-version }} -y
 
     - name: Install
       run: pip install -e .
@@ -59,10 +59,10 @@ jobs:
       fail-fast: false
       matrix:
         # test all supported minor versions of python
-        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: actions/setup-python@v6
       name: Install Python
       with:
@@ -73,7 +73,7 @@ jobs:
       run: |
           sudo apt-get -y install libspatialindex-c6
           pip install --upgrade pip
-          pip install numpy pytest
+          pip install numpy "pytest<9.1"
 
     - name: Build
       run: pip install --user .
@@ -100,7 +100,7 @@ jobs:
           - os: "macos-latest"
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - uses: actions/setup-python@v6
       name: Install Python
@@ -113,9 +113,9 @@ jobs:
       if: startsWith(matrix.os, 'windows')
 
     - name: Build wheels
-      uses: pypa/cibuildwheel@v3.4.0
+      uses: pypa/cibuildwheel@v4.1.0
       env:
-         CIBW_BUILD: ${{ runner.os == 'Windows' && runner.arch == 'ARM64' && 'cp311-*' || 'cp39-*' }}
+         CIBW_BUILD: ${{ runner.os == 'Windows' && runner.arch == 'ARM64' && 'cp311-*' || 'cp310-*' }}
 
     - uses: actions/upload-artifact@v7
       with:
@@ -127,7 +127,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ conda, ubuntu ]
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Build sdist
       run: pipx run build --sdist
@@ -172,7 +172,7 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         name: Publish release as draft
         with:
