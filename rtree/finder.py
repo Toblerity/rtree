@@ -86,6 +86,14 @@ def load() -> ctypes.CDLL:
             except importlib.metadata.PackageNotFoundError:
                 pass
 
+            # Fallback: search relative to package directory
+            # (works when importlib.metadata is unavailable, e.g. Bazel, some venvs)
+            libs_dir = _cwd.parent / "rtree.libs"
+            if libs_dir.exists():
+                for so_file in libs_dir.glob("libspatialindex*.so"):
+                    _candidates.insert(1, so_file)
+                    break
+
         for cand in _candidates:
             if cand.is_dir():
                 # if our candidate is a directory use best guess
