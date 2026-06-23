@@ -1090,7 +1090,7 @@ class Index:
                 ctypes.byref(nr),
             )
 
-            # If we got the expected nuber of results then return
+            # If we got the expected number of results then return
             if nr.value == n - offn:
                 return ids[: counts.sum()], counts
             # Otherwise, if our array is too small then resize
