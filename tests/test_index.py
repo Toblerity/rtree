@@ -293,6 +293,7 @@ class IndexIntersection(IndexTestCase):
 
 class TestIndexIntersectionUnion:
     @pytest.fixture(scope="class")
+    @classmethod
     def index_a_interleaved(self) -> index.Index:
         idx = index.Index(interleaved=True)
         idx.insert(1, (3, 3, 5, 5), "a_1")
@@ -300,6 +301,7 @@ class TestIndexIntersectionUnion:
         return idx
 
     @pytest.fixture(scope="class")
+    @classmethod
     def index_a_uninterleaved(self) -> index.Index:
         idx = index.Index(interleaved=False)
         idx.insert(1, (3, 5, 3, 5), "a_1")
@@ -307,6 +309,7 @@ class TestIndexIntersectionUnion:
         return idx
 
     @pytest.fixture(scope="class")
+    @classmethod
     def index_b_interleaved(self) -> index.Index:
         idx = index.Index(interleaved=True)
         idx.insert(3, (2, 1, 7, 6), "b_3")
@@ -314,6 +317,7 @@ class TestIndexIntersectionUnion:
         return idx
 
     @pytest.fixture(scope="class")
+    @classmethod
     def index_b_uninterleaved(self) -> index.Index:
         idx = index.Index(interleaved=False)
         idx.insert(3, (2, 7, 1, 6), "b_3")
