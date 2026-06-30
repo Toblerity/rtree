@@ -8,12 +8,12 @@ repos:
     - id: end-of-file-fixer
     - id: trailing-whitespace
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.3
+    rev: 0.37.4
     hooks:
     - id: check-github-workflows
       args: ["--verbose"]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.18
+    rev: v0.15.20
     hooks:
     # Run the linter
     - id: ruff-check
