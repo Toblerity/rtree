@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61", "wheel"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -41,13 +41,13 @@ dev = [
     "coverage",
     "pre-commit",
     "tox>=4.22",
-    {include-group = "test"},
+    {include-group = "tests"},
 ]
 docs = [
     "sphinx>=5.0",
     "sphinx-issues",
 ]
-test = [
+tests = [
     "numpy",
     "pytest>=7.0",
 ]
@@ -64,6 +64,7 @@ version = {attr = "rtree.__version__"}
 rtree = ["py.typed"]
 
 [tool.cibuildwheel]
+build = "cp310-*"
 build-verbosity = 3
 repair-wheel-command = "python scripts/repair_wheel.py -w {dest_dir} {wheel}"
 test-requires = "tox"

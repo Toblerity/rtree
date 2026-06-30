@@ -73,7 +73,7 @@ jobs:
       run: sudo apt-get -y install libspatialindex-c6
 
     - name: Install
-      run: pip install . --group test
+      run: pip install . --group tests
 
     - name: Test with pytest
       run: pytest -Werror -v --doctest-modules rtree tests

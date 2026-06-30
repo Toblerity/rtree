@@ -2,13 +2,9 @@
 from pathlib import Path
 
 from setuptools import setup
+from setuptools.command.bdist_wheel import bdist_wheel as _bdist_wheel
 from setuptools.command.install import install
 from setuptools.dist import Distribution
-
-try:
-    from setuptools.command.bdist_wheel import bdist_wheel as _bdist_wheel
-except ImportError:
-    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 # current working directory of this setup.py file
 _cwd = Path(__file__).resolve().parent
