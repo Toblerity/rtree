@@ -63,7 +63,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       name: Install Python
       with:
         python-version: ${{ matrix.python-version }}
@@ -99,7 +99,7 @@ jobs:
     steps:
     - uses: actions/checkout@v7
 
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       name: Install Python
       with:
         python-version: '3.x'
