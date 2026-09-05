@@ -632,7 +632,7 @@ class Index:
             ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS +SKIP
             >>> [(item.object, item.bbox) for item in hits if item.id == 4321]
             ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS +SKIP
-            [(42, [34.37768294..., 26.73758537..., 49.37768294...,
+            [('42', [34.37768294..., 26.73758537..., 49.37768294...,
                    41.73758537...])]
 
         If the :class:`rtree.index.Item` wrapper is not used, it is faster to
@@ -785,7 +785,7 @@ class Index:
             >>> hits = list(idx.intersection((0, 0, 60, 60), objects=True))
             >>> [(item.object, item.bbox) for item in hits if item.id == 4321]
             ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
-            [(42, [34.37768294..., 26.73758537..., 49.37768294...,
+            [('42', [34.37768294..., 26.73758537..., 49.37768294...,
                    41.73758537...])]
 
         If the :class:`rtree.index.Item` wrapper is not used, it is faster to
