@@ -165,7 +165,7 @@ class Index:
             ...         i.object
             ...         i.bbox
             ... # doctest: +ELLIPSIS
-            42
+            '42'
             [34.37768294..., 26.73758537..., 49.37768294..., 41.73758537...]
 
 
@@ -640,7 +640,7 @@ class Index:
 
             >>> list(idx.contains((0, 0, 60, 60), objects="raw"))
             ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS +SKIP
-            [42]
+            ['42']
 
         """
 
@@ -792,7 +792,7 @@ class Index:
         request the 'raw' objects::
 
             >>> list(idx.intersection((0, 0, 60, 60), objects="raw"))
-            [42]
+            ['42']
 
         Similar for the TPR-Tree::
 
@@ -810,7 +810,7 @@ class Index:
             ...  # doctest: +SKIP
             >>> [(item.object, item.bbox) for item in hits if item.id == 4321]
             ... # doctest: +SKIP
-            [(42, [34.37768294..., 26.73758537..., 49.37768294...,
+            [('42', [34.37768294..., 26.73758537..., 49.37768294...,
                    41.73758537...])]
 
         """
