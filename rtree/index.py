@@ -3,7 +3,6 @@ from __future__ import annotations
 import ctypes
 import os
 import os.path
-import pickle
 import pprint
 import warnings
 from collections.abc import Iterator, Sequence
@@ -329,10 +328,10 @@ class Index:
         self.handle = IndexHandle(self.properties.handle)
 
     def dumps(self, obj: object) -> bytes:
-        return pickle.dumps(obj)
+        return bytes(str(obj), "utf-8")
 
-    def loads(self, string: bytes) -> object:
-        return pickle.loads(string)
+    def loads(self, string: bytes) -> str:
+        return str(string, "utf-8")
 
     def close(self) -> None:
         """Force a flush of the index to storage. Renders index
