@@ -145,7 +145,7 @@ to intersection:
 .. code-block:: pycon
 
   >>> [n.object for n in idx.intersection((left, bottom, right, top), objects=True)]
-  [None, None, 42]
+  [None, None, '42']
 
 .. warning::
     `libspatialindex`_'s clustered indexes were not designed to be a database.
