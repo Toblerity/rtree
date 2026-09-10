@@ -334,12 +334,12 @@ class Index:
             return bytes("float:" + obj.hex(), "utf-8")
         return bytes("obj:" + str(obj), "utf-8")
 
-    def loads(self, string: bytes) -> str:
+    def loads(self, string: bytes) -> Any:
         string_ = str(string, "utf-8")
         if string_.startswith("int:"):
             return int(string_[4:])
         elif string_.startswith("float:"):
-            return float.from_hex(string_[6:])
+            return float.fromhex(string_[6:])
         elif string_.startswith("obj:"):
             return string_[4:]
         raise NotImplementedError("Custom loads() not implemented for this type")
