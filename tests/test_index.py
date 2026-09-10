@@ -257,7 +257,7 @@ class IndexIntersection(IndexTestCase):
         hits = idx.intersection((0, 0, 60, 60), objects=True)
         hit = [h for h in hits if h.id == 4321][0]
         self.assertEqual(hit.id, 4321)
-        self.assertEqual(hit.object, "42")
+        self.assertEqual(hit.object, 42)
         box = [f"{t:.10f}" for t in hit.bbox]
         expected = ["34.3776829412", "26.7375853734", "49.3776829412", "41.7375853734"]
         self.assertEqual(box, expected)
@@ -640,7 +640,7 @@ class IndexSerialization(unittest.TestCase):
 
         hits2 = sorted(list(idx.intersection((0, 60, 0, 60), objects=True)))
         self.assertEqual(len(hits2), 10)
-        self.assertEqual(hits2[0].object, "42")
+        self.assertEqual(hits2[0].object, 42)
 
     def test_overwrite(self) -> None:
         """Index overwrite works as expected"""
@@ -817,7 +817,7 @@ class IndexStream(IndexTestCase):
         objects = list(sindex.intersection((0, 0, 60, 60), objects=True))
 
         self.assertEqual(len(objects), 10)
-        self.assertEqual(objects[0].object, "42")
+        self.assertEqual(objects[0].object, 42)
 
     def test_empty_stream(self) -> None:
         """Assert empty stream raises exception"""

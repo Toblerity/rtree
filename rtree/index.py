@@ -165,7 +165,7 @@ class Index:
             ...         i.object
             ...         i.bbox
             ... # doctest: +ELLIPSIS
-            '42'
+            42
             [34.37768294..., 26.73758537..., 49.37768294..., 41.73758537...]
 
 
@@ -328,10 +328,21 @@ class Index:
         self.handle = IndexHandle(self.properties.handle)
 
     def dumps(self, obj: object) -> bytes:
-        return bytes(str(obj), "utf-8")
+        if isinstance(obj, int):
+            return bytes("int:" + str(obj), "utf-8")
+        elif isinstance(obj, float):
+            return bytes("float:" + obj.hex(), "utf-8")
+        return bytes("obj:" + str(obj), "utf-8")
 
     def loads(self, string: bytes) -> str:
-        return str(string, "utf-8")
+        string_ = str(string, "utf-8")
+        if string_.startswith("int:"):
+            return int(string_[4:])
+        elif string_.startswith("float:"):
+            return float.from_hex(string_[6:])
+        elif string_.startswith("obj:"):
+            return string_[4:]
+        raise NotImplementedError("Custom loads() not implemented for this type")
 
     def close(self) -> None:
         """Force a flush of the index to storage. Renders index
@@ -632,7 +643,7 @@ class Index:
             ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS +SKIP
             >>> [(item.object, item.bbox) for item in hits if item.id == 4321]
             ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS +SKIP
-            [('42', [34.37768294..., 26.73758537..., 49.37768294...,
+            [(42, [34.37768294..., 26.73758537..., 49.37768294...,
                    41.73758537...])]
 
         If the :class:`rtree.index.Item` wrapper is not used, it is faster to
@@ -640,7 +651,7 @@ class Index:
 
             >>> list(idx.contains((0, 0, 60, 60), objects="raw"))
             ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS +SKIP
-            ['42']
+            [42]
 
         """
 
@@ -785,14 +796,14 @@ class Index:
             >>> hits = list(idx.intersection((0, 0, 60, 60), objects=True))
             >>> [(item.object, item.bbox) for item in hits if item.id == 4321]
             ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
-            [('42', [34.37768294..., 26.73758537..., 49.37768294...,
+            [(42, [34.37768294..., 26.73758537..., 49.37768294...,
                    41.73758537...])]
 
         If the :class:`rtree.index.Item` wrapper is not used, it is faster to
         request the 'raw' objects::
 
             >>> list(idx.intersection((0, 0, 60, 60), objects="raw"))
-            ['42']
+            [42]
 
         Similar for the TPR-Tree::
 
@@ -810,7 +821,7 @@ class Index:
             ...  # doctest: +SKIP
             >>> [(item.object, item.bbox) for item in hits if item.id == 4321]
             ... # doctest: +SKIP
-            [('42', [34.37768294..., 26.73758537..., 49.37768294...,
+            [(42, [34.37768294..., 26.73758537..., 49.37768294...,
                    41.73758537...])]
 
         """
