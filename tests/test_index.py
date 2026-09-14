@@ -334,9 +334,9 @@ class TestIndexIntersectionUnion:
             index_c_interleaved.bounds, objects=True
         ):
             if hit.bbox == [3.0, 3.0, 5.0, 5.0]:
-                assert hit.object == ("a_1", "b_3")
+                assert hit.object == "('a_1', 'b_3')"
             elif hit.bbox == [4.0, 2.0, 6.0, 4.0]:
-                assert hit.object == ("a_2", "b_3")
+                assert hit.object == "('a_2', 'b_3')"
             else:
                 assert False
 
@@ -361,9 +361,9 @@ class TestIndexIntersectionUnion:
             index_c_uninterleaved.bounds, objects=True
         ):
             if hit.bounds == [3.0, 5.0, 3.0, 5.0]:
-                assert hit.object == ("a_1", "b_3")
+                assert hit.object == "('a_1', 'b_3')"
             elif hit.bounds == [4.0, 6.0, 2.0, 4.0]:
-                assert hit.object == ("a_2", "b_3")
+                assert hit.object == "('a_2', 'b_3')"
             else:
                 assert False
 
@@ -748,7 +748,7 @@ class IndexNearest(IndexTestCase):
         hits = sorted(
             (i.id, i.object) for i in idx.nearest((15, 10, 15, 10), 1, objects=True)
         )
-        self.assertEqual(hits, [(0, {"a": 42}), (1, {"a": 42})])
+        self.assertEqual(hits, [(0, "{'a': 42}"), (1, "{'a': 42}")])
 
 
 class IndexDelete(IndexTestCase):

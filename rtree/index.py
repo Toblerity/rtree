@@ -3,7 +3,6 @@ from __future__ import annotations
 import ctypes
 import os
 import os.path
-import pickle
 import pprint
 import warnings
 from collections.abc import Iterator, Sequence
@@ -329,10 +328,21 @@ class Index:
         self.handle = IndexHandle(self.properties.handle)
 
     def dumps(self, obj: object) -> bytes:
-        return pickle.dumps(obj)
+        if isinstance(obj, int):
+            return bytes("int:" + str(obj), "utf-8")
+        elif isinstance(obj, float):
+            return bytes("float:" + obj.hex(), "utf-8")
+        return bytes("obj:" + str(obj), "utf-8")
 
-    def loads(self, string: bytes) -> object:
-        return pickle.loads(string)
+    def loads(self, string: bytes) -> Any:
+        string_ = str(string, "utf-8")
+        if string_.startswith("int:"):
+            return int(string_[4:])
+        elif string_.startswith("float:"):
+            return float.fromhex(string_[6:])
+        elif string_.startswith("obj:"):
+            return string_[4:]
+        raise NotImplementedError("Custom loads() not implemented for this type")
 
     def close(self) -> None:
         """Force a flush of the index to storage. Renders index
