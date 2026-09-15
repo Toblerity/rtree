@@ -104,7 +104,7 @@ jobs:
       with:
         python-version: '3.x'
 
-    - uses: ilammy/msvc-dev-cmd@v1.13.0
+    - uses: TheMrMilchmann/setup-msvc-dev@v4
       with:
         arch: ${{ matrix.msvc_arch }}
       if: startsWith(matrix.os, 'windows')
