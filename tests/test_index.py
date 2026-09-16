@@ -966,7 +966,9 @@ class IndexCustomStorage(unittest.TestCase):
         self.assertEqual(count, 1)
 
 
-@pytest.mark.parametrize("item", [0, 1, -5, 0.0, -10.0, float("inf"), float("nan")])
+@pytest.mark.parametrize(
+    "item", [0, 1, -5, 0.0, -0.0, -10.0, float("-inf"), float("inf"), float("nan")]
+)
 def test_loads_dumps_equals(item):
     idx = index.Index()
     idx.insert(3, (2, 1, 7, 6), item)
@@ -977,7 +979,7 @@ def test_loads_dumps_equals(item):
         assert ret == item
 
 
-@pytest.mark.parametrize("item", [True, False])
+@pytest.mark.parametrize("item", [True, False, None])
 def test_loads_dumps_is(item):
     idx = index.Index()
     idx.insert(3, (2, 1, 7, 6), item)
@@ -994,7 +996,12 @@ def test_loads_dumps_is(item):
         3j,
         object(),
         object,
-        bool,
+        (),
+        (1.0,),
+        {},
+        {1: 2.0, 3: "4"},
+        "bool:False",
+        "int:123",
         np.float32(1.1),
         np.float64(2.2),
         np.int32(12),

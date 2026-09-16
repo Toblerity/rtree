@@ -328,28 +328,28 @@ class Index:
         self.handle = IndexHandle(self.properties.handle)
 
     def dumps(self, obj: object) -> bytes:
-        otype = type(obj)
+        obj_type = type(obj)
         # use strict type() matching rather than isinstance()
-        if otype is bool:
+        if obj_type is bool or obj is None:
             return bytes("bool:" + str(obj), "utf-8")
-        elif otype is int:
+        elif obj_type is int:
             return bytes("int:" + str(obj), "utf-8")
-        elif otype is float:
+        elif obj_type is float:
             return bytes("float:" + obj.hex(), "utf-8")  # type: ignore[attr-defined]
         # all other types
         return bytes("obj:" + str(obj), "utf-8")
 
     def loads(self, string: bytes) -> Any:
-        string_ = str(string, "utf-8")
-        if string_.startswith("bool:"):
-            return string_[5:] == "True"
-        elif string_.startswith("int:"):
-            return int(string_[4:])
-        elif string_.startswith("float:"):
-            return float.fromhex(string_[6:])
-        elif string_.startswith("obj:"):
-            return string_[4:]
-        raise NotImplementedError("Custom loads() not implemented for this type")
+        type_str, obj_str = str(string, "utf-8").split(":", maxsplit=1)
+        if type_str == "bool":  # returns None too
+            return {"True": True, "False": False}.get(obj_str)
+        elif type_str == "int":
+            return int(obj_str)
+        elif type_str == "float":
+            return float.fromhex(obj_str)
+        elif type_str == "obj":
+            return obj_str
+        raise NotImplementedError(f"Custom loads() not implemented for {type_str!r}")
 
     def close(self) -> None:
         """Force a flush of the index to storage. Renders index
