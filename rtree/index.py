@@ -3,7 +3,6 @@ from __future__ import annotations
 import ctypes
 import os
 import os.path
-import pickle
 import pprint
 import warnings
 from collections.abc import Iterator, Sequence
@@ -329,10 +328,28 @@ class Index:
         self.handle = IndexHandle(self.properties.handle)
 
     def dumps(self, obj: object) -> bytes:
-        return pickle.dumps(obj)
+        obj_type = type(obj)
+        # use strict type() matching rather than isinstance()
+        if obj_type is bool or obj is None:
+            return bytes("bool:" + str(obj), "utf-8")
+        elif obj_type is int:
+            return bytes("int:" + str(obj), "utf-8")
+        elif obj_type is float:
+            return bytes("float:" + obj.hex(), "utf-8")  # type: ignore[attr-defined]
+        # all other types
+        return bytes("obj:" + str(obj), "utf-8")
 
-    def loads(self, string: bytes) -> object:
-        return pickle.loads(string)
+    def loads(self, string: bytes) -> Any:
+        type_str, obj_str = str(string, "utf-8").split(":", maxsplit=1)
+        if type_str == "bool":  # returns None too
+            return {"True": True, "False": False}.get(obj_str)
+        elif type_str == "int":
+            return int(obj_str)
+        elif type_str == "float":
+            return float.fromhex(obj_str)
+        elif type_str == "obj":
+            return obj_str
+        raise NotImplementedError(f"Custom loads() not implemented for {type_str!r}")
 
     def close(self) -> None:
         """Force a flush of the index to storage. Renders index

@@ -334,9 +334,9 @@ class TestIndexIntersectionUnion:
             index_c_interleaved.bounds, objects=True
         ):
             if hit.bbox == [3.0, 3.0, 5.0, 5.0]:
-                assert hit.object == ("a_1", "b_3")
+                assert hit.object == "('a_1', 'b_3')"
             elif hit.bbox == [4.0, 2.0, 6.0, 4.0]:
-                assert hit.object == ("a_2", "b_3")
+                assert hit.object == "('a_2', 'b_3')"
             else:
                 assert False
 
@@ -361,9 +361,9 @@ class TestIndexIntersectionUnion:
             index_c_uninterleaved.bounds, objects=True
         ):
             if hit.bounds == [3.0, 5.0, 3.0, 5.0]:
-                assert hit.object == ("a_1", "b_3")
+                assert hit.object == "('a_1', 'b_3')"
             elif hit.bounds == [4.0, 6.0, 2.0, 4.0]:
-                assert hit.object == ("a_2", "b_3")
+                assert hit.object == "('a_2', 'b_3')"
             else:
                 assert False
 
@@ -748,7 +748,7 @@ class IndexNearest(IndexTestCase):
         hits = sorted(
             (i.id, i.object) for i in idx.nearest((15, 10, 15, 10), 1, objects=True)
         )
-        self.assertEqual(hits, [(0, {"a": 42}), (1, {"a": 42})])
+        self.assertEqual(hits, [(0, "{'a': 42}"), (1, "{'a': 42}")])
 
 
 class IndexDelete(IndexTestCase):
@@ -964,3 +964,51 @@ class IndexCustomStorage(unittest.TestCase):
         r2 = index.Index(storage, overwrite=False)
         count = r2.count((0, 0, 10, 10))
         self.assertEqual(count, 1)
+
+
+@pytest.mark.parametrize(
+    "item", [0, 1, -5, 0.0, -0.0, -10.0, float("-inf"), float("inf"), float("nan")]
+)
+def test_loads_dumps_equals(item):
+    idx = index.Index()
+    idx.insert(3, (2, 1, 7, 6), item)
+    ret = next(idx.intersection((0, 0, 60, 60), objects=True)).object
+    if np.isnan(item):
+        assert np.isnan(ret)
+    else:
+        assert ret == item
+
+
+@pytest.mark.parametrize("item", [True, False, None])
+def test_loads_dumps_is(item):
+    idx = index.Index()
+    idx.insert(3, (2, 1, 7, 6), item)
+    assert next(idx.intersection((0, 0, 60, 60), objects=True)).object is item
+
+
+@pytest.mark.parametrize(
+    "item",
+    [
+        "",
+        "True",
+        "some string",
+        b"bytes",
+        3j,
+        object(),
+        object,
+        (),
+        (1.0,),
+        {},
+        {1: 2.0, 3: "4"},
+        "bool:False",
+        "int:123",
+        np.float32(1.1),
+        np.float64(2.2),
+        np.int32(12),
+        np.int64(45),
+    ],
+)
+def test_loads_dumps_equals_str(item):
+    idx = index.Index()
+    idx.insert(3, (2, 1, 7, 6), item)
+    assert next(idx.intersection((0, 0, 60, 60), objects=True)).object == str(item)
