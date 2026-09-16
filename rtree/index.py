@@ -328,15 +328,22 @@ class Index:
         self.handle = IndexHandle(self.properties.handle)
 
     def dumps(self, obj: object) -> bytes:
-        if isinstance(obj, int):
+        otype = type(obj)
+        # use strict type() matching rather than isinstance()
+        if otype is bool:
+            return bytes("bool:" + str(obj), "utf-8")
+        elif otype is int:
             return bytes("int:" + str(obj), "utf-8")
-        elif isinstance(obj, float):
-            return bytes("float:" + obj.hex(), "utf-8")
+        elif otype is float:
+            return bytes("float:" + obj.hex(), "utf-8")  # type: ignore[attr-defined]
+        # all other types
         return bytes("obj:" + str(obj), "utf-8")
 
     def loads(self, string: bytes) -> Any:
         string_ = str(string, "utf-8")
-        if string_.startswith("int:"):
+        if string_.startswith("bool:"):
+            return string_[5:] == "True"
+        elif string_.startswith("int:"):
             return int(string_[4:])
         elif string_.startswith("float:"):
             return float.fromhex(string_[6:])
