@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import ctypes
+import json
 import os
 import os.path
-import pickle
 import pprint
 import warnings
 from collections.abc import Iterator, Sequence
@@ -329,10 +329,18 @@ class Index:
         self.handle = IndexHandle(self.properties.handle)
 
     def dumps(self, obj: object) -> bytes:
-        return pickle.dumps(obj)
+        return bytes(json.dumps(obj), "utf-8")
 
-    def loads(self, string: bytes) -> object:
-        return pickle.loads(string)
+    def loads(self, string: bytes) -> Any:
+        # https://docs.python.org/3/library/json.html
+        #
+        # Be cautious when parsing JSON data from untrusted sources. A malicious JSON
+        # string may cause the decoder to consume considerable CPU and memory resources.
+        # Limiting the size of data to be parsed is recommended.
+        if len(string) < 1024:
+            return json.loads(str(string, "utf-8"))
+        else:
+            raise TimeoutError("JSON string is too large to quickly decode")
 
     def close(self) -> None:
         """Force a flush of the index to storage. Renders index
