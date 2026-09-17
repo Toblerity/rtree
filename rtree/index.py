@@ -5,6 +5,7 @@ import json
 import os
 import os.path
 import pprint
+import sys
 import warnings
 from collections.abc import Iterator, Sequence
 from typing import Any, Literal, overload
@@ -328,15 +329,18 @@ class Index:
         self.__dict__.update(state)
         self.handle = IndexHandle(self.properties.handle)
 
+    # https://docs.python.org/3/library/json.html
+    #
+    # Be cautious when parsing JSON data from untrusted sources. A malicious JSON
+    # string may cause the decoder to consume considerable CPU and memory resources.
+    # Limiting the size of data to be parsed is recommended.
     def dumps(self, obj: object) -> bytes:
-        return bytes(json.dumps(obj), "utf-8")
+        if sys.getsizeof(obj) < 1024:
+            return bytes(json.dumps(obj), "utf-8")
+        else:
+            raise TimeoutError("Object is too large to quickly encode")
 
     def loads(self, string: bytes) -> Any:
-        # https://docs.python.org/3/library/json.html
-        #
-        # Be cautious when parsing JSON data from untrusted sources. A malicious JSON
-        # string may cause the decoder to consume considerable CPU and memory resources.
-        # Limiting the size of data to be parsed is recommended.
         if len(string) < 1024:
             return json.loads(str(string, "utf-8"))
         else:
