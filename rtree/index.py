@@ -10,10 +10,10 @@ import warnings
 from collections.abc import Iterator, Sequence
 from typing import Any, Literal, overload
 
-INDEX_JSON_SERIALIZATION_LIMIT_SIZE = 1024
-
 from . import core
 from .exceptions import RTreeError
+
+INDEX_JSON_SERIALIZATION_LIMIT_SIZE = 1024
 
 RT_Memory = 0
 RT_Disk = 1
@@ -347,7 +347,8 @@ class Index:
             return json.loads(str(string, "utf-8"))
         else:
             raise TimeoutError(
-                f"Unable to load serialized index data. The JSON string is above the serialization limit of {INDEX_JSON_SERIALIZATION_LIMIT_SIZE}"
+                "Unable to load serialized index data. The JSON string is above "
+                f"the serialization limit of {INDEX_JSON_SERIALIZATION_LIMIT_SIZE}"
             )
 
     def close(self) -> None:
