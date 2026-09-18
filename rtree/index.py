@@ -10,6 +10,8 @@ import warnings
 from collections.abc import Iterator, Sequence
 from typing import Any, Literal, overload
 
+INDEX_JSON_SERIALIZATION_LIMIT_SIZE = 1024
+
 from . import core
 from .exceptions import RTreeError
 
@@ -335,16 +337,17 @@ class Index:
     # string may cause the decoder to consume considerable CPU and memory resources.
     # Limiting the size of data to be parsed is recommended.
     def dumps(self, obj: object) -> bytes:
-        if sys.getsizeof(obj) < 1024:
+        if sys.getsizeof(obj) < INDEX_JSON_SERIALIZATION_LIMIT_SIZE:
             return bytes(json.dumps(obj), "utf-8")
         else:
             raise TimeoutError("Object is too large to quickly encode")
 
     def loads(self, string: bytes) -> Any:
-        if len(string) < 1024:
+        if len(string) < INDEX_JSON_SERIALIZATION_LIMIT_SIZE:
             return json.loads(str(string, "utf-8"))
         else:
             raise TimeoutError("JSON string is too large to quickly decode")
+            raise TimeoutError(f"Unable to load serialized index data. The JSON string is above the serialization limit of {INDEX_JSON_SERIALIZATION_LIMIT_SIZE")
 
     def close(self) -> None:
         """Force a flush of the index to storage. Renders index
