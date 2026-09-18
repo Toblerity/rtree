@@ -346,7 +346,6 @@ class Index:
         if len(string) < INDEX_JSON_SERIALIZATION_LIMIT_SIZE:
             return json.loads(str(string, "utf-8"))
         else:
-            raise TimeoutError("JSON string is too large to quickly decode")
             raise TimeoutError(f"Unable to load serialized index data. The JSON string is above the serialization limit of {INDEX_JSON_SERIALIZATION_LIMIT_SIZE")
 
     def close(self) -> None:
