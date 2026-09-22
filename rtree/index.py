@@ -451,7 +451,7 @@ class Index:
             not only the positional coordinate pairs but also the
             velocity pairs `minvk` and `maxvk` and a time value as a float.
 
-        :param obj: a pickleable object.  If not None, this object will be
+        :param obj: a JSON-like object.  If not None, this object will be
             stored in the index with the :attr:`id`.
 
         The following example inserts an entry into the index with id `4321`,
@@ -631,7 +631,7 @@ class Index:
             each dimension defining the bounds of the query window.
 
         :param objects: If True, the intersection method will return index objects that
-            were pickled when they were stored with each index entry, as well
+            were serialized when they were stored with each index entry, as well
             as the id and bounds of the index entries. If 'raw', the objects
             will be returned without the :class:`rtree.index.Item` wrapper.
 
@@ -785,7 +785,7 @@ class Index:
             time range as a float.
 
         :param objects: If True, the intersection method will return index objects that
-            were pickled when they were stored with each index entry, as well
+            were serialized when they were stored with each index entry, as well
             as the id and bounds of the index entries. If 'raw', the objects
             will be returned without the :class:`rtree.index.Item` wrapper.
 
@@ -1017,7 +1017,7 @@ class Index:
             items than specified
 
         :param objects: If True, the nearest method will return index objects that
-            were pickled when they were stored with each index entry, as
+            were serialized when they were stored with each index entry, as
             well as the id and bounds of the index entries.
             If 'raw', it will return the object as entered into the database
             without the :class:`rtree.index.Item` wrapper.
