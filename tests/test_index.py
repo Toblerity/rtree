@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import ctypes
-import pickle
+import json
 import sys
 import tempfile
 import unittest
@@ -153,29 +153,52 @@ class IndexProperties(IndexTestCase):
         self.assertEqual(props.dat_extension, "data")
 
 
-class TestPickling(unittest.TestCase):
-    # https://github.com/Toblerity/rtree/issues/87
-    @pytest.mark.xfail
-    def test_index(self) -> None:
-        idx = rtree.index.Index()
-        idx.insert(0, [0, 1, 2, 3], 4)
-        unpickled = pickle.loads(pickle.dumps(idx))
-        self.assertNotEqual(idx.handle, unpickled.handle)
-        self.assertEqual(idx.properties.as_dict(), unpickled.properties.as_dict())
-        self.assertEqual(idx.interleaved, unpickled.interleaved)
-        self.assertEqual(len(idx), len(unpickled))
-        self.assertEqual(idx.bounds, unpickled.bounds)
-        a = next(idx.intersection(idx.bounds, objects=True))
-        b = next(unpickled.intersection(unpickled.bounds, objects=True))
-        self.assertEqual(a.id, b.id)
-        self.assertEqual(a.bounds, b.bounds)
-        self.assertEqual(a.object, b.object)
-
-    def test_property(self) -> None:
+class TestPropertyJSON(unittest.TestCase):
+    def test_roundtrip_default(self) -> None:
         p = rtree.index.Property()
-        unpickled = pickle.loads(pickle.dumps(p))
-        self.assertNotEqual(p.handle, unpickled.handle)
-        self.assertEqual(p.as_dict(), unpickled.as_dict())
+        restored = rtree.index.Property.from_json(p.to_json())
+        self.assertNotEqual(p.handle, restored.handle)
+        self.assertEqual(p.as_dict(), restored.as_dict())
+
+    def test_roundtrip_custom(self) -> None:
+        p = rtree.index.Property(
+            dimension=3,
+            storage=rtree.index.RT_Disk,
+            filename="some_index",
+            leaf_capacity=50,
+            index_capacity=60,
+            fill_factor=0.5,
+            overwrite=False,
+            variant=rtree.index.RT_Quadratic,
+        )
+        restored = rtree.index.Property.from_json(p.to_json())
+        self.assertEqual(p.as_dict(), restored.as_dict())
+
+    def test_to_json_is_plain_json(self) -> None:
+        state = json.loads(rtree.index.Property().to_json())
+        self.assertIsInstance(state, dict)
+        self.assertNotIn("custom_storage_callbacks", state)
+        self.assertNotIn("custom_storage_callbacks_size", state)
+        self.assertEqual(state["dimension"], 2)
+
+    def test_from_json_accepts_bytes(self) -> None:
+        data = rtree.index.Property(dimension=4).to_json().encode("utf-8")
+        self.assertEqual(rtree.index.Property.from_json(data).dimension, 4)
+
+    def test_from_json_rejects_unknown_keys(self) -> None:
+        with pytest.raises(ValueError, match="handle"):
+            rtree.index.Property.from_json('{"handle": 0}')
+
+    def test_from_json_rejects_non_object(self) -> None:
+        with pytest.raises(TypeError):
+            rtree.index.Property.from_json("[1, 2, 3]")
+
+    def test_index_from_json_properties(self) -> None:
+        p = rtree.index.Property(dimension=3)
+        idx = rtree.index.Index(properties=rtree.index.Property.from_json(p.to_json()))
+        idx.insert(0, (0, 0, 0, 1, 1, 1))
+        self.assertEqual(idx.properties.dimension, 3)
+        self.assertEqual(list(idx.intersection((0, 0, 0, 1, 1, 1))), [0])
 
 
 class IndexContainer(IndexTestCase):
@@ -453,8 +476,8 @@ class IndexSerialization(unittest.TestCase):
             4321, (34.3776829412, 26.7375853734, 49.3776829412, 41.7375853734), obj=42
         )
 
-    def test_pickling(self) -> None:
-        """Pickling works as expected"""
+    def test_clustered_json_storage(self) -> None:
+        """Objects stored with custom JSON dumps/loads round-trip"""
 
         idx = index.Index()
         import json

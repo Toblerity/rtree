@@ -1749,6 +1749,40 @@ class Property:
         self.handle = PropertyHandle()
         self.initialize_from_dict(state)
 
+    #: Keys that hold process-local pointers and are not meaningful to
+    #: serialize to JSON.
+    _json_exclude = ("custom_storage_callbacks", "custom_storage_callbacks_size")
+
+    def to_json(self) -> str:
+        """Serialize the properties to a JSON string.
+
+        Custom storage callbacks are process-local pointers and are omitted.
+
+        >>> from rtree import index
+        >>> p = index.Property(dimension=3)
+        >>> index.Property.from_json(p.to_json()).dimension
+        3
+        """
+        state = {k: v for k, v in self.as_dict().items() if k not in self._json_exclude}
+        return json.dumps(state)
+
+    @classmethod
+    def from_json(cls, data: str | bytes) -> Property:
+        """Create a new :class:`Property` from a JSON string produced by
+        :meth:`to_json`.
+
+        Only known property keys are accepted; anything else raises
+        :class:`ValueError`.
+        """
+        state = json.loads(data)
+        if not isinstance(state, dict):
+            raise TypeError(f"Expected a JSON object, got {type(state).__name__}")
+        allowed = set(cls.pkeys) - set(cls._json_exclude)
+        unknown = set(state) - allowed
+        if unknown:
+            raise ValueError(f"Unknown property keys: {sorted(unknown)}")
+        return cls(**state)
+
     def as_dict(self) -> dict[str, Any]:
         d = {}
         for k in self.pkeys:
