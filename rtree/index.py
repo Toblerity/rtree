@@ -1,16 +1,19 @@
 from __future__ import annotations
 
 import ctypes
+import json
 import os
 import os.path
-import pickle
 import pprint
+import sys
 import warnings
 from collections.abc import Iterator, Sequence
 from typing import Any, Literal, overload
 
 from . import core
 from .exceptions import RTreeError
+
+INDEX_JSON_SERIALIZATION_LIMIT_SIZE = 1024
 
 RT_Memory = 0
 RT_Disk = 1
@@ -328,11 +331,25 @@ class Index:
         self.__dict__.update(state)
         self.handle = IndexHandle(self.properties.handle)
 
+    # https://docs.python.org/3/library/json.html
+    #
+    # Be cautious when parsing JSON data from untrusted sources. A malicious JSON
+    # string may cause the decoder to consume considerable CPU and memory resources.
+    # Limiting the size of data to be parsed is recommended.
     def dumps(self, obj: object) -> bytes:
-        return pickle.dumps(obj)
+        if sys.getsizeof(obj) < INDEX_JSON_SERIALIZATION_LIMIT_SIZE:
+            return bytes(json.dumps(obj), "utf-8")
+        else:
+            raise TimeoutError("Object is too large to quickly encode")
 
-    def loads(self, string: bytes) -> object:
-        return pickle.loads(string)
+    def loads(self, string: bytes) -> Any:
+        if len(string) < INDEX_JSON_SERIALIZATION_LIMIT_SIZE:
+            return json.loads(str(string, "utf-8"))
+        else:
+            raise TimeoutError(
+                "Unable to load serialized index data. The JSON string is above "
+                f"the serialization limit of {INDEX_JSON_SERIALIZATION_LIMIT_SIZE}"
+            )
 
     def close(self) -> None:
         """Force a flush of the index to storage. Renders index
@@ -434,7 +451,7 @@ class Index:
             not only the positional coordinate pairs but also the
             velocity pairs `minvk` and `maxvk` and a time value as a float.
 
-        :param obj: a pickleable object.  If not None, this object will be
+        :param obj: a JSON-like object.  If not None, this object will be
             stored in the index with the :attr:`id`.
 
         The following example inserts an entry into the index with id `4321`,
@@ -614,7 +631,7 @@ class Index:
             each dimension defining the bounds of the query window.
 
         :param objects: If True, the intersection method will return index objects that
-            were pickled when they were stored with each index entry, as well
+            were serialized when they were stored with each index entry, as well
             as the id and bounds of the index entries. If 'raw', the objects
             will be returned without the :class:`rtree.index.Item` wrapper.
 
@@ -768,7 +785,7 @@ class Index:
             time range as a float.
 
         :param objects: If True, the intersection method will return index objects that
-            were pickled when they were stored with each index entry, as well
+            were serialized when they were stored with each index entry, as well
             as the id and bounds of the index entries. If 'raw', the objects
             will be returned without the :class:`rtree.index.Item` wrapper.
 
@@ -1000,7 +1017,7 @@ class Index:
             items than specified
 
         :param objects: If True, the nearest method will return index objects that
-            were pickled when they were stored with each index entry, as
+            were serialized when they were stored with each index entry, as
             well as the id and bounds of the index entries.
             If 'raw', it will return the object as entered into the database
             without the :class:`rtree.index.Item` wrapper.

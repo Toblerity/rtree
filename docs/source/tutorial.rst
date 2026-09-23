@@ -131,9 +131,9 @@ are of equal distance to the bounds, both are returned:
 Using Rtree as a cheapo spatial database
 ..............................................................................
 
-Rtree also supports inserting any object you can pickle into the index (called
+Rtree also supports inserting any JSON-like object into the index (called
 a clustered index in `libspatialindex`_ parlance). The following inserts the
-picklable object ``42`` into the index with the given id ``2``:
+number ``42`` into the index with the given id ``2``:
 
 .. code-block:: pycon
 

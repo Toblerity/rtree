@@ -10,7 +10,7 @@ user.  These features include:
 * Nearest neighbor search
 * Intersection search
 * Multi-dimensional indexes
-* Clustered indexes (store Python pickles directly with index entries)
+* Clustered indexes (store JSON-like objects directly with index entries)
 * Bulk loading
 * Deletion
 * Disk serialization
