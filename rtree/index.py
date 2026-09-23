@@ -1758,13 +1758,23 @@ class Property:
 
         Custom storage callbacks are process-local pointers and are omitted.
 
+        :raises ValueError: if the encoded JSON is larger than
+            ``INDEX_JSON_SERIALIZATION_LIMIT_SIZE`` bytes.
+
         >>> from rtree import index
         >>> p = index.Property(dimension=3)
         >>> index.Property.from_json(p.to_json()).dimension
         3
         """
         state = {k: v for k, v in self.as_dict().items() if k not in self._json_exclude}
-        return json.dumps(state)
+        data = json.dumps(state)
+        size = len(data.encode("utf-8"))
+        if size > INDEX_JSON_SERIALIZATION_LIMIT_SIZE:
+            raise ValueError(
+                f"Serialized properties are {size} bytes, above the "
+                f"serialization limit of {INDEX_JSON_SERIALIZATION_LIMIT_SIZE}"
+            )
+        return data
 
     @classmethod
     def from_json(cls, data: str | bytes) -> Property:
@@ -1773,7 +1783,17 @@ class Property:
 
         Only known property keys are accepted; anything else raises
         :class:`ValueError`.
+
+        :raises ValueError: if ``data`` is larger than
+            ``INDEX_JSON_SERIALIZATION_LIMIT_SIZE`` bytes. The size is checked
+            before parsing.
         """
+        size = len(data.encode("utf-8") if isinstance(data, str) else data)
+        if size > INDEX_JSON_SERIALIZATION_LIMIT_SIZE:
+            raise ValueError(
+                f"Serialized properties are {size} bytes, above the "
+                f"serialization limit of {INDEX_JSON_SERIALIZATION_LIMIT_SIZE}"
+            )
         state = json.loads(data)
         if not isinstance(state, dict):
             raise TypeError(f"Expected a JSON object, got {type(state).__name__}")
