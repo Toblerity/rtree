@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ctypes
 import json
+import pickle
 import sys
 import tempfile
 import unittest
@@ -151,6 +152,31 @@ class IndexProperties(IndexTestCase):
         self.assertEqual(props.reinsert_factor, 0.3)
         self.assertEqual(props.idx_extension, "index")
         self.assertEqual(props.dat_extension, "data")
+
+
+class TestIndexPickling(unittest.TestCase):
+    # https://github.com/Toblerity/rtree/issues/87
+    @pytest.mark.xfail
+    def test_index(self) -> None:
+        idx = rtree.index.Index()
+        idx.insert(0, [0, 1, 2, 3], 4)
+        unpickled = pickle.loads(pickle.dumps(idx))
+        self.assertNotEqual(idx.handle, unpickled.handle)
+        self.assertEqual(idx.properties.as_dict(), unpickled.properties.as_dict())
+        self.assertEqual(idx.interleaved, unpickled.interleaved)
+        self.assertEqual(len(idx), len(unpickled))
+        self.assertEqual(idx.bounds, unpickled.bounds)
+        a = next(idx.intersection(idx.bounds, objects=True))
+        b = next(unpickled.intersection(unpickled.bounds, objects=True))
+        self.assertEqual(a.id, b.id)
+        self.assertEqual(a.bounds, b.bounds)
+        self.assertEqual(a.object, b.object)
+
+    def test_property(self) -> None:
+        p = rtree.index.Property()
+        unpickled = pickle.loads(pickle.dumps(p))
+        self.assertNotEqual(p.handle, unpickled.handle)
+        self.assertEqual(p.as_dict(), unpickled.as_dict())
 
 
 class TestPropertyJSON(unittest.TestCase):
