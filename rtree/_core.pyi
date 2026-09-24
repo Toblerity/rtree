@@ -1,5 +1,5 @@
 """
-Compiled bindings to the libspatialindex C API.
+Compiled bindings to the libspatialindex C++ API.
 """
 
 from __future__ import annotations
@@ -237,7 +237,7 @@ class IndexItem:
 
 class PropertyHandle:
     """
-    Owned libspatialindex property set.
+    libspatialindex property set.
     """
 
     dat_extension: str
@@ -248,7 +248,7 @@ class PropertyHandle:
     def destroy(self) -> None: ...
     def set_python_storage(self, storage: typing.Any) -> None:
         """
-        Route RT_Custom storage callbacks to a Python CustomStorage object.
+        Route RT_Custom storage to a Python CustomStorage object.
         """
     @property
     def buffering_capacity(self) -> int: ...
@@ -259,7 +259,7 @@ class PropertyHandle:
     @property
     def custom_storage_callbacks(self) -> int | None:
         """
-        Raw address of a CustomStorageManagerCallbacks struct (advanced use).
+        Address of a CustomStorageManagerCallbacks struct (CustomStorageBase).
         """
     @custom_storage_callbacks.setter
     def custom_storage_callbacks(
@@ -384,14 +384,14 @@ class PropertyHandle:
 
 def new_buffer(size: typing.SupportsInt | typing.SupportsIndex) -> int:
     """
-    Allocate ``size`` bytes with libspatialindex's allocator and return the
-    address.  For CustomStorageBase.loadByteArray implementations; the
-    library takes ownership of the buffer.
+    Allocate ``size`` bytes the way libspatialindex expects (``new[]``) and
+    return the address.  For CustomStorageBase.loadByteArray implementations;
+    the library takes ownership of the buffer.
     """
 
 def sidx_version() -> str:
     """
-    Version string of the libspatialindex C library that is linked at runtime.
+    Version of the libspatialindex headers this extension was built against.
     """
 
 HAS_ARRAY_API: bool

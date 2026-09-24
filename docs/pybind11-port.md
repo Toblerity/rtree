@@ -5,10 +5,17 @@ Branch: `pybind11` · Tracking issue: [#223](https://github.com/Toblerity/rtree/
 ## TL;DR
 
 A working prototype is on this branch. `rtree/core.py`'s ~700 lines of
-hand-written ctypes prototypes are replaced by a ~1,000-line pybind11 module
-(`src/_core.cpp`) that binds the libspatialindex **C API** one-to-one, but with
-Python types (`list[float]`, `bytes`, `numpy.ndarray`) instead of pointers.
-`rtree/index.py` keeps its public API and now calls the typed handles.
+hand-written ctypes prototypes are replaced by a pybind11 module
+(`src/_core.cpp`) with Python types (`list[float]`, `bytes`, `numpy.ndarray`)
+instead of pointers. `rtree/index.py` keeps its public API and now calls the
+typed handles.
+
+The module was first written against the libspatialindex **C API**
+(`sidx_api.h` / `libspatialindex_c`), and has since been rewritten to drive the
+**C++ API** (`SpatialIndex::ISpatialIndex`, visitors, storage managers)
+directly, skipping `libspatialindex_c` entirely. The Python-facing `_core`
+API — and so `_core.pyi` — is identical between the two, so they can be
+compared like for like; see [C API vs C++ API](#c-api-vs-c-api-binding).
 
 | | ctypes (`main`) | pybind11 (this branch) |
 |---|---|---|
@@ -16,7 +23,7 @@ Python types (`list[float]`, `bytes`, `numpy.ndarray`) instead of pointers.
 | Test suite (sidx 1.8.5) | — | 52 pass, 6 skipped (Contains / array APIs absent, as before) |
 | `mypy --strict rtree` | 270 errors (172 index.py, 101 core.py) | 0 in index.py/core.py (2 pre-existing in finder.py) |
 | Type info for the binding layer | none (`CDLL` attributes are `Any`) | generated `rtree/_core.pyi` |
-| Wheel contents | py3-none wheel + bundled `libspatialindex*.so/.dylib/.dll` + finder/repair scripts | one self-contained extension per CPython version, libspatialindex linked statically (583 KB on linux x86_64) |
+| Wheel contents | py3-none wheel + bundled `libspatialindex*.so/.dylib/.dll` + finder/repair scripts | one self-contained extension per CPython version, libspatialindex linked statically (542 KB on linux x86_64; 583 KB for the C-API version) |
 
 ## Type hinting — the main goal
 
@@ -61,43 +68,133 @@ Python types (`list[float]`, `bytes`, `numpy.ndarray`) instead of pointers.
   `ctypes.c_void_p()` as the context, which `CustomStorageCallbacks` wraps in a
   second `c_void_p(...)` → `TypeError: cannot be converted to pointer`. There
   was no test. Fixed; `IndexCustomStorageBase` test added.
-- `Error_Reset` / `Error_GetErrorCount` are exported by libspatialindex_c but
-  **not declared in `sidx_api.h`**; ctypes never noticed. The extension declares
-  them itself — worth adding to the header upstream.
-- (Observation) `Index_Free(NULL)` pushes an error onto the error stack, so
-  freeing an empty result can poison the next error check. The binding avoids
-  calling it on NULL.
+- C API issues found while binding it (moot now that the C API isn't used,
+  but worth fixing upstream for other C API users):
+  - `Error_Reset` / `Error_GetErrorCount` are exported by libspatialindex_c
+    but **not declared in `sidx_api.h`**; ctypes never noticed.
+  - `Index_Free(NULL)` pushes an error onto the error stack, so freeing an
+    empty result can poison the next error check.
+  - `Index_Intersects_obj` returns `RT_None` even after catching an exception
+    and pushing an error.
+  - The `IndexProperty_Set*` string setters `strdup` without freeing the
+    previous value.
 
 ## Design of the prototype
 
-- **Bind the C API, not the C++ API.** Lowest risk: same entry points, same
-  error semantics, same 1.8.5 → 2.x compatibility story, and index.py's
-  logic is untouched. Binding `SpatialIndex::ISpatialIndex` directly (visitors
-  instead of result arrays) would be faster still, but is a rewrite.
-- **Feature detection moved to build time.** `CMakeLists.txt` uses
-  `check_cxx_symbol_exists` for `Index_Contains_id` and `Index_CreateWithArray`
-  and exposes `_core.HAS_CONTAINS` / `_core.HAS_ARRAY_API`, replacing
-  `try: rt.Foo except AttributeError`. The < 1.9 `size_t*`/`uint32_t*`
-  stream-callback mismatch (#220) is handled with `SIDX_VERSION_NUM`.
-- **Memory ownership in C++.** Result arrays are copied into Python lists and
-  freed immediately with `Index_Free`; `IndexItem` owns its handle and is
-  destroyed when garbage-collected, so iterators no longer need `finally:`
-  cleanup. Everything is freed with the library's own `Index_Free`/
-  `SIDX_NewBuffer`, which matters for mismatched CRTs on Windows.
+- **Bind the C++ API.** `IndexHandle` owns the same three objects
+  `libspatialindex_c`'s `Index` class did — storage manager →
+  `RandomEvictionsBuffer` → `RTree`/`MVRTree`/`TPRTree` — built from a
+  `Tools::PropertySet` with the same defaults as the C API's `GetDefaults()`.
+  Everything the C shim provided is reimplemented in ~200 lines: id / object /
+  count visitors, bounds and leaf query strategies, point-vs-region insert
+  detection, result paging, stream and array bulk loaders, and storage
+  managers for Python and ctypes custom storage.
+- **Results are collected once.** Visitors write ids straight into a
+  `std::vector`, and `*_obj` queries extract id, bounds and payload into an
+  owned record while visiting. The C API cloned every `IData` twice (visitor,
+  then pager), `malloc`ed a C array, and copied payload bytes twice more.
+- **Paging inside the visitor.** `result_limit`/`result_offset` are applied as
+  hits arrive; skipped hits are never materialised (the C API collected and
+  cloned all of them, then sliced).
+- **Errors are exceptions.** `Tools::Exception` / `std::exception` from
+  libspatialindex are translated to `RTreeError` once. No global error stack
+  to poll after each call (which was not thread-local on MSVC), and none of the
+  C API's swallowed errors (`Index_Intersects_obj` returned `RT_None` after
+  pushing an error).
+- **Feature detection moved to build time.** `CMakeLists.txt` probes the C++
+  headers (`nearestNeighborQuery` with `max_dist` and `ISpatialIndex::flush`,
+  both ≥ 1.9). `contains()` now works with 1.8.5 too, since
+  `containsWhatQuery` was always in the C++ API — only the C API lacked it.
+- **Memory ownership in C++.** `IndexItem` owns its record and is freed when
+  garbage-collected, so iterators no longer need `finally:` cleanup.
+  Page buffers handed to libspatialindex are allocated with `new[]`, as it
+  `delete[]`s them.
 - **Lifetimes.** `IndexHandle` keeps its `PropertyHandle` alive
-  (`py::keep_alive`), and the property handle owns the custom-storage bridge,
-  so index teardown can never call into a freed callback (a latent ordering
-  hazard with the ctypes version).
-- **Custom storage.** `CustomStorage` now goes through a compiled bridge that
-  calls the Python methods with `int`/`bytes` and an `ErrorRef`. `ErrorRef`
-  supports both `err.value = X` and the old `err.contents.value = X`, so
-  existing subclasses keep working. `CustomStorageBase` (raw ctypes buffers)
-  is kept on ctypes deliberately; `allocateBuffer` now uses
-  `_core.new_buffer` instead of dlopen-ing the library.
-- **GIL** is released around index calls (as ctypes did implicitly) and
-  re-acquired in callbacks. The module is **not** declared free-threading safe
-  yet: libspatialindex is not internally locked and its MSVC build uses a
-  global error stack.
+  (`py::keep_alive`), owns copies of the property strings, and tears down
+  tree → buffer → storage in that order, so a custom storage object can never
+  be called after it's freed.
+- **Custom storage.** `CustomStorage` is a C++ `IStorageManager` that calls
+  the Python methods with `int`/`bytes` and an `ErrorRef` (supports both
+  `err.value = X` and the old `err.contents.value = X`). `CustomStorageBase`
+  (raw ctypes buffers) still works: its ctypes callback table is copied into a
+  second `IStorageManager`, and `allocateBuffer` uses `_core.new_buffer`.
+- **GIL** is released around index calls and re-acquired in callbacks. Bulk
+  loading from a Python iterator keeps it. The module is **not** declared
+  free-threading safe: libspatialindex is not internally locked.
+
+## C API vs C++ API binding
+
+Same machine, same static libspatialindex 2.1.0, same `index.py`; 100k random
+boxes, 20k 10×10 query windows; best of 5 repetitions, best of two runs each.
+Script: `benchmarks/bindings.py`.
+
+| operation | C API binding | C++ API binding | speed-up |
+|---|---:|---:|---:|
+| insert 100k | 3278 ms | 3283 ms | 1.00× |
+| insert w/ obj 20k | 737 ms | 724 ms | 1.02× |
+| stream bulk load 100k | 111 ms | 110 ms | 1.01× |
+| array bulk load 100k | 54 ms | 55 ms | 0.98× |
+| intersection → ids, 20k q | 221 ms | 226 ms | 0.98× |
+| count, 20k q | 206 ms | 207 ms | 0.99× |
+| contains → ids, 20k q | 5121 ms | 5116 ms | 1.00× |
+| intersection → `Item`s, 20k q | 562 ms | 513 ms | 1.10× |
+| intersection → raw objects, 20k q | 328 ms | 328 ms | 1.00× |
+| nearest k=5 → ids, 20k q | 527 ms | 518 ms | 1.02× |
+| nearest k=5 → `Item`s, 20k q | 857 ms | 830 ms | 1.03× |
+| `intersection_v`, 20k boxes | 175 ms | 169 ms | 1.04× |
+| `nearest_v` k=5, 20k boxes | 467 ms | 454 ms | 1.03× |
+| `leaves()` | 5.5 ms | 4.4 ms | 1.25× |
+| `bounds` ×20k | 18.2 ms | 17.0 ms | 1.07× |
+| delete 20k | 10266 ms | 10008 ms | 1.03× |
+| **large results:** `Item`s, 100k hits ×5 | 1917 ms | 1625 ms | 1.18× |
+| **large results:** raw objects, 100k hits ×5 | 825 ms | 716 ms | 1.15× |
+| **paged:** `Item`s, `result_limit=10` of 100k hits ×100 | 2085 ms | 1033 ms | **2.02×** |
+| **paged:** ids, `result_limit=10` of 100k hits ×100 | 1137 ms | 1044 ms | 1.09× |
+
+Run-to-run noise is about ±3–7%, so anything under ~1.05× is a tie.
+
+**Takeaway: dropping the C API makes no difference for typical per-query
+workloads.** The gains are where the C shim did avoidable work per *result*:
+object queries with many hits (1.1–1.2×, fewer `IData` clones and copies) and
+paged queries (up to 2×, because the C API materialised and cloned every hit
+before slicing). Everything else is bound by libspatialindex itself or by the
+Python layer:
+
+- `intersection_v` runs the whole 20k-query loop in C++ with no Python per
+  query, and still takes 169 ms against 226 ms for the Python loop. So about
+  75% of a single `intersection()` call (~8.5 µs of ~11 µs) is the tree query
+  inside libspatialindex. The remaining ~2.5 µs is Python/pybind11 overhead
+  (coordinate normalisation in `index.py`, argument conversion, list →
+  iterator); the C shim's share was ~0.1 µs.
+- Insert, delete and `contains` are dominated by libspatialindex's R*-tree
+  maintenance and node (de)serialisation through the memory storage manager.
+  Buffer size doesn't change this (`buffering_capacity=100000` gave the same
+  query time); tree shape does (`leaf_capacity=index_capacity=16` made
+  intersection ~25% faster in a quick probe).
+
+Other reasons to prefer the C++ binding anyway:
+
+- **One fewer library.** Only `libspatialindex` is needed; `libspatialindex_c`
+  is not linked (the binary contains none of its code).
+- **Fewer semantics hidden in a shim.** Paging, point detection, storage
+  setup and error handling are now in rtree's own code, where they can be
+  tested and fixed without a libspatialindex release.
+- **Fixes C API gaps.** `contains()` on 1.8.5; errors no longer swallowed.
+
+The cost:
+
+- **C++ ABI coupling.** For shared-library builds (distros, conda), the
+  extension must be built with a compiler/standard library ABI-compatible with
+  the one that built libspatialindex. Irrelevant for the static wheels.
+  Windows + a *shared* libspatialindex DLL is untested: its headers don't use
+  `__declspec(dllimport)`, which matters for C++ classes.
+- **Version drift in the C++ API** is handled with `#if` / CMake probes
+  (two so far, both for 1.8.x).
+- rtree now owns ~200 more lines of C++ that used to live upstream.
+
+Bigger wins would come from the parts above that bindings don't touch: moving
+coordinate normalisation and result iteration into C++ (the ~2.5 µs/query
+Python share), or returning NumPy arrays for id queries.
 
 ## Packaging impact (the concern raised in #223)
 
@@ -119,9 +216,10 @@ changes:
 - **Build backend:** setuptools → scikit-build-core + CMake.
 - **Source/distro builds** need a C++17 compiler and libspatialindex
   headers (`libspatialindex-dev`, conda `libspatialindex`) instead of just the
-  runtime `.so`. CMake finds libspatialindex via its CMake config (≥ 1.9) or
-  falls back to `find_path/find_library` (`SPATIALINDEX_ROOT`). Tested against
-  2.1.0 (shared and static) and 1.8.5 (shared, no CMake config).
+  runtime `.so`. Only the C++ library (`libspatialindex`) is linked, not
+  `libspatialindex_c`. CMake finds it via its CMake config (≥ 1.9) or falls
+  back to `find_path/find_library` (`SPATIALINDEX_ROOT`). Tested against 2.1.0
+  (shared and static) and 1.8.5 (shared, no CMake config).
 - macOS deployment target raised 10.9 → 10.13 (C++17 `std::optional`).
 - **PyPy:** ctypes worked on PyPy for free. pybind11 supports PyPy via
   cpyext, but it's slower there; if PyPy matters, it needs its own wheels and
@@ -134,7 +232,10 @@ changes:
   `finder.get_include()` no longer finds headers in wheels because headers
   are no longer bundled — decide whether anyone still relies on that.
 
-## Performance (same machine, libspatialindex 2.1.0, 100k boxes, 20k queries)
+## Performance vs ctypes (C-API binding, libspatialindex 2.1.0, 100k boxes, 20k queries)
+
+The C++ binding is within noise of these numbers except where the table above
+says otherwise.
 
 | operation | ctypes | pybind11 | speed-up |
 |---|---:|---:|---:|
@@ -167,9 +268,11 @@ changes:
    abi3 on 3.12+ (the binding code would port with modest changes).
 3. Add `mypy.stubtest rtree._core` to CI with an allowlist for pybind11
    metaclass noise, so the committed `.pyi` can't drift from the extension.
-4. Upstream: declare `Error_Reset`/`Error_GetErrorCount` in `sidx_api.h`; make
-   `Index_Free(NULL)` a no-op.
-5. Consider a follow-up that binds the C++ API directly (visitor-based
-   queries writing straight into Python lists / NumPy arrays).
-6. Note: `tox.ini` has `ignore_outcome = True`, so wheel-test failures in
+4. Upstream: the C API fixes listed under "Bugs found".
+5. If per-query speed matters: move coordinate normalisation into C++ and/or
+   return NumPy arrays from id queries; that's where the remaining binding-side
+   time is.
+6. Un-skip the `contains` tests for libspatialindex < 2.1 (they are gated on
+   the version via `skip_sidx_lt_210`, but the C++ binding supports them).
+7. Note: `tox.ini` has `ignore_outcome = True`, so wheel-test failures in
    cibuildwheel never fail CI today.

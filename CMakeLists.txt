@@ -20,43 +20,47 @@ find_package(pybind11 CONFIG REQUIRED)
 # scripts/install_libspatialindex.{sh,bat} put a static build here for wheels.
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/sidx-static")
 find_package(libspatialindex CONFIG QUIET)
-if(TARGET libspatialindex::spatialindex_c)
-  set(SIDX_C_TARGET libspatialindex::spatialindex_c)
-  get_target_property(SIDX_INCLUDE_DIRS libspatialindex::spatialindex_c
-                      INTERFACE_INCLUDE_DIRECTORIES)
+# Only the C++ library is needed; libspatialindex_c is no longer used.
+if(TARGET libspatialindex::spatialindex)
+  set(SIDX_TARGET libspatialindex::spatialindex)
   message(STATUS "Found libspatialindex (CMake config) ${libspatialindex_VERSION}")
-elseif(TARGET spatialindex_c)
-  set(SIDX_C_TARGET spatialindex_c)
-  get_target_property(SIDX_INCLUDE_DIRS spatialindex_c INTERFACE_INCLUDE_DIRECTORIES)
+elseif(TARGET spatialindex)
+  set(SIDX_TARGET spatialindex)
   message(STATUS "Found libspatialindex (CMake config) ${libspatialindex_VERSION}")
 else()
-  find_path(SIDX_INCLUDE_DIR spatialindex/capi/sidx_api.h
+  find_path(SIDX_INCLUDE_DIR spatialindex/SpatialIndex.h
             HINTS ${SPATIALINDEX_ROOT} ENV SPATIALINDEX_ROOT PATH_SUFFIXES include)
-  find_library(SIDX_C_LIBRARY NAMES spatialindex_c spatialindex_c-64 spatialindex_c-32
+  find_library(SIDX_LIBRARY NAMES spatialindex spatialindex-64 spatialindex-32
                HINTS ${SPATIALINDEX_ROOT} ENV SPATIALINDEX_ROOT PATH_SUFFIXES lib)
-  if(NOT SIDX_INCLUDE_DIR OR NOT SIDX_C_LIBRARY)
-    message(FATAL_ERROR "libspatialindex (C API) not found; set SPATIALINDEX_ROOT")
+  if(NOT SIDX_INCLUDE_DIR OR NOT SIDX_LIBRARY)
+    message(FATAL_ERROR "libspatialindex not found; set SPATIALINDEX_ROOT")
   endif()
-  add_library(sidx_c UNKNOWN IMPORTED)
-  set_target_properties(sidx_c PROPERTIES IMPORTED_LOCATION ${SIDX_C_LIBRARY}
-                                          INTERFACE_INCLUDE_DIRECTORIES ${SIDX_INCLUDE_DIR})
-  set(SIDX_C_TARGET sidx_c)
-  set(SIDX_INCLUDE_DIRS ${SIDX_INCLUDE_DIR})
-  message(STATUS "Found libspatialindex_c: ${SIDX_C_LIBRARY}")
+  add_library(sidx UNKNOWN IMPORTED)
+  set_target_properties(sidx PROPERTIES IMPORTED_LOCATION ${SIDX_LIBRARY}
+                                        INTERFACE_INCLUDE_DIRECTORIES ${SIDX_INCLUDE_DIR})
+  set(SIDX_TARGET sidx)
+  message(STATUS "Found libspatialindex: ${SIDX_LIBRARY}")
 endif()
 
-# Feature detection against the *headers we compile with*, replacing the
-# ctypes-era ``try: rt.Foo ... except AttributeError`` probing at import time.
-include(CheckCXXSymbolExists)
-set(CMAKE_REQUIRED_INCLUDES ${SIDX_INCLUDE_DIRS})
-set(CMAKE_REQUIRED_LIBRARIES ${SIDX_C_TARGET})
-check_cxx_symbol_exists(Index_Contains_id "spatialindex/capi/sidx_api.h" RTREE_HAVE_CONTAINS)
-check_cxx_symbol_exists(Index_CreateWithArray "spatialindex/capi/sidx_api.h"
-                        RTREE_HAVE_ARRAY_API)
+# Feature detection against the headers we compile with.  libspatialindex
+# >= 1.9 returns the furthest distance from nearestNeighborQuery and accepts a
+# max_dist bound (needed by Index.nearest_v(max_dists=..., return_max_dists=...)).
+include(CheckCXXSourceCompiles)
+set(CMAKE_REQUIRED_LIBRARIES ${SIDX_TARGET})
+check_cxx_source_compiles("
+#include <spatialindex/SpatialIndex.h>
+double f(SpatialIndex::ISpatialIndex& t, const SpatialIndex::IShape& s,
+         SpatialIndex::IVisitor& v) { return t.nearestNeighborQuery(1, s, v, 0.0); }
+int main() { return 0; }" RTREE_HAVE_NN_MAXDIST)
+check_cxx_source_compiles("
+#include <spatialindex/SpatialIndex.h>
+void f(SpatialIndex::ISpatialIndex& t) { t.flush(); }
+int main() { return 0; }" RTREE_HAVE_TREE_FLUSH)
+unset(CMAKE_REQUIRED_LIBRARIES)
 
 pybind11_add_module(_core MODULE src/_core.cpp)
-target_link_libraries(_core PRIVATE ${SIDX_C_TARGET})
-foreach(feat RTREE_HAVE_CONTAINS RTREE_HAVE_ARRAY_API)
+target_link_libraries(_core PRIVATE ${SIDX_TARGET})
+foreach(feat RTREE_HAVE_NN_MAXDIST RTREE_HAVE_TREE_FLUSH)
   if(${feat})
     target_compile_definitions(_core PRIVATE ${feat}=1)
   endif()
