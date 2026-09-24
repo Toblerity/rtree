@@ -28,6 +28,7 @@ qs = []
 for i in range(Q):
     x, y = random.random() * 1000, random.random() * 1000
     qs.append((x, y, x + 10, y + 10))
+qarr = [np.array(q, dtype=np.float64) for q in qs]
 qmins = np.array([q[:2] for q in qs])
 qmaxs = np.array([q[2:] for q in qs])
 ids_arr = np.arange(N, dtype=np.int64)
@@ -79,16 +80,43 @@ bench(
     noop,
     lambda _: index.Index((ids_arr, bmins, bmaxs)),
 )
+
+
+def as_container(r):
+    """The ids a query returns, as whatever container the binding offers."""
+    return r if isinstance(r, np.ndarray) else list(r)
+
+
+def as_array(r):
+    """The ids a query returns, as a NumPy array."""
+    return r if isinstance(r, np.ndarray) else np.fromiter(r, dtype=np.int64)
+
+
 bench(
     "intersection ids 20k q",
     noop,
+    lambda _: sum(len(as_container(idx.intersection(q))) for q in qs),
+)
+bench(
+    "intersection ids -> ndarray 20k q",
+    noop,
+    lambda _: sum(len(as_array(idx.intersection(q))) for q in qs),
+)
+bench(
+    "intersection ids -> list 20k q",
+    noop,
     lambda _: sum(len(list(idx.intersection(q))) for q in qs),
+)
+bench(
+    "intersection ndarray coords 20k q",
+    noop,
+    lambda _: sum(len(as_container(idx.intersection(q))) for q in qarr),
 )
 bench("count 20k q", noop, lambda _: sum(idx.count(q) for q in qs))
 bench(
     "contains ids 20k q",
     noop,
-    lambda _: sum(len(list(idx.contains(q))) for q in qs),
+    lambda _: sum(len(as_container(idx.contains(q))) for q in qs),
 )
 bench(
     "intersection objects 20k q",
@@ -103,7 +131,7 @@ bench(
 bench(
     "nearest k=5 20k q",
     noop,
-    lambda _: sum(len(list(idx.nearest(q, 5))) for q in qs),
+    lambda _: sum(len(as_container(idx.nearest(q, 5))) for q in qs),
 )
 bench(
     "nearest objects k=5 20k q",
@@ -125,6 +153,11 @@ bench(
 idx_big = index.Index(((i, b, i) for i, b in enumerate(boxes)))
 full = (0, 0, 1000, 1000)
 bench(
+    "ids, 100k hits x5",
+    noop,
+    lambda _: [len(as_container(idx_big.intersection(full))) for _ in range(5)],
+)
+bench(
     "objects=True, 100k hits x5",
     noop,
     lambda _: [len(list(idx_big.intersection(full, objects=True))) for _ in range(5)],
@@ -143,7 +176,7 @@ bench(
 bench(
     "paged ids (limit 10 of 100k) x100",
     noop,
-    lambda _: [list(idx_big.intersection(full)) for _ in range(100)],
+    lambda _: [as_container(idx_big.intersection(full)) for _ in range(100)],
 )
 
 print(json.dumps(results))

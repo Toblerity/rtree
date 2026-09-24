@@ -102,7 +102,7 @@ Given a query window, return ids that are contained within the window:
 
 .. code-block:: pycon
 
-  >>> list(idx.intersection((1.0, 1.0, 2.0, 2.0)))
+  >>> idx.intersection((1.0, 1.0, 2.0, 2.0)).tolist()
   [0]
 
 Given a query window that is beyond the bounds of data we have in the
@@ -110,7 +110,7 @@ index:
 
 .. code-block:: pycon
 
-  >>> list(idx.intersection((1.0000001, 1.0000001, 2.0, 2.0)))
+  >>> idx.intersection((1.0000001, 1.0000001, 2.0, 2.0)).tolist()
   []
 
 Nearest Neighbors
@@ -122,7 +122,7 @@ are of equal distance to the bounds, both are returned:
 .. code-block:: pycon
 
   >>> idx.insert(1, (left, bottom, right, top))
-  >>> list(idx.nearest((1.0000001, 1.0000001, 2.0, 2.0), 1))
+  >>> idx.nearest((1.0000001, 1.0000001, 2.0, 2.0), 1).tolist()
   [0, 1]
 
 
@@ -170,7 +170,7 @@ described :ref:`here <clustered>`:
   >>> file_idx = index.Rtree("myidx")
   >>> file_idx.insert(1, (left, bottom, right, top))
   >>> file_idx.insert(2, (left - 1.0, bottom - 1.0, right + 1.0, top + 1.0))
-  >>> [n for n in file_idx.intersection((left, bottom, right, top))]
+  >>> file_idx.intersection((left, bottom, right, top)).tolist()
   [1, 2]
   >>> sorted(os.listdir())
   ['myidx.dat', 'myidx.idx']
@@ -227,7 +227,7 @@ stored on disk as the files ``3d_index.data`` and ``3d_index.index``:
   >>> p.idx_extension = "index"
   >>> idx3d = index.Index("3d_index", properties=p)
   >>> idx3d.insert(1, (0, 60, 23.0, 0, 60, 42.0))
-  >>> list(idx3d.intersection((-1, 60, 22, 1, 62, 43)))
+  >>> idx3d.intersection((-1, 60, 22, 1, 62, 43)).tolist()
   [1]
   >>> os.chdir(prev_dir)
   >>> temp_dir.cleanup()

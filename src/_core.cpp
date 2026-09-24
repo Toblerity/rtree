@@ -131,6 +131,158 @@ std::pair<const uint8_t *, uint32_t> bytes_view(const std::optional<py::bytes> &
 }
 
 // ---------------------------------------------------------------------------
+// Coordinates: parsed from any float sequence or buffer, entirely in C++
+// ---------------------------------------------------------------------------
+
+// A Python argument accepted as coordinates.  Only its stub annotation is
+// special; parsing happens in Box.
+class CoordsArg : public py::object {
+  public:
+    PYBIND11_OBJECT_DEFAULT(CoordsArg, object, [](PyObject *o) { return o != nullptr; })
+};
+
+// An entry id taken as a plain object so that coordinates are validated
+// before the id's type, matching the historical error precedence.
+class IdArg : public py::object {
+  public:
+    PYBIND11_OBJECT_DEFAULT(IdArg, object, [](PyObject *o) { return o != nullptr; })
+    int64_t value() const {
+        PyObject *i = PyNumber_Index(ptr());  // TypeError for None, floats, ...
+        if (i == nullptr) {
+            throw py::error_already_set();
+        }
+        const long long v = PyLong_AsLongLong(i);
+        Py_DECREF(i);
+        if (v == -1 && PyErr_Occurred()) {
+            throw py::error_already_set();
+        }
+        return static_cast<int64_t>(v);
+    }
+};
+
+// mins/maxs for one query or entry, built the way rtree has always
+// interpreted coordinates:
+//   * ``dim`` values: a point;
+//   * ``2*dim`` values: a box, ``[mins..., maxs...]`` when ``interleaved`` else
+//     ``[min0, max0, min1, max1, ...]``.
+// Small dimensions (the common case) live on the stack.
+class Box {
+  public:
+    Box(py::handle coords, uint32_t dim, bool interleaved, bool validate = true) : dim_(dim) {
+        buf_ = 2 * static_cast<size_t>(dim) <= kInline ? inline_ : (heap_.resize(2 * dim), heap_.data());
+        double *vals = scratch(2 * static_cast<size_t>(dim));
+        const size_t n = read_values(coords, vals, 2 * static_cast<size_t>(dim));
+        if (n == dim) {
+            std::copy(vals, vals + dim, buf_);
+            std::copy(vals, vals + dim, buf_ + dim);
+            return;
+        }
+        if (n != 2 * static_cast<size_t>(dim)) {
+            throw py::value_error("Expected " + std::to_string(dim) + " or " +
+                                  std::to_string(2 * dim) + " coordinates, got " +
+                                  std::to_string(n));
+        }
+        for (uint32_t i = 0; i < dim; ++i) {
+            buf_[i] = interleaved ? vals[i] : vals[2 * i];
+            buf_[dim + i] = interleaved ? vals[dim + i] : vals[2 * i + 1];
+        }
+        if (validate) {
+            for (uint32_t i = 0; i < dim; ++i) {
+                if (!(buf_[i] <= buf_[dim + i])) {
+                    PyErr_SetString(g_rtree_error,
+                                    "Coordinates must not have minimums more than maximums");
+                    throw py::error_already_set();
+                }
+            }
+        }
+    }
+    Box(const Box &) = delete;
+    Box &operator=(const Box &) = delete;
+
+    const double *lo() const { return buf_; }
+    const double *hi() const { return buf_ + dim_; }
+    uint32_t dim() const { return dim_; }
+    SI::Region region() const { return SI::Region(lo(), hi(), dim_); }
+    bool degenerate() const {
+        double length = 0;
+        for (uint32_t i = 0; i < dim_; ++i) {
+            length += std::fabs(buf_[i] - buf_[dim_ + i]);
+        }
+        return length <= std::numeric_limits<double>::epsilon();
+    }
+
+  private:
+    static constexpr size_t kInline = 16;
+
+    double *scratch(size_t n) {
+        if (n <= kInline) {
+            return scratch_inline_;
+        }
+        scratch_heap_.resize(n);
+        return scratch_heap_.data();
+    }
+
+    // Returns the number of values; writes at most ``cap`` of them.
+    static size_t read_values(py::handle obj, double *out, size_t cap) {
+        PyObject *o = obj.ptr();
+        // Fast path: a 1-D float64 buffer (NumPy array, array.array('d'), ...).
+        if (PyObject_CheckBuffer(o) && !PyBytes_Check(o) && !PyByteArray_Check(o)) {
+            Py_buffer view;
+            if (PyObject_GetBuffer(o, &view, PyBUF_FORMAT | PyBUF_STRIDES) == 0) {
+                const bool f64 = view.itemsize == 8 && view.format != nullptr &&
+                                 (std::strcmp(view.format, "d") == 0 ||
+                                  std::strcmp(view.format, "<d") == 0 ||
+                                  std::strcmp(view.format, "=d") == 0);
+                if (f64 && view.ndim == 1) {
+                    const auto n = static_cast<size_t>(view.shape[0]);
+                    const auto *base = static_cast<const char *>(view.buf);
+                    for (size_t i = 0; i < n && i < cap; ++i) {
+                        std::memcpy(&out[i], base + i * view.strides[0], sizeof(double));
+                    }
+                    PyBuffer_Release(&view);
+                    return n;
+                }
+                PyBuffer_Release(&view);
+            } else {
+                PyErr_Clear();
+            }
+        }
+        // General path: any sequence of numbers.
+        py::object seq = py::reinterpret_steal<py::object>(
+            PySequence_Fast(o, "coordinates must be a sequence of numbers"));
+        if (!seq) {
+            throw py::error_already_set();
+        }
+        const auto n = static_cast<size_t>(PySequence_Fast_GET_SIZE(seq.ptr()));
+        PyObject **items = PySequence_Fast_ITEMS(seq.ptr());
+        for (size_t i = 0; i < n && i < cap; ++i) {
+            const double v = PyFloat_AsDouble(items[i]);
+            if (v == -1.0 && PyErr_Occurred()) {
+                throw py::error_already_set();
+            }
+            out[i] = v;
+        }
+        return n;
+    }
+
+    uint32_t dim_;
+    double *buf_;
+    double inline_[kInline];
+    double scratch_inline_[kInline];
+    std::vector<double> heap_, scratch_heap_;
+};
+
+// Hand a vector of ids to NumPy without copying.
+py::array_t<int64_t> to_array(std::vector<int64_t> &&v) {
+    if (v.empty()) {
+        return py::array_t<int64_t>(0);
+    }
+    auto *owned = new std::vector<int64_t>(std::move(v));
+    py::capsule owner(owned, [](void *p) { delete static_cast<std::vector<int64_t> *>(p); });
+    return py::array_t<int64_t>(static_cast<py::ssize_t>(owned->size()), owned->data(), owner);
+}
+
+// ---------------------------------------------------------------------------
 // Query result records and visitors
 // ---------------------------------------------------------------------------
 
@@ -654,10 +806,14 @@ class PropertyHandle {
 // Bulk-load data streams
 // ---------------------------------------------------------------------------
 
-// Pulls ``(id, mins, maxs, data)`` tuples from a Python callable.
+// Pulls ``(id, coordinates, obj)`` items from a Python iterator; coordinates
+// are parsed in C++ and ``obj`` is serialized with ``dumps`` unless None.
 class PyDataStream final : public SI::IDataStream {
   public:
-    explicit PyDataStream(py::function next) : next_(std::move(next)) { read(); }
+    PyDataStream(py::iterator it, uint32_t dim, bool interleaved, py::function dumps)
+        : it_(std::move(it)), dumps_(std::move(dumps)), dim_(dim), interleaved_(interleaved) {
+        read();
+    }
     SI::IData *getNext() override {
         SI::IData *r = pending_.release();
         read();
@@ -674,25 +830,34 @@ class PyDataStream final : public SI::IDataStream {
             return;
         }
         try {
-            py::object r = next_();
-            if (r.is_none()) {
+            PyObject *item = PyIter_Next(it_.ptr());
+            if (item == nullptr) {
+                if (PyErr_Occurred()) {
+                    throw py::error_already_set();
+                }
                 done_ = true;
                 return;
             }
-            auto t = r.cast<py::tuple>();
-            if (t.size() != 4) {
-                throw py::value_error("stream item must be (id, mins, maxs, data)");
+            py::object entry = py::reinterpret_steal<py::object>(item);
+            py::object seq = py::reinterpret_steal<py::object>(
+                PySequence_Fast(entry.ptr(), "stream items must be (id, coordinates, obj)"));
+            if (!seq) {
+                throw py::error_already_set();
             }
-            const auto id = t[0].cast<int64_t>();
-            mins_ = t[1].cast<Coords>();
-            maxs_ = t[2].cast<Coords>();
-            require_same_dim(mins_, maxs_, "stream");
+            if (PySequence_Fast_GET_SIZE(seq.ptr()) != 3) {
+                throw py::value_error("stream items must be (id, coordinates, obj)");
+            }
+            PyObject **f = PySequence_Fast_ITEMS(seq.ptr());
+            const auto id = py::reinterpret_borrow<py::object>(f[0]).cast<int64_t>();
+            // The ctypes-era stream never validated min <= max; keep that.
+            Box box(f[1], dim_, interleaved_, /*validate=*/false);
             const uint8_t *buf = nullptr;
             uint32_t len = 0;
-            if (!t[3].is_none()) {
-                std::tie(buf, len) = bytes_view(t[3].cast<py::bytes>());
+            if (f[2] != Py_None) {
+                data_ = dumps_(py::reinterpret_borrow<py::object>(f[2]));
+                std::tie(buf, len) = bytes_view(data_.cast<py::bytes>());
             }
-            SI::Region region(mins_.data(), maxs_.data(), static_cast<uint32_t>(mins_.size()));
+            SI::Region region = box.region();
             // RTree::Data copies the payload.
             pending_.reset(new SI::RTree::Data(len, const_cast<uint8_t *>(buf), region, id));
         } catch (...) {
@@ -700,9 +865,12 @@ class PyDataStream final : public SI::IDataStream {
             done_ = true;
         }
     }
-    py::function next_;
+    py::iterator it_;
+    py::function dumps_;
+    py::object data_;
     std::unique_ptr<SI::RTree::Data> pending_;
-    Coords mins_, maxs_;
+    uint32_t dim_;
+    bool interleaved_;
     bool done_ = false;
 };
 
@@ -789,16 +957,14 @@ class IndexHandle {
         }, false);
     }
 
-    using StreamItem =
-        py::typing::Optional<py::typing::Tuple<py::int_, py::typing::List<py::float_>,
-                                               py::typing::List<py::float_>,
-                                               py::typing::Optional<py::bytes>>>;
-    using NextItemFn = py::typing::Callable<StreamItem()>;
+    using DumpsFn = py::typing::Callable<py::bytes(py::object)>;
 
-    static std::unique_ptr<IndexHandle> from_stream(PropertyHandle &p, NextItemFn next_item) {
+    static std::unique_ptr<IndexHandle> from_stream(PropertyHandle &p,
+                                                    py::typing::Iterable<py::object> stream_in,
+                                                    bool interleaved, DumpsFn dumps) {
         std::unique_ptr<IndexHandle> h(new IndexHandle());
         run("Index_CreateWithStream", [&] { h->prepare(p); }, false);
-        PyDataStream stream(std::move(next_item));
+        PyDataStream stream(py::iter(stream_in), h->dim_, interleaved, std::move(dumps));
         // Keep the GIL: the stream calls back into Python.
         std::string msg;
         try {
@@ -850,52 +1016,48 @@ class IndexHandle {
 
     // -- mutation ----------------------------------------------------------
 
-    void insert(int64_t id, Coords mins, Coords maxs, std::optional<py::bytes> data) {
-        require_same_dim(mins, maxs, "insert");
-        auto [buf, len] = bytes_view(data);
+    void insert(const IdArg &id_arg, const CoordsArg &coords, bool interleaved,
+                std::optional<py::bytes> data) {
         auto &t = tree();
-        const auto dim = static_cast<uint32_t>(mins.size());
+        Box box(coords, dim_, interleaved);
+        const int64_t id = id_arg.value();
+        auto [buf, len] = bytes_view(data);
         run("Index_InsertData", [&] {
-            if (is_degenerate(mins, maxs)) {
-                t.insertData(len, buf, SI::Point(mins.data(), dim), id);
+            if (box.degenerate()) {
+                t.insertData(len, buf, SI::Point(box.lo(), box.dim()), id);
             } else {
-                t.insertData(len, buf, SI::Region(mins.data(), maxs.data(), dim), id);
+                t.insertData(len, buf, box.region(), id);
             }
         });
     }
 
-    void remove(int64_t id, Coords mins, Coords maxs) {
-        require_same_dim(mins, maxs, "delete");
+    void remove(const IdArg &id_arg, const CoordsArg &coords, bool interleaved) {
         auto &t = tree();
-        run("Index_DeleteData", [&] {
-            t.deleteData(
-                SI::Region(mins.data(), maxs.data(), static_cast<uint32_t>(mins.size())), id);
-        });
+        Box box(coords, dim_, interleaved);
+        const int64_t id = id_arg.value();
+        run("Index_DeleteData", [&] { t.deleteData(box.region(), id); });
     }
 
     // -- queries -----------------------------------------------------------
 
-    uint64_t intersects_count(Coords mins, Coords maxs) {
-        require_same_dim(mins, maxs, "count");
+    uint64_t count(const CoordsArg &coords, bool interleaved) {
         auto &t = tree();
+        Box box(coords, dim_, interleaved);
         CountVisitor v;
-        run("Index_Intersects_count", [&] {
-            t.intersectsWithQuery(
-                SI::Region(mins.data(), maxs.data(), static_cast<uint32_t>(mins.size())), v);
-        });
+        run("Index_Intersects_count", [&] { t.intersectsWithQuery(box.region(), v); });
         return v.n;
     }
 
     enum class Kind { Intersects, Contains, Nearest };
 
     template <typename Visitor>
-    void region_query(Kind kind, const char *name, Coords &mins, Coords &maxs, Visitor &v,
-                      uint32_t k = 0) {
-        require_same_dim(mins, maxs, name);
+    void region_query(Kind kind, const char *name, const CoordsArg &coords, bool interleaved,
+                      Visitor &v, uint32_t k = 0) {
         auto &t = tree();
+        Box box(coords, dim_, interleaved);
         v.pager = Pager{offset_, limit_, 0};
         run(name, [&] {
-            SI::Region r(mins.data(), maxs.data(), static_cast<uint32_t>(mins.size()));
+            SI::Region r = box.region();
             switch (kind) {
             case Kind::Intersects:
                 t.intersectsWithQuery(r, v);
@@ -910,16 +1072,16 @@ class IndexHandle {
         });
     }
 
-    std::vector<int64_t> query_id(Kind kind, const char *name, Coords mins, Coords maxs,
-                                  uint32_t k = 0) {
+    py::array_t<int64_t> query_id(Kind kind, const char *name, const CoordsArg &coords,
+                                  bool interleaved, uint32_t k = 0) {
         IdVisitor v;
-        region_query(kind, name, mins, maxs, v, k);
-        return std::move(v.ids);
+        region_query(kind, name, coords, interleaved, v, k);
+        return to_array(std::move(v.ids));
     }
-    std::vector<IndexItem> query_obj(Kind kind, const char *name, Coords mins, Coords maxs,
-                                     uint32_t k = 0) {
+    std::vector<IndexItem> query_obj(Kind kind, const char *name, const CoordsArg &coords,
+                                     bool interleaved, uint32_t k = 0) {
         ObjVisitor v;
-        region_query(kind, name, mins, maxs, v, k);
+        region_query(kind, name, coords, interleaved, v, k);
         return to_items(v.items);
     }
 
@@ -1106,12 +1268,12 @@ class IndexHandle {
         tp_query(false, "Index_TPIntersects_count", a, b, va, vb, t0, t1, v);
         return v.n;
     }
-    std::vector<int64_t> tp_id(bool nearest, const char *name, Coords a, Coords b, Coords va,
+    py::array_t<int64_t> tp_id(bool nearest, const char *name, Coords a, Coords b, Coords va,
                                Coords vb, double t0, double t1, uint32_t k) {
         IdVisitor v;
         v.pager = Pager{offset_, limit_, 0};
         tp_query(nearest, name, a, b, va, vb, t0, t1, v, k);
-        return std::move(v.ids);
+        return to_array(std::move(v.ids));
     }
     std::vector<IndexItem> tp_obj(bool nearest, const char *name, Coords a, Coords b, Coords va,
                                   Coords vb, double t0, double t1, uint32_t k) {
@@ -1144,6 +1306,10 @@ class IndexHandle {
             storage_->flush();
         });
     }
+    uint32_t dimension() {
+        tree();
+        return dim_;
+    }
     int64_t result_set_offset() {
         tree();
         return offset_;
@@ -1175,6 +1341,7 @@ class IndexHandle {
     void prepare(PropertyHandle &p) {
         props_ = p.snapshot(strings_);
         type_ = p.get_as<uint32_t>("IndexType", Tools::VT_ULONG);
+        dim_ = p.get_as<uint32_t>("Dimension", Tools::VT_ULONG);
         kind_ = p.get_as<uint32_t>("IndexStorageType", Tools::VT_ULONG);
         storage_ = p.make_storage(props_);
         buffer_.reset(SI::StorageManager::returnRandomEvictionsBuffer(*storage_, props_));
@@ -1251,7 +1418,7 @@ class IndexHandle {
     std::unique_ptr<SI::StorageManager::IBuffer> buffer_;
     std::unique_ptr<SI::ISpatialIndex> tree_;
     int64_t offset_ = 0, limit_ = 0;
-    uint32_t type_ = RT_RTree, kind_ = RT_Memory;
+    uint32_t type_ = RT_RTree, kind_ = RT_Memory, dim_ = 2;
 };
 
 std::string version_string() {
@@ -1264,6 +1431,16 @@ std::string version_string() {
 }
 
 }  // namespace
+
+namespace pybind11::detail {
+template <> struct handle_type_name<IdArg> {
+    static constexpr auto name = const_name("int");
+};
+template <> struct handle_type_name<CoordsArg> {
+    static constexpr auto name =
+        const_name("collections.abc.Sequence[float] | numpy.typing.NDArray[typing.Any]");
+};
+}  // namespace pybind11::detail
 
 // ---------------------------------------------------------------------------
 // Property accessor macros
@@ -1403,57 +1580,60 @@ PYBIND11_MODULE(_core, m) {
     using K = IndexHandle::Kind;
     py::class_<IndexHandle> idx(m, "IndexHandle", "Owned libspatialindex index.");
     idx.def(py::init<PropertyHandle &>(), "properties"_a, py::keep_alive<1, 2>())
-        .def_static("from_stream", &IndexHandle::from_stream, "properties"_a, "next_item"_a,
-                    py::keep_alive<0, 1>(),
-                    "Bulk-load from ``next_item()`` which returns ``(id, mins, maxs, data)``\n"
-                    "tuples and ``None`` when exhausted.")
+        .def_static("from_stream", &IndexHandle::from_stream, "properties"_a, "stream"_a,
+                    "interleaved"_a, "dumps"_a, py::keep_alive<0, 1>(),
+                    "Bulk-load from an iterable of ``(id, coordinates, obj)``; ``obj`` is\n"
+                    "stored as ``dumps(obj)`` unless it is None.")
         .def_static("from_arrays", &IndexHandle::from_arrays, "properties"_a, "ids"_a, "mins"_a,
                     "maxs"_a, py::keep_alive<0, 1>())
         .def("intersects_id_v", &IndexHandle::intersects_id_v, "mins"_a, "maxs"_a, "ids"_a,
              "counts"_a)
         .def("nearest_id_v", &IndexHandle::nearest_id_v, "knn"_a, "mins"_a, "maxs"_a, "ids"_a,
              "counts"_a, "dists"_a = py::none())
-        .def(
-            "contains_id",
-            [](Q &q, Coords a, Coords b) {
-                return q.query_id(K::Contains, "Index_Contains_id", a, b);
-            },
-            "mins"_a, "maxs"_a)
-        .def(
-            "contains_obj",
-            [](Q &q, Coords a, Coords b) {
-                return q.query_obj(K::Contains, "Index_Contains_obj", a, b);
-            },
-            "mins"_a, "maxs"_a)
         .def("destroy", &IndexHandle::destroy)
         .def("__bool__", &IndexHandle::valid_handle)
-        .def("insert", &IndexHandle::insert, "id"_a, "mins"_a, "maxs"_a, "data"_a = py::none())
-        .def("delete", &IndexHandle::remove, "id"_a, "mins"_a, "maxs"_a)
-        .def("intersects_count", &IndexHandle::intersects_count, "mins"_a, "maxs"_a)
+        .def("insert", &IndexHandle::insert, "id"_a, "coordinates"_a, "interleaved"_a,
+             "data"_a = py::none())
+        .def("delete", &IndexHandle::remove, "id"_a, "coordinates"_a, "interleaved"_a)
+        .def("count", &IndexHandle::count, "coordinates"_a, "interleaved"_a)
         .def(
-            "intersects_id",
-            [](Q &q, Coords a, Coords b) {
-                return q.query_id(K::Intersects, "Index_Intersects_id", a, b);
+            "intersection",
+            [](Q &q, const CoordsArg &c, bool il) {
+                return q.query_id(K::Intersects, "Index_Intersects_id", c, il);
             },
-            "mins"_a, "maxs"_a)
+            "coordinates"_a, "interleaved"_a, "Ids of entries intersecting the query.")
         .def(
-            "intersects_obj",
-            [](Q &q, Coords a, Coords b) {
-                return q.query_obj(K::Intersects, "Index_Intersects_obj", a, b);
+            "intersection_obj",
+            [](Q &q, const CoordsArg &c, bool il) {
+                return q.query_obj(K::Intersects, "Index_Intersects_obj", c, il);
             },
-            "mins"_a, "maxs"_a)
+            "coordinates"_a, "interleaved"_a)
         .def(
-            "nearest_id",
-            [](Q &q, Coords a, Coords b, uint32_t k) {
-                return q.query_id(K::Nearest, "Index_NearestNeighbors_id", a, b, k);
+            "contains",
+            [](Q &q, const CoordsArg &c, bool il) {
+                return q.query_id(K::Contains, "Index_Contains_id", c, il);
             },
-            "mins"_a, "maxs"_a, "num_results"_a)
+            "coordinates"_a, "interleaved"_a, "Ids of entries contained by the query.")
+        .def(
+            "contains_obj",
+            [](Q &q, const CoordsArg &c, bool il) {
+                return q.query_obj(K::Contains, "Index_Contains_obj", c, il);
+            },
+            "coordinates"_a, "interleaved"_a)
+        .def(
+            "nearest",
+            [](Q &q, const CoordsArg &c, bool il, uint32_t k) {
+                return q.query_id(K::Nearest, "Index_NearestNeighbors_id", c, il, k);
+            },
+            "coordinates"_a, "interleaved"_a, "num_results"_a,
+            "Ids of the ``num_results`` nearest entries (more on distance ties).")
         .def(
             "nearest_obj",
-            [](Q &q, Coords a, Coords b, uint32_t k) {
-                return q.query_obj(K::Nearest, "Index_NearestNeighbors_obj", a, b, k);
+            [](Q &q, const CoordsArg &c, bool il, uint32_t k) {
+                return q.query_obj(K::Nearest, "Index_NearestNeighbors_obj", c, il, k);
             },
-            "mins"_a, "maxs"_a, "num_results"_a)
+            "coordinates"_a, "interleaved"_a, "num_results"_a)
+        .def_property_readonly("dimension", &IndexHandle::dimension)
         .def("bounds", &IndexHandle::bounds, "(mins, maxs) of the whole index, or None.")
         .def("leaves", &IndexHandle::leaves,
              "List of (leaf id, child ids, [mins..., maxs...]) tuples.")

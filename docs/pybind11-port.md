@@ -19,8 +19,8 @@ compared like for like; see [C API vs C++ API](#c-api-vs-c-api-binding).
 
 | | ctypes (`main`) | pybind11 (this branch) |
 |---|---|---|
-| Test suite (sidx 2.1.0) | 57 pass | 58 pass (+2 new regression tests, 0 changed expectations except `ctypes.ArgumentError` → `TypeError`) |
-| Test suite (sidx 1.8.5) | — | 52 pass, 6 skipped (Contains / array APIs absent, as before) |
+| Test suite (sidx 2.1.0) | 57 pass | 60 pass (+8 new tests; changed expectations: `ctypes.ArgumentError` → `TypeError`, id queries return arrays) |
+| Test suite (sidx 1.8.5) | — | 57 pass, 6 skipped (version-gated tests) |
 | `mypy --strict rtree` | 270 errors (172 index.py, 101 core.py) | 0 in index.py/core.py (2 pre-existing in finder.py) |
 | Type info for the binding layer | none (`CDLL` attributes are `Any`) | generated `rtree/_core.pyi` |
 | Wheel contents | py3-none wheel + bundled `libspatialindex*.so/.dylib/.dll` + finder/repair scripts | one self-contained extension per CPython version, libspatialindex linked statically (542 KB on linux x86_64; 583 KB for the C-API version) |
@@ -194,7 +194,80 @@ The cost:
 
 Bigger wins would come from the parts above that bindings don't touch: moving
 coordinate normalisation and result iteration into C++ (the ~2.5 µs/query
-Python share), or returning NumPy arrays for id queries.
+Python share), or returning NumPy arrays for id queries. Both are done in the
+next section.
+
+## Coordinates in C++, NumPy arrays for id queries
+
+`IndexHandle` now takes the caller's coordinates object and the index's
+`interleaved` flag and does the point/box split, (de)interleaving and
+validation in C++ (`Box` in `src/_core.cpp`), so `index.py` no longer builds
+`mins`/`maxs` lists per call. Id queries return a 1-D `int64` NumPy array that
+takes ownership of the C++ result vector without copying.
+
+- **Inputs:** any sequence of numbers, plus a fast path for 1-D `float64`
+  buffers (NumPy arrays, `array.array('d')`, strided views). Other NumPy
+  dtypes and NumPy scalars go through the sequence path.
+- **Covered:** `insert`, `delete`, `count`, `intersection`, `contains`,
+  `nearest` (ids and objects), and stream bulk loading, whose iterator is
+  now consumed in C++ (coordinates parsed there, `obj` serialised with
+  `Index.dumps`). TPR-tree calls still split coordinates in Python but also
+  return arrays for ids.
+- **Typing:** `_core.pyi` says `coordinates: Sequence[float] | NDArray[Any]`
+  and `-> NDArray[np.int64]`; `Index.intersection/nearest/contains` overloads
+  return `IdArray` (`npt.NDArray[np.int64]`) for `objects=False`.
+
+Measured against the previous commit (C++ API, Python coordinates, lists), same
+setup as above, best of two runs of best-of-5:
+
+| operation | before | after | speed-up |
+|---|---:|---:|---:|
+| fixed per-call cost, `intersection` that misses (µs/call) | 1.90 | 1.05 | **1.8×** |
+| fixed per-call cost, `count` that misses (µs/call) | 1.45 | 0.80 | **1.8×** |
+| stream bulk load 100k | 107 ms | 61 ms | **1.75×** |
+| intersection, NumPy coordinates, 20k q | 249 ms | 200 ms | 1.25× |
+| intersection → ids wanted as ndarray, 20k q | 239 ms | 198 ms | 1.20× |
+| intersection → ids (list before, array after), 20k q | 219 ms | 198 ms | 1.11× |
+| intersection → `list(ids)`, 20k q | 217 ms | 215 ms | 1.01× |
+| count, 20k q | 208 ms | 183 ms | 1.14× |
+| intersection → raw objects, 20k q | 335 ms | 301 ms | 1.11× |
+| intersection → `Item`s, 20k q | 535 ms | 494 ms | 1.08× |
+| nearest k=5 → ids, 20k q | 518 ms | 500 ms | 1.03× |
+| ids, 100k hits ×5 | 64 ms | 57 ms | 1.12× |
+| array bulk load 100k | 55 ms | 52 ms | 1.07× |
+| insert 100k / delete 20k / contains 20k q | 3245 / 9972 / 5148 ms | 3182 / 10174 / 5107 ms | ~1.0× |
+
+(Unchanged code paths — `intersection_v`, `nearest_v`, `leaves()`,
+`bounds` — moved by up to ±10% between runs; treat that as the noise floor.)
+
+What this shows:
+
+- **The binding's fixed cost per call is now ~1 µs** (from ~1.9 µs), so
+  queries that return little are ~10–25% faster end to end. What remains per
+  query is libspatialindex's own tree search (~8.5 µs for these 10×10
+  windows) — no binding change can remove that.
+- **The array helps when you use it as an array.** If you immediately do
+  `list(idx.intersection(...))`, you pay to box each `np.int64`, and the gain
+  disappears (1.01×). `.tolist()` is the fast way back to Python ints.
+- **Stream bulk loading is 1.75× faster** because the per-item Python closure
+  (slicing, list building, tuple packing) is gone.
+
+**Behaviour changes** (all covered by tests in `CoordinateParsing`):
+
+- `intersection()`, `nearest()` and `contains()` with `objects=False` return
+  `numpy.ndarray[int64]` instead of an iterator of `int`. Iterating yields
+  `np.int64`, which compares and hashes like `int` but is not `int`: e.g.
+  `json.dumps` rejects it, and on NumPy 2 its repr is `np.int64(3)`
+  (doctests printing `list(...)` change — the tutorial now uses `.tolist()`).
+  `RtreeContainer` converts internally and is unchanged for users.
+- **NumPy becomes a required dependency** (`numpy>=1.23`). Until now it was
+  only needed for the `_v` / array bulk-load APIs.
+- `min <= max` is now checked **per dimension**. The old check compared the
+  `mins` and `maxs` lists lexicographically, so `(xmin=0, ymin=5, xmax=1,
+  ymax=2)` was accepted and inserted an inverted box; it now raises
+  `RTreeError`. (Stream bulk loading still doesn't validate, as before.)
+- Stream items may be points (`dim` values), and coordinates may be any
+  sequence or 1-D array; before, streams required box coordinates.
 
 ## Packaging impact (the concern raised in #223)
 
@@ -259,6 +332,9 @@ says otherwise.
   change for anyone who worked around the swap).
 - `Property.filename` & extensions accept `str` or `bytes`; getters return `str`.
 - `Property.custom_storage_callbacks` returns an `int` address (or `None`).
+- Id queries return `numpy.ndarray[int64]`; NumPy is required; boxes are
+  validated per dimension — see
+  [the section above](#coordinates-in-c-numpy-arrays-for-id-queries).
 
 ## Suggested next steps
 
@@ -269,9 +345,10 @@ says otherwise.
 3. Add `mypy.stubtest rtree._core` to CI with an allowlist for pybind11
    metaclass noise, so the committed `.pyi` can't drift from the extension.
 4. Upstream: the C API fixes listed under "Bugs found".
-5. If per-query speed matters: move coordinate normalisation into C++ and/or
-   return NumPy arrays from id queries; that's where the remaining binding-side
-   time is.
+5. Decide whether returning arrays from id queries is worth the behaviour
+   change for a release, or whether it should be opt-in (e.g. an
+   `as_array=True` flag) for one deprecation cycle. The C++ coordinate parsing
+   is independent of that choice and could ship on its own.
 6. Un-skip the `contains` tests for libspatialindex < 2.1 (they are gated on
    the version via `skip_sidx_lt_210`, but the C++ binding supports them).
 7. Note: `tox.ini` has `ignore_outcome = True`, so wheel-test failures in

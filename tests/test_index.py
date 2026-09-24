@@ -1102,3 +1102,63 @@ class IndexCustomStorageBase(unittest.TestCase):
         self.assertEqual(sorted(idx.intersection((0, 0, 5, 5))), [0, 1, 2, 3, 4, 5])
         self.assertTrue(storage.dict)
         idx.close()
+
+
+class CoordinateParsing(unittest.TestCase):
+    """Coordinates are parsed in C++ from sequences and float buffers."""
+
+    def setUp(self) -> None:
+        self.idx = index.Index()
+        for i in range(10):
+            self.idx.insert(i, (i, i, i + 0.5, i + 0.5))
+
+    def test_id_queries_return_int64_arrays(self) -> None:
+        for res in (
+            self.idx.intersection((0, 0, 3, 3)),
+            self.idx.nearest((0, 0), 2),
+            self.idx.contains((0, 0, 3, 3)),
+        ):
+            self.assertIsInstance(res, np.ndarray)
+            self.assertEqual(res.dtype, np.int64)
+            self.assertEqual(res.ndim, 1)
+        self.assertEqual(self.idx.intersection((0, 0, 3, 3)).tolist(), [0, 1, 2, 3])
+        self.assertEqual(self.idx.intersection((100, 100, 101, 101)).tolist(), [])
+
+    def test_input_types(self) -> None:
+        import array
+
+        expected = [0, 1, 2, 3]
+        inputs = [
+            (0, 0, 3, 3),
+            [0.0, 0.0, 3.0, 3.0],
+            np.array([0, 0, 3, 3], dtype=np.float64),
+            np.array([0, 0, 3, 3], dtype=np.int32),  # non-float dtype
+            np.array([0, 9, 0, 9, 3, 9, 3, 9], dtype=np.float64)[::2],  # strided
+            array.array("d", [0, 0, 3, 3]),
+            (np.float32(0), 0, np.int64(3), 3),
+        ]
+        for coords in inputs:
+            self.assertEqual(self.idx.intersection(coords).tolist(), expected, coords)
+            self.assertEqual(self.idx.count(coords), 4)
+
+    def test_points_and_non_interleaved(self) -> None:
+        self.assertEqual(self.idx.intersection((1.25, 1.25)).tolist(), [1])
+        idx = index.Index(interleaved=False)
+        idx.insert(1, (0, 1, 10, 11))  # xmin, xmax, ymin, ymax
+        self.assertEqual(idx.intersection((0.5, 0.6, 10.5, 10.6)).tolist(), [1])
+        self.assertEqual(idx.bounds, [0.0, 1.0, 10.0, 11.0])
+
+    def test_invalid_coordinates(self) -> None:
+        with self.assertRaises(ValueError):
+            self.idx.intersection((0, 0, 1))
+        with self.assertRaises(TypeError):
+            self.idx.intersection((0, "a", 1, 1))
+        # Checked per dimension: ymin > ymax is rejected even though the
+        # old lexicographic ``mins <= maxs`` list comparison let it through.
+        with self.assertRaises(RTreeError):
+            self.idx.insert(99, (0, 5, 1, 2))
+
+    def test_stream_accepts_points_and_arrays(self) -> None:
+        data = [(i, np.array([i, i], dtype=float), None) for i in range(5)]
+        idx = index.Index(data)
+        self.assertEqual(idx.intersection((0, 0, 2, 2)).tolist(), [0, 1, 2])

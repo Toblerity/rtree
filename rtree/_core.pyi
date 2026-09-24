@@ -8,6 +8,7 @@ import collections.abc
 import typing
 
 import numpy
+import numpy.typing
 
 __all__: list[str] = [
     "ErrorRef",
@@ -49,13 +50,13 @@ class IndexHandle:
     @staticmethod
     def from_stream(
         properties: PropertyHandle,
-        next_item: collections.abc.Callable[
-            [], tuple[int, list[float], list[float], bytes | None] | None
-        ],
+        stream: collections.abc.Iterable[typing.Any],
+        interleaved: bool,
+        dumps: collections.abc.Callable[[typing.Any], bytes],
     ) -> IndexHandle:
         """
-        Bulk-load from ``next_item()`` which returns ``(id, mins, maxs, data)``
-        tuples and ``None`` when exhausted.
+        Bulk-load from an iterable of ``(id, coordinates, obj)``; ``obj`` is
+        stored as ``dumps(obj)`` unless it is None.
         """
     def __bool__(self) -> bool: ...
     def __init__(self, properties: PropertyHandle) -> None: ...
@@ -64,41 +65,52 @@ class IndexHandle:
         (mins, maxs) of the whole index, or None.
         """
     def clear_buffer(self) -> None: ...
-    def contains_id(
+    def contains(
         self,
-        mins: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
-        maxs: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
-    ) -> list[int]: ...
+        coordinates: collections.abc.Sequence[float] | numpy.typing.NDArray[typing.Any],
+        interleaved: bool,
+    ) -> numpy.typing.NDArray[numpy.int64]:
+        """
+        Ids of entries contained by the query.
+        """
     def contains_obj(
         self,
-        mins: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
-        maxs: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+        coordinates: collections.abc.Sequence[float] | numpy.typing.NDArray[typing.Any],
+        interleaved: bool,
     ) -> list[IndexItem]: ...
+    def count(
+        self,
+        coordinates: collections.abc.Sequence[float] | numpy.typing.NDArray[typing.Any],
+        interleaved: bool,
+    ) -> int: ...
     def delete(
         self,
-        id: typing.SupportsInt | typing.SupportsIndex,
-        mins: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
-        maxs: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+        id: int,
+        coordinates: collections.abc.Sequence[float] | numpy.typing.NDArray[typing.Any],
+        interleaved: bool,
     ) -> None: ...
     def destroy(self) -> None: ...
     def flush(self) -> None: ...
     def insert(
         self,
-        id: typing.SupportsInt | typing.SupportsIndex,
-        mins: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
-        maxs: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+        id: int,
+        coordinates: collections.abc.Sequence[float] | numpy.typing.NDArray[typing.Any],
+        interleaved: bool,
         data: bytes | None = None,
     ) -> None: ...
-    def intersects_count(
+    def intersection(
         self,
-        mins: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
-        maxs: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
-    ) -> int: ...
-    def intersects_id(
+        coordinates: collections.abc.Sequence[float] | numpy.typing.NDArray[typing.Any],
+        interleaved: bool,
+    ) -> numpy.typing.NDArray[numpy.int64]:
+        """
+        Ids of entries intersecting the query.
+        """
+    def intersection_obj(
         self,
-        mins: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
-        maxs: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
-    ) -> list[int]: ...
+        coordinates: collections.abc.Sequence[float] | numpy.typing.NDArray[typing.Any],
+        interleaved: bool,
+    ) -> list[IndexItem]: ...
     def intersects_id_v(
         self,
         mins: numpy.ndarray[typing.Any, numpy.dtype[typing.Any]],
@@ -106,22 +118,20 @@ class IndexHandle:
         ids: numpy.ndarray[typing.Any, numpy.dtype[typing.Any]],
         counts: numpy.ndarray[typing.Any, numpy.dtype[typing.Any]],
     ) -> int: ...
-    def intersects_obj(
-        self,
-        mins: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
-        maxs: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
-    ) -> list[IndexItem]: ...
     def is_valid(self) -> bool: ...
     def leaves(self) -> list[tuple[int, list[int], list[float]]]:
         """
         List of (leaf id, child ids, [mins..., maxs...]) tuples.
         """
-    def nearest_id(
+    def nearest(
         self,
-        mins: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
-        maxs: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+        coordinates: collections.abc.Sequence[float] | numpy.typing.NDArray[typing.Any],
+        interleaved: bool,
         num_results: typing.SupportsInt | typing.SupportsIndex,
-    ) -> list[int]: ...
+    ) -> numpy.typing.NDArray[numpy.int64]:
+        """
+        Ids of the ``num_results`` nearest entries (more on distance ties).
+        """
     def nearest_id_v(
         self,
         knn: typing.SupportsInt | typing.SupportsIndex,
@@ -133,8 +143,8 @@ class IndexHandle:
     ) -> int: ...
     def nearest_obj(
         self,
-        mins: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
-        maxs: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
+        coordinates: collections.abc.Sequence[float] | numpy.typing.NDArray[typing.Any],
+        interleaved: bool,
         num_results: typing.SupportsInt | typing.SupportsIndex,
     ) -> list[IndexItem]: ...
     def tp_delete(
@@ -175,7 +185,7 @@ class IndexHandle:
         vmaxs: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
         t_start: typing.SupportsFloat | typing.SupportsIndex,
         t_end: typing.SupportsFloat | typing.SupportsIndex,
-    ) -> list[int]: ...
+    ) -> numpy.typing.NDArray[numpy.int64]: ...
     def tp_intersects_obj(
         self,
         mins: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
@@ -194,7 +204,7 @@ class IndexHandle:
         t_start: typing.SupportsFloat | typing.SupportsIndex,
         t_end: typing.SupportsFloat | typing.SupportsIndex,
         num_results: typing.SupportsInt | typing.SupportsIndex,
-    ) -> list[int]: ...
+    ) -> numpy.typing.NDArray[numpy.int64]: ...
     def tp_nearest_obj(
         self,
         mins: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex],
@@ -205,6 +215,8 @@ class IndexHandle:
         t_end: typing.SupportsFloat | typing.SupportsIndex,
         num_results: typing.SupportsInt | typing.SupportsIndex,
     ) -> list[IndexItem]: ...
+    @property
+    def dimension(self) -> int: ...
     @property
     def result_set_limit(self) -> int: ...
     @result_set_limit.setter

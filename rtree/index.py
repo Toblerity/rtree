@@ -10,12 +10,18 @@ import warnings
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from typing import TYPE_CHECKING, Any, Literal, TypeVar, overload
 
+import numpy as np
+
 from . import _core
 from .exceptions import InvalidHandleException, RTreeError
 
 if TYPE_CHECKING:
-    import numpy as np
+    from typing import TypeAlias
+
     import numpy.typing as npt
+
+    #: Result of an id query: a 1-D ``int64`` array of entry ids.
+    IdArray: TypeAlias = npt.NDArray[np.int64]
 
 #: Coordinates may be any float sequence, including a NumPy array.
 Coordinates = Sequence[float]
@@ -459,8 +465,7 @@ class Index:
             # https://github.com/python/mypy/issues/6799
             return self._insertTP(id, *coordinates, obj=obj)  # type: ignore[misc]
 
-        mins, maxs = self.get_coordinate_pointers(coordinates)
-        self._h.insert(id, mins, maxs, self._serialize(obj))
+        self._h.insert(id, coordinates, self.interleaved, self._serialize(obj))
 
     add = insert
 
@@ -524,8 +529,7 @@ class Index:
         """
         if self.properties.type == RT_TPRTree:
             return self._countTP(*coordinates)
-        mins, maxs = self.get_coordinate_pointers(coordinates)
-        return self._h.intersects_count(mins, maxs)
+        return self._h.count(coordinates, self.interleaved)
 
     def _countTP(
         self,
@@ -544,7 +548,7 @@ class Index:
     @overload
     def contains(
         self, coordinates: Any, objects: Literal[False] = False
-    ) -> Iterator[int] | None: ...
+    ) -> IdArray | None: ...
 
     @overload
     def contains(
@@ -553,7 +557,7 @@ class Index:
 
     def contains(
         self, coordinates: Any, objects: bool | Literal["raw"] = False
-    ) -> Iterator[Item | int | object] | None:
+    ) -> Iterator[Item | object] | IdArray | None:
         """Return ids or objects in the index that contains within the given
         coordinates.
 
@@ -599,8 +603,7 @@ class Index:
         if objects:
             return self._contains_obj(coordinates, objects)
 
-        mins, maxs = self.get_coordinate_pointers(coordinates)
-        return iter(self._h.contains_id(mins, maxs))
+        return self._h.contains(coordinates, self.interleaved)
 
     def __and__(self, other: Index) -> Index:
         """Take the intersection of two Index objects.
@@ -678,7 +681,7 @@ class Index:
     @overload
     def intersection(
         self, coordinates: Any, objects: Literal[False] = False
-    ) -> Iterator[int]: ...
+    ) -> IdArray: ...
 
     @overload
     def intersection(
@@ -687,7 +690,7 @@ class Index:
 
     def intersection(
         self, coordinates: Any, objects: bool | Literal["raw"] = False
-    ) -> Iterator[Item | int | object]:
+    ) -> Iterator[Item | object] | IdArray:
         """Return ids or objects in the index that intersect the given
         coordinates.
 
@@ -756,8 +759,7 @@ class Index:
         if objects:
             return self._intersection_obj(coordinates, objects)
 
-        mins, maxs = self.get_coordinate_pointers(coordinates)
-        return iter(self._h.intersects_id(mins, maxs))
+        return self._h.intersection(coordinates, self.interleaved)
 
     def _intersectionTP(
         self,
@@ -765,26 +767,26 @@ class Index:
         velocities: Coordinates,
         times: Sequence[float],
         objects: bool | Literal["raw"] = False,
-    ) -> Iterator[Item | int | object]:
+    ) -> Iterator[Item | object] | IdArray:
         mins, maxs = self.get_coordinate_pointers(coordinates)
         vmins, vmaxs = self.get_coordinate_pointers(velocities)
         t_start, t_end = self._get_time_doubles(times)
         if objects:
             items = self._h.tp_intersects_obj(mins, maxs, vmins, vmaxs, t_start, t_end)
             return self._get_objects(items, objects)
-        return iter(self._h.tp_intersects_id(mins, maxs, vmins, vmaxs, t_start, t_end))
+        return self._h.tp_intersects_id(mins, maxs, vmins, vmaxs, t_start, t_end)
 
     def _intersection_obj(
         self, coordinates: Coordinates, objects: Literal[True, "raw"]
     ) -> Iterator[Item | object]:
-        mins, maxs = self.get_coordinate_pointers(coordinates)
-        return self._get_objects(self._h.intersects_obj(mins, maxs), objects)
+        items = self._h.intersection_obj(coordinates, self.interleaved)
+        return self._get_objects(items, objects)
 
     def _contains_obj(
         self, coordinates: Coordinates, objects: Literal[True, "raw"]
     ) -> Iterator[Item | object]:
-        mins, maxs = self.get_coordinate_pointers(coordinates)
-        return self._get_objects(self._h.contains_obj(mins, maxs), objects)
+        items = self._h.contains_obj(coordinates, self.interleaved)
+        return self._get_objects(items, objects)
 
     def _get_objects(
         self, items: list[_core.IndexItem], objects: Literal[True, "raw"]
@@ -804,8 +806,7 @@ class Index:
         num_results: int,
         objects: Literal[True, "raw"],
     ) -> Iterator[Item | object]:
-        mins, maxs = self.get_coordinate_pointers(coordinates)
-        items = self._h.nearest_obj(mins, maxs, num_results)
+        items = self._h.nearest_obj(coordinates, self.interleaved, num_results)
         return self._get_objects(items, objects)
 
     @overload
@@ -816,7 +817,7 @@ class Index:
     @overload
     def nearest(
         self, coordinates: Any, num_results: int, objects: Literal[False] = False
-    ) -> Iterator[int]: ...
+    ) -> IdArray: ...
 
     @overload
     def nearest(
@@ -828,7 +829,7 @@ class Index:
         coordinates: Any,
         num_results: int = 1,
         objects: bool | Literal["raw"] = False,
-    ) -> Iterator[Item | int | object]:
+    ) -> Iterator[Item | object] | IdArray:
         """Returns the ``k``-nearest objects to the given coordinates.
 
         :param coordinates: This may be an object that satisfies the numpy array
@@ -867,11 +868,9 @@ class Index:
 
         if objects:
             return self._nearest_obj(coordinates, num_results, objects)
-        mins, maxs = self.get_coordinate_pointers(coordinates)
-
         # If multiple neighbors are at the same distance, all are returned, so
         # the result may be longer than ``num_results``.
-        return iter(self._h.nearest_id(mins, maxs, num_results))
+        return self._h.nearest(coordinates, self.interleaved, num_results)
 
     def intersection_v(
         self, mins: npt.ArrayLike, maxs: npt.ArrayLike
@@ -1038,7 +1037,7 @@ class Index:
         times: Sequence[float],
         num_results: int = 1,
         objects: bool | Literal["raw"] = False,
-    ) -> Iterator[Item | int | object]:
+    ) -> Iterator[Item | object] | IdArray:
         mins, maxs = self.get_coordinate_pointers(coordinates)
         vmins, vmaxs = self.get_coordinate_pointers(velocities)
         t_start, t_end = self._get_time_doubles(times)
@@ -1047,8 +1046,8 @@ class Index:
                 mins, maxs, vmins, vmaxs, t_start, t_end, num_results
             )
             return self._get_objects(items, objects)
-        return iter(
-            self._h.tp_nearest_id(mins, maxs, vmins, vmaxs, t_start, t_end, num_results)
+        return self._h.tp_nearest_id(
+            mins, maxs, vmins, vmaxs, t_start, t_end, num_results
         )
 
     def get_bounds(self, coordinate_interleaved: bool | None = None) -> Any:
@@ -1114,8 +1113,7 @@ class Index:
         """
         if self.properties.type == RT_TPRTree:
             return self._deleteTP(id, *coordinates)
-        mins, maxs = self.get_coordinate_pointers(coordinates)
-        self._h.delete(id, mins, maxs)
+        self._h.delete(id, coordinates, self.interleaved)
 
     def _deleteTP(
         self,
@@ -1183,31 +1181,11 @@ class Index:
         """This function is used to instantiate the index given an
         iterable stream of data."""
 
-        stream_iter = iter(stream)
-        dimension = self.properties.dimension
-
-        def next_item() -> tuple[int, list[float], list[float], bytes | None] | None:
-            """Called by the C++ bulk loader for each entry; ``None`` ends the
-            stream."""
-            try:
-                id_, coordinates, obj = next(stream_iter)
-            except StopIteration:
-                # we're done
-                return None
-            except Exception as exc:
-                self._exception = exc
-                return None
-
-            if self.interleaved:
-                mins = list(coordinates[:dimension])
-                maxs = list(coordinates[dimension:])
-            else:
-                mins = list(coordinates[::2])
-                maxs = list(coordinates[1::2])
-
-            return id_, mins, maxs, self._serialize(obj)
-
-        return _core.IndexHandle.from_stream(self.properties.handle, next_item)
+        # Iteration, coordinate parsing and serialization all happen in C++;
+        # an exception raised by the iterator propagates unchanged.
+        return _core.IndexHandle.from_stream(
+            self.properties.handle, stream, self.interleaved, self.dumps
+        )
 
     def _create_idx_from_array(
         self, ibuf: npt.ArrayLike, minbuf: npt.ArrayLike, maxbuf: npt.ArrayLike
@@ -2129,7 +2107,7 @@ class RtreeContainer(Rtree):
 
         """
         if bbox is False:
-            for id in super().intersection(coordinates, bbox):
+            for id in super().intersection(coordinates, bbox).tolist():
                 yield self._objects[id][1]
         elif bbox is True:
             for value in super().intersection(coordinates, bbox):
@@ -2183,7 +2161,7 @@ class RtreeContainer(Rtree):
             >>> hits = idx.nearest((0, 0, 10, 10), 3, bbox=True)
         """
         if bbox is False:
-            for id in super().nearest(coordinates, num_results, bbox):
+            for id in super().nearest(coordinates, num_results, bbox).tolist():
                 yield self._objects[id][1]
         elif bbox is True:
             for value in super().nearest(coordinates, num_results, bbox):
