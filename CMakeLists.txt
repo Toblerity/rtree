@@ -47,6 +47,9 @@ endif()
 # max_dist bound (needed by Index.nearest_v(max_dists=..., return_max_dists=...)).
 include(CheckCXXSourceCompiles)
 set(CMAKE_REQUIRED_LIBRARIES ${SIDX_TARGET})
+# Same std::binary_function shims as src/_core.cpp (old headers + C++17).
+set(CMAKE_REQUIRED_DEFINITIONS -D_HAS_AUTO_PTR_ETC=1
+                               -D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION)
 check_cxx_source_compiles("
 #include <spatialindex/SpatialIndex.h>
 double f(SpatialIndex::ISpatialIndex& t, const SpatialIndex::IShape& s,
@@ -57,6 +60,7 @@ check_cxx_source_compiles("
 void f(SpatialIndex::ISpatialIndex& t) { t.flush(); }
 int main() { return 0; }" RTREE_HAVE_TREE_FLUSH)
 unset(CMAKE_REQUIRED_LIBRARIES)
+unset(CMAKE_REQUIRED_DEFINITIONS)
 
 pybind11_add_module(_core MODULE src/_core.cpp)
 target_link_libraries(_core PRIVATE ${SIDX_TARGET})

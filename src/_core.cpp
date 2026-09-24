@@ -19,6 +19,17 @@
 // The Python-facing API of ``rtree._core`` is unchanged from the C-API version
 // so the two can be compared like for like.
 
+// libspatialindex < 1.9 headers derive from std::binary_function, which C++17
+// removed. Ask the standard libraries to keep providing it (must come before
+// any standard header): MSVC STL and libc++ drop it in C++17 mode; libstdc++
+// still has it.
+#ifndef _HAS_AUTO_PTR_ETC
+#define _HAS_AUTO_PTR_ETC 1
+#endif
+#ifndef _LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION
+#define _LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION
+#endif
+
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -1383,13 +1394,15 @@ class IndexHandle {
             if (v.m_varType == Tools::VT_LONGLONG) {
                 index_id = v.m_val.llVal;
             }
-#if SIDX_VERSION_NUM >= 1900
+#if SIDX_VERSION_NUM >= 2000
             tree_.reset(SI::RTree::createAndBulkLoadNewRTree(SI::RTree::BLM_STR, *stream,
                                                              *buffer_, props_, index_id));
 #else
-            // 1.8.x ignores ExternalSortBuffer* in the PropertySet overload's
-            // favour of on-disk temp files; use the explicit overload like
-            // libspatialindex_c 1.8.5 did.
+            // Before 2.0 the PropertySet overload defaults the external sorter
+            // to 0-byte pages / 0 pages unless ExternalSortBuffer* are set,
+            // and then fails opening temp files ("BufferedFileWriter::open:
+            // Cannot open file"). libspatialindex_c < 2.0 used the explicit
+            // overload (10000-byte pages x 100); do the same.
             auto num = [&](const char *key, auto dflt) {
                 Tools::Variant x = props_.getProperty(key);
                 using T = decltype(dflt);
