@@ -13,20 +13,18 @@ cd build
 
 pip install ninja
 
-set INSTALL_PREFIX=%~dp0\..\rtree
+set INSTALL_PREFIX=%~dp0\..\sidx-static
 
 cmake -G Ninja ^
       -D CMAKE_BUILD_TYPE=Release ^
-      -D BUILD_SHARED_LIBS="ON" ^
+      -D BUILD_SHARED_LIBS="OFF" ^
+      -D BUILD_TESTING="OFF" ^
       -D CMAKE_INSTALL_PREFIX="%INSTALL_PREFIX%" ^
-      -D CMAKE_INSTALL_BINDIR=lib ^
-      -D CMAKE_INSTALL_LIBDIR=libdir ^
+      -D CMAKE_INSTALL_LIBDIR=lib ^
       ..
 
 ninja install
 
-:: remove unneeded libdir
-rmdir %INSTALL_PREFIX%\libdir /s /q
 
 dir %INSTALL_PREFIX%
 dir %INSTALL_PREFIX%\lib

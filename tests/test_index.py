@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import ctypes
 import json
 import pickle
 import sys
@@ -12,7 +11,7 @@ import numpy as np
 import pytest
 
 import rtree
-from rtree import core, index
+from rtree import index
 from rtree.exceptions import RTreeError
 
 from .common import skip_sidx_lt_210
@@ -67,27 +66,33 @@ class IndexBounds(unittest.TestCase):
         idx = index.Index()
         self.assertRaises(RTreeError, idx.add, None, (0.0, 0.0, -1.0, 1.0))
         self.assertRaises(RTreeError, idx.intersection, (0.0, 0.0, -1.0, 1.0))
-        self.assertRaises(ctypes.ArgumentError, idx.add, None, (1, 1))
+        self.assertRaises(TypeError, idx.add, None, (1, 1))
 
 
 class IndexProperties(IndexTestCase):
-    @pytest.mark.skipif(
-        not hasattr(core.rt, "Index_GetResultSetOffset"),
-        reason="Index_GetResultsSetOffset required in libspatialindex",
-    )
     def test_result_offset(self) -> None:
         idx = index.Rtree()
         idx.set_result_offset(3)
         self.assertEqual(idx.result_offset, 3)
 
-    @pytest.mark.skipif(
-        not hasattr(core.rt, "Index_GetResultSetLimit"),
-        reason="Index_GetResultsSetOffset required in libspatialindex",
-    )
     def test_result_limit(self) -> None:
         idx = index.Rtree()
         idx.set_result_limit(44)
         self.assertEqual(idx.result_limit, 44)
+
+    def test_result_limit_and_offset_semantics(self) -> None:
+        """result_limit/result_offset drive the matching C API setting.
+
+        The ctypes bindings had these cross-wired; the round-trip tests above
+        could not catch it because the getters were swapped too.
+        """
+        idx = index.Rtree()
+        for i in range(10):
+            idx.insert(i, (i, i, i + 1, i + 1))
+        idx.result_limit = 3
+        self.assertEqual(list(idx.intersection((0, 0, 20, 20))), [0, 1, 2])
+        idx.result_offset = 5
+        self.assertEqual(list(idx.intersection((0, 0, 20, 20))), [5, 6, 7])
 
     def test_invalid_properties(self) -> None:
         """Invalid values are guarded"""
@@ -1043,3 +1048,57 @@ class IndexCustomStorage(unittest.TestCase):
         r2 = index.Index(storage, overwrite=False)
         count = r2.count((0, 0, 10, 10))
         self.assertEqual(count, 1)
+
+
+class RawDictStorage(index.CustomStorageBase):
+    """CustomStorageBase subclass working directly on the ctypes buffers."""
+
+    def __init__(self) -> None:
+        self.clear()
+
+    def clear(self) -> None:
+        self.dict: dict[int, bytes] = {}
+
+    def create(self, context, returnError):
+        returnError.contents.value = self.NoError
+
+    def destroy(self, context, returnError):
+        returnError.contents.value = self.NoError
+
+    def flush(self, context, returnError):
+        returnError.contents.value = self.NoError
+
+    def loadByteArray(self, context, page, resultLen, resultData, returnError):
+        import ctypes
+
+        data = self.dict[page]
+        buf = self.allocateBuffer(len(data))
+        ctypes.memmove(buf, data, len(data))
+        resultLen.contents.value = len(data)
+        resultData[0] = ctypes.cast(buf, ctypes.POINTER(ctypes.c_uint8))
+        returnError.contents.value = self.NoError
+
+    def storeByteArray(self, context, page, len_, data, returnError):
+        import ctypes
+
+        if page.contents.value == self.NewPage:
+            page.contents.value = len(self.dict)
+        self.dict[page.contents.value] = ctypes.string_at(data, len_)
+        returnError.contents.value = self.NoError
+
+    def deleteByteArray(self, context, page, returnError):
+        del self.dict[page]
+        returnError.contents.value = self.NoError
+
+
+class IndexCustomStorageBase(unittest.TestCase):
+    def test_raw_custom_storage(self) -> None:
+        """CustomStorageBase (raw ctypes callbacks) still works."""
+        storage = RawDictStorage()
+        settings = index.Property(writethrough=True, buffering_capacity=1)
+        idx = index.Index(storage, properties=settings)
+        for i in range(100):
+            idx.insert(i, (i, i, i + 1, i + 1))
+        self.assertEqual(sorted(idx.intersection((0, 0, 5, 5))), [0, 1, 2, 3, 4, 5])
+        self.assertTrue(storage.dict)
+        idx.close()

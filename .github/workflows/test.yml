@@ -41,10 +41,13 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Setup
-      run: conda install -c conda-forge pip numpy pytest libspatialindex=${{ matrix.sidx-version }} -y
+      run: conda install -c conda-forge pip numpy pytest cmake ninja cxx-compiler libspatialindex=${{ matrix.sidx-version }} -y
 
     - name: Install
-      run: pip install -e .
+      # Compiles the pybind11 extension against conda's libspatialindex.
+      run: pip install -v -e .
+      env:
+        CMAKE_PREFIX_PATH: ${{ runner.os == 'Windows' && format('{0}\\Library', env.CONDA_PREFIX) || env.CONDA_PREFIX }}
 
     - name: Test with pytest
       run: pytest -Werror -v --doctest-modules rtree tests
@@ -70,10 +73,11 @@ jobs:
         allow-prereleases: true
 
     - name: Setup
-      run: sudo apt-get -y install libspatialindex-c6
+      run: sudo apt-get -y install libspatialindex-dev
 
     - name: Install
-      run: pip install . --group tests
+      # Editable, so the in-tree rtree/ package finds the compiled rtree._core
+      run: pip install -e . --group tests
 
     - name: Test with pytest
       run: pytest -Werror -v --doctest-modules rtree tests
@@ -110,9 +114,8 @@ jobs:
       if: startsWith(matrix.os, 'windows')
 
     - name: Build wheels
+      # One wheel per CPython version now; see [tool.cibuildwheel] in pyproject.toml.
       uses: pypa/cibuildwheel@v4.2.1
-      env:
-         CIBW_BUILD: ${{ runner.os == 'Windows' && runner.arch == 'ARM64' && 'cp311-*' || 'cp310-*' }}
 
     - uses: actions/upload-artifact@v7
       with:

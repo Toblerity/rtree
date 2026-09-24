@@ -2,7 +2,22 @@ from ctypes import CDLL
 from pathlib import Path
 from unittest import mock
 
+import pytest
+
 from rtree import finder
+
+# rtree no longer needs a loadable libspatialindex_c shared library: the
+# compiled extension links it directly (statically in the published wheels).
+# ``finder`` is kept for third-party code that dlopen()s the library itself.
+try:
+    finder.load()
+    _HAVE_SHARED_LIB = True
+except OSError:
+    _HAVE_SHARED_LIB = False
+
+pytestmark = pytest.mark.skipif(
+    not _HAVE_SHARED_LIB, reason="no libspatialindex_c shared library to load"
+)
 
 
 def test_load():

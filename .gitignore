@@ -13,3 +13,5 @@ wheelhouse
 .vscode/
 *venv*
 *.lock
+sidx-static/
+libspatialindex-*/

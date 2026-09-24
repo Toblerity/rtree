@@ -33,7 +33,7 @@ import rtree
 from rtree import Rtree as _Rtree
 
 print(f"Benchmarking Rtree-{rtree.__version__} from {Path(rtree.__file__).parent}")
-print(f"Using {rtree.core.rt._name} version {rtree.core.rt.SIDX_Version().decode()}")
+print(f"Using libspatialindex {rtree.core.sidx_version()}")
 print()
 
 TEST_TIMES = 20

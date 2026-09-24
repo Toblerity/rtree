@@ -1,7 +1,9 @@
 #!/bin/sh
 set -xe
 
-# A simple script to install libspatialindex from a Github Release
+# Build a *static*, position-independent libspatialindex from a GitHub release
+# into <project>/sidx-static, where CMakeLists.txt looks for it.  The pybind11
+# extension links it in directly, so wheels carry no separate shared library.
 VERSION=2.1.0
 SHA256=86aa0925dd151ff9501a5965c4f8d7fb3dcd8accdc386a650dbdd62660399926
 
@@ -10,7 +12,7 @@ SHA256=86aa0925dd151ff9501a5965c4f8d7fb3dcd8accdc386a650dbdd62660399926
 install_prefix() {
   OURPWD=$PWD
   cd "$(dirname "$0")"
-  cd ../rtree
+  cd ..
   arr=$(pwd)
   cd "$OURPWD"
   echo $arr
@@ -25,7 +27,7 @@ scriptloc() {
 }
 # note that we're doing this convoluted thing to get
 # an absolute path so mac doesn't yell at us
-INSTALL_PREFIX=`install_prefix`
+INSTALL_PREFIX=`install_prefix`/sidx-static
 SL=`scriptloc`
 
 rm -f $VERSION.zip
@@ -49,25 +51,22 @@ cd build
 printenv
 
 if [ "$(uname)" = "Darwin" ]; then
-    CMAKE_ARGS="-D CMAKE_OSX_ARCHITECTURES=${ARCHFLAGS##* } \
-                -D CMAKE_INSTALL_RPATH=@loader_path"
+    # One universal static library serves both the x86_64 and arm64 wheels.
+    CMAKE_ARGS="-D CMAKE_OSX_ARCHITECTURES=x86_64;arm64"
 fi
 
 cmake ${CMAKE_ARGS} \
   -D CMAKE_BUILD_TYPE=Release \
-  -D BUILD_SHARED_LIBS=ON \
+  -D BUILD_SHARED_LIBS=OFF \
+  -D CMAKE_POSITION_INDEPENDENT_CODE=ON \
+  -D BUILD_TESTING=OFF \
   -D CMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
   -D CMAKE_INSTALL_LIBDIR=lib \
-  -D CMAKE_PLATFORM_NO_VERSIONED_SONAME=ON \
   ..
 make -j 4
 
 # copy built libraries relative to path of this script
 make install
-
-# remove unneeded extras in lib
-rm -rfv ${INSTALL_PREFIX}/lib/cmake
-rm -rfv ${INSTALL_PREFIX}/lib/pkgconfig
 
 ls -R ${INSTALL_PREFIX}/lib
 ls -R ${INSTALL_PREFIX}/include
