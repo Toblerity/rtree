@@ -188,6 +188,15 @@ The cost:
   the one that built libspatialindex. Irrelevant for the static wheels.
   Windows + a *shared* libspatialindex DLL is untested: its headers don't use
   `__declspec(dllimport)`, which matters for C++ classes.
+- **Exceptions cross the library boundary.** libspatialindex throws its own
+  `Tools::Exception` types. pybind11 builds with `-fvisibility=hidden`, and
+  libc++ (macOS; clang on Linux) matches exception types by `type_info`
+  address, so against a *shared* libspatialindex `catch (Tools::Exception&)`
+  silently failed to match (surfacing as `RuntimeError: Caught an unknown
+  exception!` or a generic "Unknown Error"). The header include is wrapped in
+  `#pragma GCC visibility push(default)` to fix this; `test_empty_stream` now
+  checks libspatialindex's own message so it can't regress unnoticed. The
+  conda macOS CI job (shared lib + libc++) covers this configuration.
 - **Version drift in the C++ API** is handled with `#if` / CMake probes
   (two so far, both for 1.8.x).
 - rtree now owns ~200 more lines of C++ that used to live upstream.

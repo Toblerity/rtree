@@ -905,7 +905,11 @@ class IndexStream(IndexTestCase):
 
     def test_empty_stream(self) -> None:
         """Assert empty stream raises exception"""
-        self.assertRaises(RTreeError, index.Index, iter(()))
+        # The message comes from libspatialindex's own exception; seeing it
+        # proves C++ exceptions are caught across the library boundary (they
+        # weren't on macOS/libc++ when the headers had hidden visibility).
+        with self.assertRaisesRegex(RTreeError, "Empty data stream"):
+            index.Index(iter(()))
 
     def test_exception_in_generator(self) -> None:
         """Assert exceptions raised in callbacks are raised in main thread"""

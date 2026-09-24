@@ -24,7 +24,20 @@
 #include <pybind11/stl.h>
 #include <pybind11/typing.h>
 
+// libspatialindex throws its own exception types (Tools::Exception is not a
+// std::exception) across the shared-library boundary. pybind11 builds this
+// module with -fvisibility=hidden, and libc++ (macOS, and clang on Linux)
+// matches exception types by type_info *address*, so with hidden visibility
+// `catch (Tools::Exception&)` silently fails to match an exception thrown by
+// libspatialindex.dylib. Give the library's declarations default visibility
+// so their type_info resolves to the library's own symbols.
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC visibility push(default)
+#endif
 #include <spatialindex/SpatialIndex.h>
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC visibility pop
+#endif
 
 #include <algorithm>
 #include <cmath>
@@ -975,6 +988,8 @@ class IndexHandle {
             msg = e.what();
         } catch (std::exception &e) {
             msg = e.what();
+        } catch (...) {
+            msg = "Unknown Error";
         }
         if (stream.error) {
             h.reset();
