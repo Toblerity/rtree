@@ -70,7 +70,7 @@ jobs:
         allow-prereleases: true
 
     - name: Setup
-      run: sudo apt-get -y install libspatialindex-c6
+      run: sudo apt-get -y install libspatialindex-dev
 
     - name: Install
       run: pip install . --group tests
