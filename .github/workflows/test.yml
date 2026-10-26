@@ -70,7 +70,7 @@ jobs:
         allow-prereleases: true
 
     - name: Setup
-      run: sudo apt-get -y install libspatialindex-c6
+      run: sudo apt-get -y install libspatialindex-dev
 
     - name: Install
       run: pip install . --group tests
@@ -110,7 +110,7 @@ jobs:
       if: startsWith(matrix.os, 'windows')
 
     - name: Build wheels
-      uses: pypa/cibuildwheel@v4.3.1
+      uses: pypa/cibuildwheel@v4.3.4
       env:
          CIBW_BUILD: ${{ runner.os == 'Windows' && runner.arch == 'ARM64' && 'cp311-*' || 'cp310-*' }}
 
