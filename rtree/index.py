@@ -131,6 +131,11 @@ class Index:
             to ensure compatibility with previous versions of the library.  All
             other properties must be set on the object.
 
+        :param overwrite: Recreate an existing disk or custom-storage index
+            when True. Defaults to False, preserving existing entries.
+            For existing storage, this keyword overrides
+            :attr:`Property.overwrite`, including when ``properties`` is supplied.
+
         .. warning::
             The coordinate ordering for all functions are sensitive the
             index's :attr:`interleaved` data member.  If :attr:`interleaved`
@@ -1976,7 +1981,13 @@ class Property:
         return bool(core.rt.IndexProperty_SetOverwrite(self.handle, value))
 
     overwrite = property(get_overwrite, set_overwrite)
-    """Overwrite existing index files"""
+    """Overwrite existing index files.
+
+    When opening existing disk or custom storage, :class:`Index` sets this
+    property from its ``overwrite`` keyword argument, which defaults to False.
+    Pass ``overwrite=True`` directly to :class:`Index` to recreate an existing
+    index.
+    """
 
     def get_near_minimum_overlap_factor(self) -> int:
         return core.rt.IndexProperty_GetNearMinimumOverlapFactor(self.handle)

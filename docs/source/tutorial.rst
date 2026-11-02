@@ -174,16 +174,40 @@ described :ref:`here <clustered>`:
   [1, 2]
   >>> sorted(os.listdir())
   ['myidx.dat', 'myidx.idx']
+  >>> file_idx.close()
+
+Reopening the index preserves its entries by default. Close the index before
+opening it again:
+
+.. code-block:: pycon
+
+  >>> file_idx = index.Rtree("myidx")
+  >>> sorted(file_idx.intersection((left, bottom, right, top)))
+  [1, 2]
+  >>> file_idx.close()
+
+Pass ``overwrite=True`` to the constructor to recreate the index without its
+previous entries:
+
+.. code-block:: pycon
+
+  >>> file_idx = index.Rtree("myidx", overwrite=True)
+  >>> list(file_idx.intersection((left, bottom, right, top)))
+  []
+  >>> file_idx.close()
+  >>> file_idx = index.Rtree("myidx")
+  >>> list(file_idx.intersection((left, bottom, right, top)))
+  []
+  >>> file_idx.close()
   >>> os.chdir(prev_dir)
   >>> temp_dir.cleanup()
 
 .. note::
 
-    By default, if an index file with the given name ``myidx`` in the example
-    above already exists on the file system, it will be opened in append mode
-    and not be re-created. You can control this behavior with the
-    :py:attr:`rtree.index.Property.overwrite` property of the index property
-    that can be given to the :py:class:`rtree.index.Index` constructor.
+    For existing storage, the constructor's ``overwrite`` keyword argument
+    determines :py:attr:`rtree.index.Property.overwrite`, even when a
+    :py:class:`rtree.index.Property` object is supplied. Set the keyword argument
+    directly on :py:class:`rtree.index.Index` to control this behavior.
 
 .. seealso::
 
@@ -229,6 +253,7 @@ stored on disk as the files ``3d_index.data`` and ``3d_index.index``:
   >>> idx3d.insert(1, (0, 60, 23.0, 0, 60, 42.0))
   >>> list(idx3d.intersection((-1, 60, 22, 1, 62, 43)))
   [1]
+  >>> idx3d.close()
   >>> os.chdir(prev_dir)
   >>> temp_dir.cleanup()
 
