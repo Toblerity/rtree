@@ -285,8 +285,13 @@ class Index:
 
         if stream and self.properties.type == RT_RTree:
             self._exception = None
-            self.handle = self._create_idx_from_stream(stream)
-            if self._exception:
+            try:
+                self.handle = self._create_idx_from_stream(stream)
+            except RTreeError:
+                if self._exception is not None:
+                    raise self._exception from None
+                raise
+            if self._exception is not None:
                 raise self._exception
         elif arrays and self.properties.type == RT_RTree:
             self._exception = None
@@ -484,6 +489,9 @@ class Index:
             ...            obj=42)  # doctest: +SKIP
 
         """
+        if isinstance(id, str):
+            raise TypeError("Index IDs must be integers.")
+
         if self.properties.type == RT_TPRTree:
             # https://github.com/python/mypy/issues/6799
             return self._insertTP(id, *coordinates, obj=obj)  # type: ignore[misc]
@@ -1436,7 +1444,10 @@ class Index:
             than 0, it is assumed that the stream of data is done."""
 
             try:
-                p_id[0], coordinates, obj = next(stream_iter)
+                entry_id, coordinates, obj = next(stream_iter)
+                if isinstance(entry_id, str):
+                    raise TypeError("Index IDs must be integers.")
+                p_id[0] = entry_id
             except StopIteration:
                 # we're done
                 return -1

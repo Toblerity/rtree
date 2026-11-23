@@ -70,6 +70,12 @@ class IndexBounds(unittest.TestCase):
         self.assertRaises(ctypes.ArgumentError, idx.add, None, (1, 1))
 
 
+def test_insert_rejects_string_id() -> None:
+    idx = index.Index()
+    with pytest.raises(TypeError, match="Index IDs must be integers"):
+        idx.insert("a", (0.0, 0.0, 1.0, 1.0))  # type: ignore[arg-type]
+
+
 class IndexProperties(IndexTestCase):
     @pytest.mark.skipif(
         not hasattr(core.rt, "Index_GetResultSetOffset"),
@@ -935,6 +941,20 @@ class IndexStream(IndexTestCase):
             return index.Index(gen())  # type: ignore[func-returns-value]
 
         self.assertRaises(TestException, create_index)
+
+
+@pytest.mark.parametrize("ids", [("a",), (0, "a")])
+def test_stream_rejects_string_id(ids: tuple[int | str, ...]) -> None:
+    bounds = (0.0, 0.0, 1.0, 1.0)
+    stream = ((entry_id, bounds, None) for entry_id in ids)
+    with pytest.raises(TypeError, match="Index IDs must be integers"):
+        index.Index(stream)
+
+
+def test_stream_reports_malformed_first_entry() -> None:
+    stream = iter([("a", (0.0, 0.0, 1.0, 1.0))])
+    with pytest.raises(ValueError, match="expected 3"):
+        index.Index(stream)
 
 
 class DictStorage(index.CustomStorage):
